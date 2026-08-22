@@ -284,19 +284,28 @@ stages: [validate, plan]
 
 default:
   tags: [azure-runner]   # group runner del subgroup Logistico (vedi Runners del progetto)
-  image: hashicorp/terraform:latest   # TODO: pinnare la versione di Terraform
+  image:
+    name: hashicorp/terraform:latest   # TODO: pinnare la versione di Terraform
+    # L'immagine terraform ha ENTRYPOINT=terraform: senza reset GitLab esegue
+    # "terraform sh -c ..." -> 'no command named sh'. entrypoint: [""] ripristina la shell.
+    entrypoint: [""]
+
+variables:
+  # Config brownfield sotto terraform/brownfield/ (la root ha solo il modulo greenfield
+  # deprecato: "Non eseguire terraform apply"). Tutti i comandi usano -chdir su questa dir.
+  TF_DIR: terraform/brownfield
 
 validate:
   stage: validate
   script:
-    - terraform init -backend=false
-    - terraform validate
+    - terraform -chdir=$TF_DIR init -backend=false
+    - terraform -chdir=$TF_DIR validate
 
 plan:
   stage: plan
   script:
-    - terraform init
-    - terraform plan
+    - terraform -chdir=$TF_DIR init
+    - terraform -chdir=$TF_DIR plan
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 """
