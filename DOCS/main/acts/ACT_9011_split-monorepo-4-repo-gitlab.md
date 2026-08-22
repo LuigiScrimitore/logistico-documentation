@@ -1,6 +1,6 @@
 # ACT_9011 · Split monorepo → 4 repo GitLab (+ Package Registry)
 
-**Status**: proposed
+**Status**: in-progress (pilot lib completato; workflows/infra + cutover pendenti)
 **Type**: infra
 **Origin**: emerged (accesso subgroup GitLab concesso 2026-08-03)   **Sprint**: fuori-sprint (emergente)
 **Fase / Wave**: FASE 0 — Fondamenta   **Gg (stima)**: 2
@@ -82,7 +82,15 @@ nei repo (già in `.gitignore`).
   pubblicato). Nessun file sensibile nei repo (`git log`/scan). Documentation non presente sul GitLab cliente.
 
 ## Esito
-— (parte locale da preparare; push cliente su go dell'utente)
+- **Parte locale automatizzata** via `scripts/split_to_multirepo.py` ([[ACT_9017]]): 4 repo generati in
+  `C:\PROGETTI\logistico-repos\`, 584 file, 0 non mappati.
+- **GitHub**: i 4 repo (`LuigiScrimitore/logistico-{lib,workflows,infrastructure,documentation}`) creati e
+  pushati (init pulito `import @<sha>`). Il monorepo `Logistico2.0` resta archivio.
+- **GitLab cliente — pilot `logistico-lib` completato** (2026-08-22): project creato nel subgroup
+  `Logistico`, snapshot `v1.0.4` promosso (modello A), **CI verde**, wheel nel **Package Registry**
+  (`logistica_utils 1.0.4`). Superati due ostacoli d'ambiente → [[LL-011]] (runner tag) e [[LL-012]] (CA).
+- **Restano**: promuovere `workflows` e `infrastructure` (dopo il consolidamento `databricks.yml`,
+  [[ACT_9018]]); variabili CI/CD masked (ARM_*/DATABRICKS_*); sync/cutover.
 
 ## Follow-up
 Sblocca [[ACT_0.1.6]] (repo infrastructure pronto) e i gate cloud. Allineare compute serverless nei YML

@@ -4,7 +4,7 @@
 > Contiene il quadro tecnico e funzionale della Fase 0: perimetro, architettura, decisioni, stato, punti aperti/risolti, decisioni out-of-scope e sviluppi futuri.
 > Sostituisce il precedente `fasi/F0_infrastruttura.md` (archiviato). Stato di dettaglio degli sprint: [`../sprint_agile/`](../sprint_agile/) (0.1, 0.2, 0.3).
 
-**Ultimo aggiornamento:** 2026-07-03 · **Stato fase:** 🔵 IN CORSO (Sprint 0.1 attivo; 0.2/0.3 ✅)
+**Ultimo aggiornamento:** 2026-08-22 · **Stato fase:** 🔵 IN CORSO (Sprint 0.1 attivo; 0.2/0.3 ✅; split multi-repo eseguito, pilot lib su GitLab ✅ — [[ACT_9011]])
 
 ---
 
@@ -27,6 +27,7 @@ Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **
 | Compute per i job | ✅ job cluster serverless |
 | Libreria condivisa `logistica_utils` | ✅ 6 moduli, 64 test |
 | CI/CD e Databricks Asset Bundles | ✅ pipeline + `databricks.yml` |
+| Split multi-repo (4 repo) + wheel su Package Registry | ✅ 4 repo GitHub; pilot `logistico-lib` su GitLab (CI + `logistica_utils 1.0.4`) — [[ACT_9011]]/[[ACT_9017]] |
 | Template notebook (Bronze/Silver/Gold) | ✅ 3 template + logging standard |
 
 ---

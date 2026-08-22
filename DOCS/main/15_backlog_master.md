@@ -333,13 +333,14 @@ _(sezioni da popolare in Fase 2)_
 | 9008 | Cleanup orchestrazione Wave E (yml placeholder rimosso) | cross-check doc-vs-codice | ✅ done | [acts/ACT_9008](acts/ACT_9008_cleanup-orchestrazione-wave-e.md) |
 | 9009 | Estendere `quadratura_fact.py` (GIACENZE/TRASPORTO/TURNO/TRACC) | cross-check doc-vs-codice | ✅ done | [acts/ACT_9009](acts/ACT_9009_estendere-quadratura-fact-config.md) |
 | 9010 | Task DQ standalone nei workflow (`dq_gate` + registry) | cross-check doc-vs-codice | ✅ done | [acts/ACT_9010](acts/ACT_9010_task-dq-standalone-nei-workflow.md) |
-| 9011 | Split monorepo → 4 repo GitLab (+ Package Registry) | accesso subgroup GitLab | ⬜ proposed | [acts/ACT_9011](acts/ACT_9011_split-monorepo-4-repo-gitlab.md) |
+| 9011 | Split monorepo → 4 repo GitLab (+ Package Registry) | accesso subgroup GitLab | 🔵 in-progress (pilot lib ✅) | [acts/ACT_9011](acts/ACT_9011_split-monorepo-4-repo-gitlab.md) |
 | 9012 | Trasporto landing SFTP vs Blob (AzCopy/API) + send_to_landing pluggable | thread mail SFTP | ⬜ proposed | [acts/ACT_9012](acts/ACT_9012_trasporto-landing-sftp-vs-blob.md) |
 | 9013 | Attribuzione costi serverless (usage/budget policy, ex custom_tags) | correzione serverless 9007 | ⬜ proposed | [acts/ACT_9013](acts/ACT_9013_tagging-costi-serverless-budget-policy.md) |
 | 9014 | Riallineare workflow ai notebook reali (DAG derivato, 103 task) | audit durante ACT_9010 | ✅ done | [acts/ACT_9014](acts/ACT_9014_riallineare-workflow-notebook.md) |
 | 9015 | Verifica integrità baseline Gold + rebuild storico movimentazione (17 date) | follow-up ACT_9005 | ✅ done | [acts/ACT_9015](acts/ACT_9015_verifica-integrita-baseline-gold.md) |
 | 9016 | Guardrail pytest eseguibili in locale (classpath Delta + fixture Decimal + FQN) | follow-up ACT_9015 | ✅ done | [acts/ACT_9016](acts/ACT_9016_guardrail-pytest-eseguibili-locale.md) |
 | 9017 | Script split monorepo → multi-repo (tooling di transizione, mono-direzionale) | domanda utente in ACT_9011 | 🔵 in-progress | [acts/ACT_9017](acts/ACT_9017_script-split-monorepo-transizione.md) |
+| 9018 | Consolidamento dei due databricks.yml in logistico-workflows (+ ADR modello deploy) | split multi-repo | ⬜ proposed | [acts/ACT_9018](acts/ACT_9018_consolidamento-databricks-yml.md) |
 
 ---
 

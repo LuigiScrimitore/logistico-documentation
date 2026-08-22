@@ -64,6 +64,18 @@ il formato versione, esige source pulito, ed è **idempotente** (nessuna diff �
 Validato in locale 2026-08-22 (lib v1.0.0: commit+tag OK; documentation rifiutato). Procedura d'uso:
 `16_runbook_multirepo_github_gitlab.md` (Fase 3, modello A confermato con ADR-0016 §aggiornamento 2026-08-22).
 
+## Pilot completato — `logistico-lib` sul GitLab cliente (2026-08-22)
+Giro end-to-end **dimostrato sul GitLab cliente reale** (`cp1lgitlab...Logistico/logistico-lib`):
+`promote_to_gitlab.py` → push → **CI verde** → wheel nel **Package Registry** (`logistica_utils 1.0.4`).
+Due ostacoli d'ambiente superati (entrambi promossi a lezione):
+- **pipeline `stuck`** con group runner attivo → mancava il tag: aggiunto `tags: [azure-runner]` nel
+  `default:` dei `.gitlab-ci.yml` generati → [[LL-011]].
+- **`publish` in `CERTIFICATE_VERIFY_FAILED`** verso il GitLab (CA aziendale sconosciuta al container) →
+  `before_script` che aggiunge la CA (`CI_SERVER_TLS_CA_FILE`) al trust store → [[LL-012]].
+- **versione wheel disallineata** (tag `v1.0.2` ma pacchetto `1.0.0` da `setup.py`) → il `build` allinea la
+  versione al tag (`CI_COMMIT_TAG`) → [[LL-013]]. Versione finale pubblicata: **`1.0.4`**.
+Il fix dei tre è nel **generatore** (`split_to_multirepo.py`), quindi vale per tutti e 4 i repo.
+
 ## Follow-up
 - Consolidamento dei due `databricks.yml` in `logistico-workflows` (oggi affiancati + warning).
 - Al cutover: freeze monorepo, stop rigenerazione, ritiro degli script di transizione.

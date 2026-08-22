@@ -54,6 +54,10 @@ Confermato il modello operativo dei due host (raffina il "seed one-shot al cutov
   push della history). Direzione **sempre** monorepo → GitHub → GitLab; mai inversa.
 - Procedura operativa: `16_runbook_multirepo_github_gitlab.md`; automazione promozione:
   `scripts/promote_to_gitlab.py` ([[ACT_9017]]).
+- **Validato (2026-08-22)**: 4 repo su GitHub; **pilot `logistico-lib` completato sul GitLab cliente** —
+  promote → CI verde → wheel `logistica_utils 1.0.4` nel Package Registry. Lezioni operative emerse:
+  [[LL-011]] (tag runner), [[LL-012]] (CA aziendale nel container), [[LL-013]] (versione dal tag). Restano
+  `workflows` (dopo consolidamento `databricks.yml`, [[ACT_9018]]) e `infrastructure`.
 
 **Conseguenze**:
 + Cicli di rilascio indipendenti (infra ≠ workflow ≠ lib); permessi e CI/CD per repo; lib riusabile via registry.

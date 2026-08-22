@@ -20,7 +20,7 @@
 | **Data inizio → fine** | 6 lug → 10 lug 2026 |
 | **Ultimo aggiornamento** | 2026-07-03 |
 
-**Note di sprint:** sprint completato offline. Il deploy effettivo su cloud dipende dai prerequisiti dello Sprint 0.1 (subgroup GitLab, workspace). La pipeline CI/CD andrà adattata ai **3 repo** del subgroup `logistico` (multi-repo, non mono-repo).
+**Note di sprint:** sprint completato offline. Il deploy effettivo su cloud dipende dai prerequisiti dello Sprint 0.1 (subgroup GitLab, workspace). **Aggiornamento 2026-08-22**: lo split multi-repo è stato **eseguito** — 4 repo su GitHub (SoT) e pilot `logistico-lib` completato sul GitLab cliente (CI verde + wheel nel Package Registry). Vedi [[ACT_9011]] (split) e [[ACT_9017]] (tooling `split_to_multirepo.py` / `promote_to_gitlab.py`). La CI/CD di questo sprint è quindi confluita nei `.gitlab-ci.yml` per-repo generati.
 
 ## Attività
 
@@ -33,6 +33,9 @@
 | 0.2.5 | Libreria `logistica_utils` (6 moduli, 64 test) | 1 | ✅ | secret_helper, logging, delta, dq, utils, storage; wheel |
 
 ## Note di adattamento (per il deploy cloud)
-- `databricks.yml`: compute serverless (D 2026-07-03).
-- Struttura da riportare sui 3 repo: `logistico-infrastructure` (terraform), `logistico-workflows` (notebooks+DAB), `logistico-lib` (wheel).
-- Secret CI/CD: solo auth (`ARM_*` + `DATABRICKS_TOKEN`), meccanismo in def. con Technology.
+- `databricks.yml`: compute serverless (D 2026-07-03). **NB**: consolidamento dei due `databricks.yml` in
+  `logistico-workflows` ancora aperto → [[ACT_9018]].
+- Struttura riportata sui repo (eseguito, ACT_9011): `logistico-infrastructure` (terraform),
+  `logistico-workflows` (notebooks+DAB), `logistico-lib` (wheel), `logistico-documentation` (solo GitHub).
+- Secret CI/CD: solo auth (`ARM_*` + `DATABRICKS_TOKEN`), variabili masked per-repo (ADR-0005). Runner: group
+  runner `azure-runner` del subgroup (i job vanno taggati → [[LL-011]]); CA aziendale nel container → [[LL-012]].

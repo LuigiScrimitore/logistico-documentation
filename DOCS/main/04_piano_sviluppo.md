@@ -1,6 +1,6 @@
 # Piano di Sviluppo — Logistico 2.0
 
-**Ultimo aggiornamento:** 2026-07-02  
+**Ultimo aggiornamento:** 2026-08-22  
 **Versione documento:** 3.1 (stato corrente + certifica wave + readiness brownfield)  
 **Progetto:** Logistico 2.0 — CNO Data Platform  
 **Stack:** PySpark · Delta Lake · Azure ADLS Gen2 · Unity Catalog · Databricks Workflows · GitLab CI/CD · Terraform
@@ -17,7 +17,7 @@
 
 | Fase | Descrizione | Sprint | Gg totali | Gg completati | Stato | Note |
 |------|-------------|--------|-----------|---------------|-------|------|
-| **FASE 0** | Fondamenta Infrastrutturali | 0.1–0.3 | 18 | 13 | 🔵 IN CORSO | Sprint 0.1 IN CORSO (Terraform scritto, apply pendente provisioning workspace); D1/D2/D3/D5 ✅ decisi; 0.1.4 ridisegnata (AKV → GitLab CI/CD); 0.2/0.3 ✅ |
+| **FASE 0** | Fondamenta Infrastrutturali | 0.1–0.3 | 18 | 13 | 🔵 IN CORSO | Sprint 0.1 IN CORSO (Terraform scritto, apply pendente provisioning workspace); D1/D2/D3/D5 ✅ decisi; 0.1.4 ridisegnata (AKV → GitLab CI/CD); 0.2/0.3 ✅; split multi-repo eseguito (4 repo GitHub, pilot lib su GitLab CI+Registry ✅ — ACT_9011) |
 | **FASE 1** | Master Data & Dimensioni | 1.1–1.3 | 19 | 17 | 🔵 PARZ. | DIM offline ✅; first-run landing + workflow yml da eseguire su cloud |
 | **FASE 2** | Wave A — Carichi (Inbound) | 2.1–2.4 | 26 | 21 | 🔵 PARZ. | F_CARICO 0.0% orphan locale; backfill/quadratura/BA-validation pendenti |
 | **FASE 3** | Wave B — Giacenze (Stock) | 3.1–3.4 | 26 | 22 | 🔵 PARZ. | T_STOCK OK locale; backfill/quadratura/BA-validation pendenti |
@@ -180,7 +180,7 @@
 | Watermark rollout (clean, carichi, spedizioni, ordini) | OP-35 | 🟡 Media | 3 gg DE | ✅ Completato | Rollout 2026-06-19 su tutti i _clean |
 | Supporto Parquet in Bronze (widget file_format, auto-detect) | Gap #2 | 🔴 Alta | 3 gg DE | ✅ Fatto | G-01, 2026-06-20 |
 | **Certifica F_CARICO — grain pesata INNER JOIN** | OP-CAR-5 | 🟠 Media | 2 gg DE | Design pendente | LEFT join pesata vs grain da catena WL; sessione dedicata |
-| **Migrazione brownfield Databricks** (schemi, Volume, DAB, multi-repo GitLab) | D1-D5 | 🟡 Media | 4-6 gg DevOps | Codice pronto (D1-D5 chiuse) | Overlay TF + storage.py; subgroup `logistico` con 3 repo; vedi `11_devops_handoff_databricks.md` |
+| **Migrazione brownfield Databricks** (schemi, Volume, DAB, multi-repo GitLab) | D1-D5 | 🟡 Media | 4-6 gg DevOps | Codice pronto (D1-D5 chiuse) | Overlay TF + storage.py; subgroup `logistico`: 4 repo GitHub (SoT) / 3 GitLab cliente, pilot lib ✅ (ACT_9011); vedi `11_devops_handoff_databricks.md` |
 | Schema definitivo lookup Retail (OP-02) | OP-02 | 🟡 Media | — | In attesa Reply | Sblocca join master articolo/fornitore; lega D2 migrazione |
 | Framework DQ condiviso (Great Expectations / Soda) | OP-21 | 🔴 Alta | — | Senza risposta Reply | Ri-sottoporre con priorità |
 
