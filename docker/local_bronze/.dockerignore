@@ -1,0 +1,5 @@
+# Tutto cio' che il build NON deve copiare nel context (la build usa solo
+# Dockerfile e requirements.txt presenti in questa cartella).
+*
+!Dockerfile
+!requirements.txt

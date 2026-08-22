@@ -1,0 +1,13 @@
+# Dipendenze per sviluppo locale e test
+# Installare con: pip install -r requirements-dev.txt
+
+# Core
+pyspark>=3.5.0
+delta-spark>=3.0.0
+
+# Test
+pytest>=8.0.0
+pytest-cov>=5.0.0
+
+# Utilities
+pyarrow>=14.0.0   # richiesto da PySpark per operazioni pandas API

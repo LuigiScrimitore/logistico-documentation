@@ -1,0 +1,43 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Logistico 2.0 — docker-compose per ambiente Bronze locale
+#
+# Servizio singolo "spark" headless. Si lanciano i notebook via:
+#   docker compose exec spark python /workspace/code/tests/local_bronze/run_notebook.py ...
+# oppure tramite l'helper PowerShell:
+#   .\run.ps1 notebooks\bronze\anagrafiche\bronze_tabgen.py
+#
+# Mount:
+#   ./../../                                              -> /workspace/code        (repo, RO)
+#   ${DATA_LANDING}                                       -> /workspace/data/landing    (RO)
+#   ${DATA_WAREHOUSE}                                     -> /workspace/data/warehouse  (RW)
+#
+# Override path via env vars (file .env oppure inline):
+#   DATA_LANDING   = path host alla cartella CSV landing
+#   DATA_WAREHOUSE = path host dove persistere le Delta tables
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  spark:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: logistico-spark:1.0
+    container_name: logistico-spark
+    working_dir: /workspace/code
+    volumes:
+      # Codice del repo (sola lettura: i notebook non vanno modificati dall'interno)
+      - ../../:/workspace/code:ro
+      # Landing CSV reali (sola lettura)
+      - ${DATA_LANDING:-C:/PROGETTI/LOGISTICO_DATA/data/landing}:/workspace/data/landing:ro
+      # Warehouse Delta (lettura/scrittura, persistito sull'host)
+      - ${DATA_WAREHOUSE:-C:/PROGETTI/LOGISTICO_DATA/data/warehouse}:/workspace/data/warehouse:rw
+    environment:
+      PYTHONPATH: /workspace/code/lib/logistica_utils:/workspace/code/tests/local_bronze
+      JAVA_TOOL_OPTIONS: "-Dlog4j.logLevel=WARN -Dlog4j.rootCategory=WARN"
+      # Allocazione memoria Spark (override possibile via env)
+      SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY:-4g}
+    # Container resta attivo (i comandi si lanciano via exec)
+    command: ["tail", "-f", "/dev/null"]
+    tty: true
+    stdin_open: true

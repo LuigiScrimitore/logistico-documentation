@@ -1,0 +1,5 @@
+# Dipendenze test locale Bronze (Piano A, parte 2).
+# Allineate a Databricks Runtime 15.4 LTS (Spark 3.5.0, Scala 2.12).
+pyspark==3.5.0
+delta-spark==3.2.0
+pyyaml>=6.0

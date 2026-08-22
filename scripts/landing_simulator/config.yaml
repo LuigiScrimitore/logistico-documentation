@@ -1,0 +1,246 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Landing Simulator — configurazione estrazione Oracle -> file landing
+# Versione: 1.0.0  Data: 2026-06-08
+#
+# IMPORTANTE: lo script esegue ESCLUSIVAMENTE query SELECT (READ-ONLY).
+# Non aggiorna mai i flag *_DATA_ESTRAZIONE_DWH dei record letti.
+#
+# Connessione: il file di esempio in scripts/landing_simulator/.env.example
+# definisce ORACLE_HOST/PORT/SERVICE/USER/PASSWORD. Lo script legge .env (non versionato).
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Cartella radice dove scrivere i file landing (parametrizzabile via CLI / env)
+output_dir: "C:/PROGETTI/LOGISTICO_DATA/data/landing"
+
+# Encoding/separatore file di output (allineati al template Bronze)
+csv:
+  encoding: "utf-8"
+  separator: ";"
+  null_value: ""
+  date_format: "YYYY-MM-DD"
+  timestamp_format: "YYYY-MM-DD HH24:MI:SS"
+
+# Sistemi sorgente
+systems:
+
+  # ── LOGISTIX (multi-sito via db-link) ─────────────────────────────────────
+  logistix:
+    landing_subdir: "logistix-landing"
+    # Db-link dei siti attivi — allineati a CDT_ESTR.S_LOGISTIX WHERE FLAG_ATTIVO = 1 (2026-06-10).
+    # La chiave (sito) e' il db-link senza prefisso LOG_, minuscolo; finisce nel path landing
+    # (logistix-landing/<sito>/) ed e' la base di _sito_estrazione -> normalize_sito (TABGEN).
+    dblinks:
+      laix: "LOG_LAIX"
+      lbvx: "LOG_LBVX"
+      lcax: "LOG_LCAX"
+      leax: "LOG_LEAX"
+      lfax: "LOG_LFAX"
+      lfmx: "LOG_LFMX"
+      lfqx: "LOG_LFQX"
+      lfsx: "LOG_LFSX"
+      lfvx: "LOG_LFVX"
+      lgax: "LOG_LGAX"
+      lgcx: "LOG_LGCX"
+      lgnx: "LOG_LGNX"
+      lgqx: "LOG_LGQX"
+      lgrx: "LOG_LGRX"
+      lgsx: "LOG_LGSX"
+      lgvx: "LOG_LGVX"
+      lgzx: "LOG_LGZX"
+      lonx: "LOG_LONX"
+      losx: "LOG_LOSX"
+      lslx: "LOG_LSLX"
+      lsmx: "LOG_LSMX"
+      lsvx: "LOG_LSVX"
+    tables:
+      # Transazionali — modalità DELTA-by-flag (estrazione: WHERE prefix_DATA_ESTRAZIONE_DWH = 0
+      # oppure window su una data di business per backfill profondo)
+      sto_tes_carichi:
+        mode: delta
+        date_column: "STCAR_DATA_CARICO"
+        date_column_type: "julian_day"   # Oracle legacy: Julian Day Number (TO_DATE(num,'J'))
+        flag_column: "STCAR_DATA_ESTRAZIONE_DWH"
+        merge_keys: ["STCAR_NRO_CARICO", "STCAR_COD_MAGAZZINO"]
+        columns: []
+      sto_righe_carico:
+        mode: delta
+        date_column: "SRCAR_DATA_CARICO"
+        date_column_type: "julian_day"
+        flag_column: ""              # nessun flag proprio (AS-IS via WL2_CATENA)
+        merge_keys: ["SRCAR_NRO_CARICO", "SRCAR_COD_MSI", "SRCAR_COD_MAGAZZINO"]
+        columns: []
+      pesate:
+        mode: delta
+        date_column: "PSP_DATABOLLA"
+        date_column_type: "date"     # eccezione: PSP_DATABOLLA e' DATE
+        flag_column: "PSP_DATA_ESTRAZIONE_DWH"
+        merge_keys: ["PSP_NUMETIC", "PSP_DATABOLLA"]
+        columns: []
+      tracciace178:
+        mode: delta
+        date_column: "CE178_DATA_CARICO"
+        date_column_type: "julian_day"
+        flag_column: "CE178_DATA_ESTRAZIONE_DWH"
+        merge_keys: ["CE178_NRO_ETICHETTA", "CE178_NRO_CARICO"]
+        columns: []
+      dettaglio_carr:
+        mode: delta
+        date_column: "DTCRL_DATA_RICH_ABB"
+        date_column_type: "julian_day"
+        flag_column: "DTCRL_DATA_ESTRAZIONE_DWH"
+        merge_keys: ["DTCRL_COD_CARRELLIST", "DTCRL_DATA_RICH_ABB", "DTCRL_ORA_RICH_ABB", "DTCRL_COD_MSI"]
+        columns: []
+      cartellino:
+        mode: delta
+        date_column: "CARTE_DATA"
+        date_column_type: "julian_day"
+        flag_column: "CARTE_DATA_ESTRAZIONE_DWH"
+        merge_keys: ["CARTE_COD_CARRELLIST", "CARTE_DATA"]
+        columns: []
+      imbfmovim:
+        mode: delta
+        date_column: ""              # IMBFMOVIM senza date_column -> filtro solo via flag
+        flag_column: "IMF_DATA_ESTRAZIONE_DWH"
+        merge_keys: ["IMFNUMBOL", "IMFANNOBOL", "IMFPRGRIF", "IMFCODIMB"]
+        columns: []
+      abb_tolti:
+        mode: delta
+        date_column: "ABT_DATA_ANNULLO"
+        date_column_type: "julian_day"
+        flag_column: "ABT_DATA_ESTRAZIONE_DWH"
+        merge_keys: ["ABT_NRO_ETICHETTA", "ABT_DATA_ANNULLO"]
+        columns: []
+      # Anagrafiche — modalità FULL (snapshot completo, no filtro)
+      carrellisti:        { mode: full, columns: [] }
+      preparatori:        { mode: full, columns: [] }
+      ricevitori:         { mode: full, columns: [] }
+      spedizionieri:      { mode: full, columns: [] }
+      struttura_mag:      { mode: full, columns: [] }
+      corsie:             { mode: full, columns: [] }
+      tabgen:             { mode: full, columns: [] }
+      aree_merceologiche:
+        mode: full
+        # OP-10: filtro di business presente in AS-IS
+        where_clause: "ARM_TIPO_AREA = 1"
+        columns: []
+      classe_posto_pallet:
+        mode: full
+        # AS-IS usa una vista derivata V_CLASSE_POSTO_PALLET; per il test estraiamo direttamente
+        # dalla tabella sorgente (se diversa, mappare qui il vero nome)
+        source_object: "CLASSE_POSTO_PALLET"
+        columns: []
+      # ── Sorgenti RAW aggiunte (ridisegno scelta B: leggere il sorgente, non le WL) ──
+      # STOCK: catena giacenze (sostituisce wl2_catena/wl1_catena). Snapshot giornaliero.
+      catena:
+        mode: snapshot
+        source_object: "CATENA"
+        columns: []
+      catena_esterni:
+        mode: snapshot
+        source_object: "CATENA_ESTERNI"
+        columns: []
+      # NB: storico_liste/storico_bolle (sorgenti prep_sped) gestite nel blocco STAT
+      # (vedi sotto), dove risiede gia' storico_bolle. Qui in logistix solo catena (stock).
+
+  # ── STAT (db-link unico, preparazione spedizioni) ─────────────────────────
+  stat:
+    landing_subdir: "stat-landing"
+    dblinks:
+      stat: "STAT"          # un solo db-link, ma la struttura resta {sito_logico: dblink}
+    is_multisite_in_path: false   # NB: stat non e' multi-sito nel path landing
+    tables:
+      storico_riepiloghi:
+        mode: delta
+        date_column: "RPLPR_DATA_PREPARAZ"
+        date_column_type: "julian_day"
+        flag_column: "RPLPR_DATA_ESTRAZIONE_DWH"
+        merge_keys: ["RPLPR_SITO", "RPLPR_NRO_RIEPILOGO", "RPLPR_DATA_PREPARAZ"]
+        columns: []
+      testate_bolle:
+        mode: delta
+        date_column: "TEBO_DATA_BOLLA"
+        date_column_type: "julian_day"
+        flag_column: "TEBO_DATA_ESTRAZIONE_DWH"
+        merge_keys: ["TEBO_SITO", "TEBO_NRO_BOLLA", "TEBO_DATA_BOLLA"]
+        columns: []
+      storico_bolle:
+        mode: delta
+        date_column: "BOL_DATA_BOLLA"
+        date_column_type: "julian_day"
+        flag_column: "BOL_DATA_ESTRAZIONE_DWH"
+        merge_keys: ["BOL_SITO", "BOL_NRO_BOLLA", "BOL_DATA_BOLLA", "BOL_NRO_RIGA"]
+        columns: []
+      # Sorgente RAW prep_sped (sostituisce wl1_storico_liste + _uniche).
+      # NB date_column/merge_keys DA VALIDARE con dati reali (bugfix successivo).
+      storico_liste:
+        mode: delta
+        date_column: "LSPRL_DATA_ORDIN_NEG"
+        date_column_type: "julian_day"
+        flag_column: ""        # decisione: niente flag CDC, solo finestra data
+        merge_keys: ["LSPRL_SITO", "LSPRL_NRO_GABBIA", "LSPRL_NRO_ORDINE_NEG", "LSPRL_COD_NEGOZIO", "LSPRL_COD_MSI", "LSPRL_DATA_ORDIN_NEG", "LSPRL_SEQUE_PRELIEVO", "LSPRL_FLAG_SCARTATO"]
+        columns: []
+      buoni_eco:
+        # AS-IS: estrazione non flag-based; date_column "DATA_BUONO" non esiste su STAT (ORA-00904).
+        # Passiamo a FULL come tipo_attivita_eco (e' una tabella di servizio piccola/media).
+        mode: full
+        merge_keys: ["BUONO_COD"]
+        columns: []
+      tipo_attivita_eco:
+        mode: full
+        columns: []
+
+  # ── CDT_ESTR_RAW (sorgenti raw locali, accesso diretto schema CDT_ESTR) ────
+  # Ridisegno SCELTA B: NON leggiamo piu' le WL* staging (wl1_*/wl2_*/s_*), ma le
+  # VERE SORGENTI raw che le WL leggevano. Le elaborazioni intermedie (uniche,
+  # catena, fill-down, join) sono replicate nei Silver, non lette dallo staging.
+  #
+  # Bronze 1:1: SELECT * senza derivate; ART_RADICE/VAR e mag_sito_cod -> Silver.
+  # Filtro: full o finestra data (NO flag CDC, che richiederebbe UPDATE sul sorgente).
+  # READ-ONLY assoluto.
+  cdt_estr_raw:
+    landing_subdir: "cdt-estr-raw-landing"
+    schema: "CDT_ESTR"
+    is_multisite_in_path: false
+    tables:
+      # DISMESSE (2026-06-10): non raggiungibili (sinonimi su db-link remoti morti, es. TRASPO)
+      # E non utilizzate in alcun notebook della pipeline TO-BE. Verifica usage in data engineering.
+      #   - artdgene           (join in prep_sped era dead-join: nessuna colonna selezionata)
+      #   - cndpardgene        (nessun riferimento)
+      #   - ass_merceologiche  (nessun riferimento; @TRASPO inesistente)
+      #   - macro_aggregazioni (nessun riferimento; @TRASPO inesistente)
+      #   - macro_aggregazionid(nessun riferimento)
+      # DISMESSE anche cndstostock e gfdit (2026-06-10): non raggiungibili e dismesse
+      # funzionalmente. silver_t_stock perde la valorizzazione (VAL_STOCK_* -> 0);
+      # silver_t_pdv perde PDV_FID_COD (-> '00000'). Entrambi degradano con fallback.
+      # Anagrafiche / config (full)
+      # NB (2026-06-11): 'vettori' (CDT_ESTR.VETTORI locale) DISMESSO — doppione di vettori@TRACK
+      # (stessa anagrafica, 96 righe) e ramo vettori_locale senza consumer a valle. Fonte unica = TRACK.
+      automezzi:       { mode: full, source_object: "AUTOMEZZI", columns: [] }
+      # Anagrafica PDV (per T_PDV: sostituisce wl1_apvpunto_vendita)
+      apvpunto_vendita:     { mode: full, source_object: "APVPUNTO_VENDITA", columns: [] }
+      # Coda di estrazione spedizioni (flag CDC legacy) — la leggiamo come anagrafica di stato
+      estrai_spedizioni:    { mode: full, source_object: "ESTRAI_SPEDIZIONI", columns: [] }
+      # NB: 'spedizioni' SPOSTATA nel blocco 'track' (2026-06-10): CDT_ESTR.SPEDIZIONI e' solo un
+      # SYNONYM per SPEDIZIONI@TRACK. La leggiamo direttamente dalla sorgente TRACK.
+
+  # ── TRACK (db-link @TRACK: vettori sorgente trasporti) ────────────────────
+  track:
+    landing_subdir: "track-landing"
+    dblinks:
+      track: "TRACK"
+    is_multisite_in_path: false
+    tables:
+      vettori:
+        mode: full
+        source_object: "vettori"
+        columns: []
+      # Transazionale spedizioni: sorgente AUTORITATIVA @TRACK (CDT_ESTR.SPEDIZIONI ne e' un
+      # synonym). Finestra su SP_DATABOLLA (DATE). Aggancia la catena Trasporti (rebuild s_trasp_mtv).
+      spedizioni:
+        mode: delta
+        source_object: "SPEDIZIONI"
+        date_column: "SP_DATABOLLA"
+        date_column_type: "date"
+        flag_column: ""
+        merge_keys: ["SP_ID"]
+        columns: []

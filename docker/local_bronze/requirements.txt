@@ -1,0 +1,14 @@
+# Dipendenze aggiuntive (oltre quelle gia' nell'immagine base jupyter/pyspark-notebook)
+# La base ha gia': python 3.11, pyspark 3.5.0, java 17.
+delta-spark==3.2.0
+pyyaml>=6.0
+
+# Quadratura Gold vs CDT_DW (scripts/quadratura/quadratura_fact.py, ACT_9015):
+# legge Oracle in SOLA LETTURA via thin client (nessun Instant Client necessario)
+# e le credenziali da scripts/landing_simulator/.env.
+oracledb>=4.0.2
+python-dotenv>=1.2.3
+
+# Test guardrail (tests/test_workflows_alignment.py e altri): senza pytest nell'immagine
+# i test esistono ma in locale nessuno li esegue (rilevato in ACT_9015).
+pytest>=8.0
