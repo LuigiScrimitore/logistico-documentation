@@ -340,7 +340,7 @@ _(sezioni da popolare in Fase 2)_
 | 9015 | Verifica integrità baseline Gold + rebuild storico movimentazione (17 date) | follow-up ACT_9005 | ✅ done | [acts/ACT_9015](acts/ACT_9015_verifica-integrita-baseline-gold.md) |
 | 9016 | Guardrail pytest eseguibili in locale (classpath Delta + fixture Decimal + FQN) | follow-up ACT_9015 | ✅ done | [acts/ACT_9016](acts/ACT_9016_guardrail-pytest-eseguibili-locale.md) |
 | 9017 | Script split monorepo → multi-repo (tooling di transizione, mono-direzionale) | domanda utente in ACT_9011 | 🔵 in-progress | [acts/ACT_9017](acts/ACT_9017_script-split-monorepo-transizione.md) |
-| 9018 | Consolidamento dei due databricks.yml in logistico-workflows (+ ADR modello deploy) | split multi-repo | ⬜ proposed | [acts/ACT_9018](acts/ACT_9018_consolidamento-databricks-yml.md) |
+| 9018 | Consolidamento dei due databricks.yml in logistico-workflows (ADR-0021) | split multi-repo | 🔵 in-progress (decisioni prese, piano pronto) | [acts/ACT_9018](acts/ACT_9018_consolidamento-databricks-yml.md) |
 
 ---
 
@@ -369,6 +369,7 @@ _(sezioni da popolare in Fase 2)_
 | 0018 | Perimetro decisionale Reply | accepted | 2026-07-05 | [adr/0018](adr/0018_reply_scope_governance.md) |
 | 0019 | Orchestrazione: DAG derivato dal codice | accepted | 2026-08-04 | [adr/0019](adr/0019_orchestrazione_dag_derivato.md) |
 | 0020 | Lezioni operative: tracciamento cumulativo e scala di maturità | accepted | 2026-08-21 | [adr/0020](adr/0020_lezioni_operative.md) |
+| 0021 | Modello di deploy DAB: pipeline per-area (non wave) | accepted | 2026-08-22 | [adr/0021](adr/0021_modello_deploy_dab_pipeline_per_area.md) |
 
 ---
 

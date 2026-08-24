@@ -39,7 +39,11 @@ def _workflows():
 
 
 def _load(path: Path) -> dict:
-    return yaml.safe_load(path.read_text(encoding="utf-8"))
+    """Restituisce il dict del job. Formato DAB (ADR-0021): `resources.jobs.<key>`
+    (un job per file). Retrocompat con il vecchio formato "job nudo" (top-level)."""
+    doc = yaml.safe_load(path.read_text(encoding="utf-8"))
+    jobs = (doc.get("resources") or {}).get("jobs") or {}
+    return next(iter(jobs.values())) if jobs else doc
 
 
 def _tasks(job: dict) -> list[dict]:

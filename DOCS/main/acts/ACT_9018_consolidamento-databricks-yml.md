@@ -1,12 +1,12 @@
 # ACT_9018 · Consolidamento dei due `databricks.yml` in logistico-workflows
 
-**Status**: proposed
+**Status**: in-progress (decisioni prese → [[ADR-0021]]; piano definito; esecuzione in attesa di validazione)
 **Type**: infra / DAB   **Origin**: emerged (split multi-repo, [[ACT_9011]] / [[ACT_9017]])
 **Sprint**: fuori-sprint (emergente)   **Fase / Wave**: FASE 0 — Fondamenta   **Gg (stima)**: 0,5–1
-**Blocco**: 🟡 richiede una decisione (modello di deploy) — meglio con input del team
+**Blocco**: 🟢 decisioni prese; resta un refactoring dei workflow (+ update test) da validare insieme
 **Created**: 2026-08-22   **Closed**: —
 **Dipende da**: [[ACT_9011]] (split), DBR-05 (wheel su Package Registry)   **Blocca**: CI di `logistico-workflows`
-**ADR collegate**: ADR-0016 (multi-repo), ADR-0009 (serverless), ADR-0017 (rilascio a fasi)   **OP collegati**: DBR-05
+**ADR collegate**: [[ADR-0021]] (modello deploy per-area), ADR-0016 (multi-repo), ADR-0009 (serverless), ADR-0017 (rilascio a fasi)   **OP collegati**: DBR-05
 
 ## Contesto e motivazione
 Nel monorepo esistono **due `databricks.yml`** che lo split porta entrambi in `logistico-workflows`. Non sono
@@ -22,34 +22,50 @@ due frammenti dello stesso bundle: sono **due bundle paralleli** con nomi divers
 | Path | relativi al repo | `sync: ../../notebooks`, `../../lib` (rotti nel layout multi-repo) |
 | Host | `${DATABRICKS_HOST}` (CI-friendly) | `https://<WORKSPACE_*_URL>` (placeholder) |
 
-## Le decisioni (non è un merge meccanico)
-1. **Modello di deploy** — le **7 pipeline per-area** (`workflows/*.yml`) *oppure* le **wave KIT-06**
-   (`resources/*.job.yml`)? Sono due unità di rilascio diverse. È una scelta architatturale → **serve un ADR**
-   (vedi sotto). Le due cose potrebbero coesistere (wave = raggruppamento di rilascio sopra le pipeline), ma va
-   deciso, non ereditato per caso dal merge.
-2. **Wheel dal Package Registry, non da `lib/`** — nel multi-repo `lib` è un repo separato: il blocco
-   `artifacts` che builda da `lib/` non è più valido. Il wheel va dichiarato come **dipendenza pinnata** dal
-   GitLab Package Registry (DBR-05). Questo è già coperto da ADR-0016/DBR-05 → **nessun ADR nuovo**, solo
-   implementazione.
-3. **Path e sync** — rimuovere i `../../` (validi solo nel monorepo); in `logistico-workflows` `notebooks/` è
-   alla root e `lib/` **non c'è** (arriva come wheel).
-4. **Merge del resto** — tenere le variabili ricche del root + i `presets.tags` (cost tag) del bundle + host
-   via `${DATABRICKS_HOST}`; un solo `bundle.name`.
+## Le decisioni — PRESE (2026-08-22)
+1. **Modello di deploy = pipeline per-area** (`workflows/*.yml`), wave KIT-06 archiviata → **[[ADR-0021]]**.
+2. **Wheel dal Package Registry, pinnato** `logistica_utils==1.0.4` (DBR-05); rimosso il blocco `artifacts`
+   build-da-`lib/`.
+3. **Path** sistemati per il layout `logistico-workflows` (via `-chdir`/path relativi coerenti; niente `../../`).
+4. **Merge**: base = root `databricks.yml` (variabili complete + host `${DATABRICKS_HOST}` + targets dev/prod)
+   **+** `presets.tags` (cost tag) dallo scheletro; **un solo** `bundle.name` = **`logistico`**.
 
-## Valutazione ADR
-- **Sì, un ADR** per il **punto 1** (modello di deploy: per-area vs wave): è una scelta con alternative e
-  conseguenze durature su CI, gate PROD e granularità di rilascio. Da scrivere **quando la decisione è presa**
-  (idealmente con il team). Titolo previsto: *ADR-00xx · Modello di deploy DAB (pipeline per-area vs wave)*.
-- **No ADR** per i punti 2–4: già coperti (ADR-0016/DBR-05) o meccanici.
+## Piano di consolidamento (nel monorepo → poi rigenerazione)
+1. **`databricks.yml` unico** (sostituisce il root): `bundle.name: logistico`; `variables` invariate;
+   `workspace.host: ${DATABRICKS_HOST}`; `targets.dev/prod` con l'aggiunta di `presets.tags`
+   (business_unit/project/env/managed_by); **rimosso** `artifacts`; `include: resources/*.yml`.
+2. **Convertire i 7 `workflows/*.yml` → formato DAB**: wrappare ciascuno in `resources: jobs: <name>: {…}`
+   (contenuto job invariato) e spostarli sotto `resources/`. Sistemare `notebook_path` (`../notebooks/…` →
+   coerente col bundle root) e la **dipendenza wheel**: `environments…dependencies` da
+   `../lib/dist/logistica_utils-*.whl` → `logistica_utils==1.0.4` (dal Package Registry).
+3. **Aggiornare `tests/test_workflows_alignment.py`**: `_load`/`_tasks` devono leggere `resources.jobs.<key>.tasks`
+   invece del top-level `tasks` (i 30 guardrail devono restare verdi sul nuovo formato).
+4. **Rimuovere/archiviare**: `infra/databricks_bundle/databricks.yml` (duplicato) e
+   `resources/logistica_wave_a.job.yml` (scheletro wave — [[ADR-0021]]).
+5. **Aggiornare la mappatura split** ([[ACT_9017]]): sparisce il secondo `databricks.yml` → niente più warning
+   sul consolidamento; i job wrappati vanno in `logistico-workflows/resources/`.
+6. **Validazione locale**: `test_workflows_alignment` verde sul nuovo formato + YAML valido. La `databricks
+   bundle validate` completa richiede la CLI + `DATABRICKS_*` → si verifica in CI su GitLab (al gate).
+
+**Punto che richiede validazione cloud (DBR-05)**: come il compute **serverless** installa il wheel dal
+**Package Registry privato** (index-url/pip.conf nell'`environment`). Localmente pinniamo `==1.0.4`; il
+meccanismo d'indice va confermato sul workspace Databricks. È l'unico pezzo non verificabile in locale.
 
 ## Dove si esegue
 Il consolidamento va fatto nel **monorepo** (SoT in transizione), poi rigenerato in `logistico-workflows` con
-`split_to_multirepo.py`. Aggiornare di conseguenza la mappatura in [[ACT_9017]] (oggi i due file vengono
-affiancati con un warning).
+`split_to_multirepo.py` (con `--only logistico-workflows`).
 
 ## Esito
-— (parcheggiato: attende la decisione sul modello di deploy).
+- Decisioni prese ([[ADR-0021]]); piano definito ed **eseguito** (2026-08-22):
+  - `databricks.yml` unico consolidato (`bundle.name: logistico`, `presets.tags`, niente `artifacts`,
+    `include: workflows/*.yml`).
+  - 7 `workflows/*.yml` wrappati in `resources: jobs: <key>:`; wheel → `logistica_utils==1.0.4` (registry).
+  - `tests/test_workflows_alignment.py` legge `resources.jobs.<key>`; **suite 111/111 verde** (30 guardrail
+    workflow inclusi).
+  - Rimossi `infra/databricks_bundle/databricks.yml` (duplicato) e lo scheletro wave; regola split ripulita.
+- **Cloud-gated residuo**: `databricks bundle validate` completo + meccanismo d'indice del Package Registry
+  per il wheel sul serverless (DBR-05) — verificabili solo su Databricks.
 
 ## Follow-up
-- Scrivere l'ADR del modello di deploy, poi consolidare in un unico `databricks.yml`.
-- Agganciare il wheel dal Package Registry (DBR-05) e pinnarne la versione.
+- Eseguito il consolidamento: rigenerare `logistico-workflows`, poi promuovere su GitLab (`bundle validate`).
+- Confermare a DBR-05 il meccanismo d'indice del Package Registry per il wheel sul serverless.

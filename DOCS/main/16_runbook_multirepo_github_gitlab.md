@@ -16,6 +16,18 @@ deploy sono **variabili CI/CD masked per-repo** (ADR-0005): `ARM_*` (infrastruct
 **Credenziali**: l'autenticazione (PAT/SSH) e i `push` verso host remoti sono **azione dell'utente**;
 questo runbook fornisce i comandi esatti.
 
+## Stato pubblicazione (aggiornato 2026-08-22)
+| Repo | GitHub (SoT) | GitLab cliente | Note |
+|------|:---:|:---:|------|
+| `logistico-lib` | ✅ | ✅ `v1.0.4` | wheel `logistica_utils 1.0.4` nel Package Registry (CI verde) |
+| `logistico-infrastructure` | ✅ | ✅ `v0.1.2` | CI `validate` ✅ / `plan` ⏸️ in attesa `ARM_*` DEV ([[ACT_0.1.6]]) |
+| `logistico-workflows` | ✅ | ⬜ da promuovere | DAB consolidato ([[ACT_9018]]/[[ADR-0021]]); promozione = prossimo passo |
+| `logistico-documentation` | ✅ | ❌ (mai) | solo GitHub, per scelta |
+
+Lezioni operative emerse durante la migrazione (per il team): [[LL-009]] una direzione sola · [[LL-010]] split
+da file tracciati · [[LL-011]] runner tag · [[LL-012]] CA aziendale nel container · [[LL-013]] versione wheel
+dal tag · [[LL-014]] entrypoint immagine CI · [[LL-015]] formato `resources:` dei file DAB.
+
 ---
 
 ## Fase 0 — (transizione) rigenerare i repo dal monorepo

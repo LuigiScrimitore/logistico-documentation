@@ -70,11 +70,11 @@ RULES = [
     ("lib/", "logistico-lib", "lib/"),
 
     # ---- logistico-infrastructure: Terraform brownfield alla root (infra/ strippato) ----
-    #      ECCEZIONE: infra/databricks_bundle/ va in workflows (regola più specifica sotto).
     ("infra/", "logistico-infrastructure", "infra/"),
 
     # ---- logistico-workflows: notebook, DAB, sql, script runtime ----
-    ("infra/databricks_bundle/", "logistico-workflows", "infra/"),  # → databricks_bundle/...
+    # (il DAB consolidato è databricks.yml + workflows/*.yml — ACT_9018/ADR-0021;
+    #  infra/databricks_bundle/ rimosso, niente più regola dedicata.)
     ("notebooks/", "logistico-workflows", ""),
     ("workflows/", "logistico-workflows", ""),
     ("sql/", "logistico-workflows", ""),

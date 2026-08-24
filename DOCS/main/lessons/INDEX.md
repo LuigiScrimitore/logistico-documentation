@@ -4,7 +4,7 @@
 > `python scripts/lessons/lessons_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0020](../adr/0020_lezioni_operative.md).
 
-**13 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
+**15 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
 
 ## Cerca per sintomo
 
@@ -17,10 +17,14 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `colonne bronze popolate con i valori di un'altra colonna` | [LL-008](LL-008_csv-bronze-schema-per-nome.md) |
 | `compact vdisk completato ma il file resta della stessa dimensione` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
 | `conteggi corretti ma contenuti spostati di una posizione` | [LL-008](LL-008_csv-bronze-schema-per-nome.md) |
+| `databricks bundle validate non vede il job / dopo il deploy il job non c'è` | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) |
 | `docker system df: RECLAIMABLE 0B ma il disco C: è pieno` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
+| `errori tipo '<tool> has no command named sh/-c' all'avvio del job` | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) |
 | `fstrim: 0 B (0 bytes) trimmed` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
 | `il build fallisce con 'unexpected EOF while looking for matching quote' nel sed della versione` | [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) |
 | `il DAG del workflow non riflette le dipendenze reali di lettura/scrittura` | [LL-007](LL-007_dag-derivato-dal-codice.md) |
+| `il job GitLab non esegue lo script: parte l'entrypoint dell'immagine` | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) |
+| `il job YAML ha name:/schedule:/tasks: a livello top-level (nessun resources:)` | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) |
 | `il processo sembra bloccato ma non lo è` | [LL-002](LL-002_vacuum-per-database-unbuffered.md) |
 | `il rilancio di un notebook fallisce subito dopo un tentativo interrotto` | [LL-003](LL-003_docker-exec-troncato-lock-derby.md) |
 | `il runner ha un tag (es. azure-runner) e i job del .gitlab-ci.yml non ne hanno` | [LL-011](LL-011_pipeline-stuck-runner-taggato.md) |
@@ -46,8 +50,10 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `quadratura: una colonna di delta è esattamente 100,0% su ogni sito e ogni data` | [LL-005](LL-005_delta-costante-accusa-colonna.md) |
 | `Settings > CI/CD > Runners mostra un runner attivo (pallino verde) ma i job non partono` | [LL-011](LL-011_pipeline-stuck-runner-taggato.md) |
 | `silver ha una sola data mentre il fact gold ne ha diverse` | [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) |
+| `Terraform has no command named \"sh\". Did you mean \"push\"?` | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) |
 | `un .env o un dato reale è finito in un repo condiviso/consegnato` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `un file del monorepo non compare in nessun repo derivato dopo lo split` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
+| `un file in include: non produce alcuna risorsa nel bundle` | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) |
 | `una misura aggregata è inspiegabilmente gonfiata rispetto alla sorgente` | [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) |
 | `una misura di business è NULL su tutte le righe del fact` | [LL-005](LL-005_delta-costante-accusa-colonna.md) |
 | `una modifica fatta sul repo cliente non si ritrova a monte` | [LL-009](LL-009_due-host-git-una-direzione.md) |
@@ -72,6 +78,8 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | [LL-011](LL-011_pipeline-stuck-runner-taggato.md) | Pipeline "stuck" con un runner attivo presente → è il tag, non il runner | 🔵 regola | `gitlab`, `ci-cd`, `runner`, `ambiente-cliente` | ACT_9017 | 2026-08-22 |
 | [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) | CERTIFICATE_VERIFY_FAILED in un job container verso un host aziendale → manca la CA interna nel container | 🔵 regola ⚠️ da automatizzare | `ci-cd`, `tls`, `certificati`, `container`, `ambiente-cliente` | ACT_9017 | 2026-08-22 |
 | [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) | La versione del pacchetto viene da setup.py, non dal tag git — vanno sincronizzati | 🔵 regola ⚠️ da automatizzare | `ci-cd`, `packaging`, `python`, `wheel`, `release` | ACT_9017 | 2026-08-22 |
+| [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) | Immagine CI con ENTRYPOINT non-shell (terraform, kaniko…) → resettare entrypoint in GitLab | 🔵 regola ⚠️ da automatizzare | `gitlab`, `ci-cd`, `docker`, `terraform` | ACT_0.1.6, ACT_9017 | 2026-08-22 |
+| [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) | I file inclusi da un Databricks Asset Bundle devono essere `resources:`, non un job "nudo | 🔵 regola | `databricks`, `dab`, `ci-cd`, `orchestrazione` | ACT_9018, ADR-0021 | 2026-08-22 |
 
 ## Debito di automazione
 
@@ -83,6 +91,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) — Uno split/proiezione parte dai file tracciati e segnala i non mappati — mai drop silenziosi
 - [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) — CERTIFICATE_VERIFY_FAILED in un job container verso un host aziendale → manca la CA interna nel container
 - [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) — La versione del pacchetto viene da setup.py, non dal tag git — vanno sincronizzati
+- [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) — Immagine CI con ENTRYPOINT non-shell (terraform, kaniko…) → resettare entrypoint in GitLab
 
 ## Per tag
 
@@ -91,19 +100,20 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`backfill`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`bronze`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`certificati`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
-- **`ci-cd`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) · [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
+- **`ci-cd`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) · [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md)
 - **`container`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`csv`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
-- **`databricks`**: [LL-007](LL-007_dag-derivato-dal-codice.md)
+- **`dab`**: [LL-015](LL-015_dab-file-inclusi-resources-jobs.md)
+- **`databricks`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md)
 - **`dati`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) · [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`delta`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md)
 - **`derby`**: [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
 - **`diagnostica`**: [LL-005](LL-005_delta-costante-accusa-colonna.md)
 - **`disco`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md)
-- **`docker`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) · [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
+- **`docker`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) · [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md)
 - **`dq`**: [LL-005](LL-005_delta-costante-accusa-colonna.md)
 - **`git`**: [LL-009](LL-009_due-host-git-una-direzione.md) · [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
-- **`gitlab`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md)
+- **`gitlab`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md)
 - **`gold`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`governance`**: [LL-009](LL-009_due-host-git-una-direzione.md)
 - **`guardrail`**: [LL-007](LL-007_dag-derivato-dal-codice.md)
@@ -114,7 +124,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`metastore`**: [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
 - **`migrazione`**: [LL-009](LL-009_due-host-git-una-direzione.md) · [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`multi-repo`**: [LL-009](LL-009_due-host-git-una-direzione.md) · [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
-- **`orchestrazione`**: [LL-007](LL-007_dag-derivato-dal-codice.md)
+- **`orchestrazione`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md)
 - **`packaging`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
 - **`partizionamento`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`python`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
@@ -126,6 +136,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`sicurezza`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`snapshot`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`spark`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
+- **`terraform`**: [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md)
 - **`tls`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`tooling`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`vacuum`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md)
