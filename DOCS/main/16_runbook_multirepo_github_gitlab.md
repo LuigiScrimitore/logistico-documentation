@@ -21,7 +21,7 @@ questo runbook fornisce i comandi esatti.
 |------|:---:|:---:|------|
 | `logistico-lib` | ✅ | ✅ `v1.0.4` | wheel `logistica_utils 1.0.4` nel Package Registry (CI verde) |
 | `logistico-infrastructure` | ✅ | ✅ `v0.1.2` | CI `validate` ✅ / `plan` ⏸️ in attesa `ARM_*` DEV ([[ACT_0.1.6]]) |
-| `logistico-workflows` | ✅ | ⬜ da promuovere | DAB consolidato ([[ACT_9018]]/[[ADR-0021]]); promozione = prossimo passo |
+| `logistico-workflows` | ✅ | ✅ `v0.1.5` | DAB consolidato ([[ACT_9018]]/[[ADR-0021]]); CI `main` verde → **deploy_dev in DEV** (7 job, sandbox mode:development). Wheel dal registry a run-time (DBR-05) |
 | `logistico-documentation` | ✅ | ❌ (mai) | solo GitHub, per scelta |
 
 Lezioni operative emerse durante la migrazione (per il team): [[LL-009]] una direzione sola · [[LL-010]] split

@@ -63,8 +63,14 @@ Il consolidamento va fatto nel **monorepo** (SoT in transizione), poi rigenerato
   - `tests/test_workflows_alignment.py` legge `resources.jobs.<key>`; **suite 111/111 verde** (30 guardrail
     workflow inclusi).
   - Rimossi `infra/databricks_bundle/databricks.yml` (duplicato) e lo scheletro wave; regola split ripulita.
-- **Cloud-gated residuo**: `databricks bundle validate` completo + meccanismo d'indice del Package Registry
-  per il wheel sul serverless (DBR-05) — verificabili solo su Databricks.
+- **2026-08-27 — workflows DEPLOYATO in DEV via GitLab CI** 🎯: `logistico-workflows` promosso su GitLab;
+  pipeline `main` **verde** (`validate` + `deploy_dev`) → i **7 job creati** nel workspace DEV (auth MSI). Con
+  `mode: development` sono un sandbox sotto la MI, **schedule in pausa**. Bring-up chiuso lato deploy.
+  Iterazioni superate (tutte fixate nel generatore + guardrail dove utile): yaml `variables` sotto `default`
+  ([[LL-016]]/tag), `workspace.host` interpolato, notebook_path `.py` ([[LL-015]]), `root_path` per-utente in
+  `mode:development`, `job.parameters` non dichiarati ([[LL-017]], + nuovo guardrail, suite 37).
+- **Cloud-gated residuo**: il **wheel dal Package Registry** (DBR-05) serve al **run** di un job (non al
+  deploy) — meccanismo d'indice pip sul serverless da confermare eseguendo una pipeline in DEV.
 
 ## Follow-up
 - Eseguito il consolidamento: rigenerare `logistico-workflows`, poi promuovere su GitLab (`bundle validate`).
