@@ -288,9 +288,10 @@ deploy_prod:
 """
 
 CI_INFRA = """\
-# logistico-infrastructure — Terraform validate/plan (apply manuale).
-# Secret CI/CD (ADR-0005, masked per-repo): ARM_CLIENT_ID/SECRET/TENANT_ID/SUBSCRIPTION_ID.
-stages: [validate, plan]
+# logistico-infrastructure — Terraform validate / plan / apply (apply MANUALE, gate).
+# Auth via Managed Identity (team 2026-08-27): niente segreti. Variabili CI (Protected):
+# ARM_CLIENT_ID/ARM_TENANT_ID/ARM_SUBSCRIPTION_ID (user-assigned MI) + TF_VAR_databricks_host.
+stages: [validate, plan, apply]
 
 default:
   tags: [azure-runner]   # group runner del subgroup Logistico (vedi Runners del progetto)
@@ -322,9 +323,26 @@ plan:
   stage: plan
   script:
     - terraform -chdir=$TF_DIR init
-    - terraform -chdir=$TF_DIR plan
+    # -out=tfplan: salva il piano rivisto; l'apply userà ESATTAMENTE questo (no re-plan).
+    - terraform -chdir=$TF_DIR plan -out=tfplan
+  artifacts:
+    paths: [terraform/brownfield/tfplan]
+    expire_in: 1 week
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
+apply:
+  stage: apply
+  # GATE: parte SOLO con clic manuale, su main (protetto). Applica il tfplan rivisto:
+  # se lo stato e' cambiato dal plan, apply fallisce (protezione). apply DEV; PROD -> ACT_8.1.2.
+  script:
+    - terraform -chdir=$TF_DIR init
+    - terraform -chdir=$TF_DIR apply -input=false tfplan
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  # non blocca la pipeline se non cliccato:
+  allow_failure: true
 """
 
 CI_BY_REPO = {
