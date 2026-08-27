@@ -435,6 +435,16 @@ Databricks (UC, 3 livelli) era già corretto: era l'ambiente locale l'anomalia.
 `schema.table`. Usato da `DeltaHelper._fqn` e da `get_watermark` (stesso bug latente). Suite completa **111/111
 verde**, sia coi 5 file nominati sia con `pytest` bare (aggiunto `--ignore=tests/local_bronze` in `pytest.ini`).
 
+### OP-INF-1 — Grant `CREATE SCHEMA` alla Managed Identity sui catalog DEV 🟡 (attesa Reply)
+**Aperto**: 2026-08-27 ([[ACT_0.1.6]])   **Da confermare (Reply/piattaforma)**
+
+L'`apply` Terraform DEV (via MSI) è autenticato ma bloccato: la MI (SP applicationId `54d17490-…`) non ha
+`CREATE SCHEMA` su `bronze_dev`/`silver_dev`/`gold_dev`/`config_dev`/`landing_dev`. Il `plan` è verde
+(15 add, 0 destroy); 0 risorse create (stato invariato) → [[LL-018]] (authN ≠ authZ).
+
+**Azione**: richiesti a Francesco Giambona (Reply, fr.giambona@reply.it) i grant `USE CATALOG` + `CREATE SCHEMA`
+sui 5 catalog DEV per la MI (mail 2026-08-27). Ottenuti → ri-run pipeline `infrastructure` + clic `apply`.
+
 ## Riferimenti
 - `docs/Archive/Open Points - Logistico 2.0.md` — versione originale 2026-06-10
 - `docs/main/03_pipeline_mapping.md` — mapping completo pipeline layer per layer

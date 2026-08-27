@@ -1,6 +1,6 @@
 # ACT_0.1.6 · Consegna Terraform `brownfield/` in multi-repo GitLab
 
-**Status**: in-progress (✅ **`terraform plan` verde in DEV** 2026-08-27 via MSI; restano review MR + `apply`)
+**Status**: on-hold (⏸️ `apply` DEV in attesa dei grant `CREATE SCHEMA` alla MI — mail a Giambona/Reply 2026-08-27; `plan` verde, 0 destroy)
 **Type**: infra
 **Origin**: sprint 0.1   **Sprint**: 0.1   **Fase / Wave**: FASE 0 — Fondamenta
 **Gg (stima)**: 1   **Blocco**: 🟢 `plan` DEV verde; restano review MR (Reply) e `apply` (gate [[ACT_8.1.2]])
@@ -85,5 +85,9 @@ MR approvata da Ippazio (Reply).
 - ✅ **Plan rivisto (2026-08-27)**: `15 to add, 0 to change, 0 to destroy` — additivo, brownfield corretto (5
   catalog letti, non toccati). Crea 8 schemi + Volume `landing.files` + 6 grants `Engineering-dev`, tutti
   `force_destroy=false`/`managed_by=terraform`. **Safe da applicare.** `tfplan` salvato come artefatto.
-- Prossimo: review MR con Ippazio (Reply) → **clic manuale su `apply`** (DEV). È il **primo write** e testa i
-  permessi di *create* della MI (se mancano → 403 → Francesco Giambona). PROD → [[ACT_8.1.2]].
+- **2026-08-27 — `apply` DEV tentato → bloccato sui permessi MI** (auth MSI ok, ma **0 risorse create**, stato
+  invariato): `cannot create schema: User does not have CREATE SCHEMA on Catalog '<cat>'` su **tutti** i 5
+  catalog. La MI legge i catalog ma non ha `CREATE SCHEMA`. → **richiesta a Francesco Giambona (Reply)**:
+  concedere alla MI (SP applicationId `54d17490-…`) **`USE CATALOG` + `CREATE SCHEMA`** su `bronze_dev`,
+  `silver_dev`, `gold_dev`, `config_dev`, `landing_dev`. Ottenuti i grant → **ri-clic `apply`** (o ri-run
+  pipeline: il `tfplan` va rigenerato se scaduto). PROD → [[ACT_8.1.2]].

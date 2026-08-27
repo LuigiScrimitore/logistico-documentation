@@ -58,6 +58,10 @@ Confermato il modello operativo dei due host (raffina il "seed one-shot al cutov
   promote → CI verde → wheel `logistica_utils 1.0.4` nel Package Registry. Lezioni operative emerse:
   [[LL-011]] (tag runner), [[LL-012]] (CA aziendale nel container), [[LL-013]] (versione dal tag). Restano
   `workflows` (dopo consolidamento `databricks.yml`, [[ACT_9018]]) e `infrastructure`.
+- **Aggiornamento (2026-08-27)**: **tutti e 3 i repo cliente su GitLab con CI in DEV** — auth **Managed
+  Identity** (no secret): `infrastructure` (`plan` DEV verde, `apply` gated in attesa grant UC alla MI),
+  `workflows` (`deploy_dev` verde, 7 job creati in DEV). Lezioni: [[LL-014]]..[[LL-018]]. Restano: grant
+  `CREATE SCHEMA` alla MI (Reply) per l'apply infra, wheel dal registry a run-time (DBR-05), cutover.
 
 **Conseguenze**:
 + Cicli di rilascio indipendenti (infra ≠ workflow ≠ lib); permessi e CI/CD per repo; lib riusabile via registry.

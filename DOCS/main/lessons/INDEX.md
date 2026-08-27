@@ -4,7 +4,7 @@
 > `python scripts/lessons/lessons_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0020](../adr/0020_lezioni_operative.md).
 
-**17 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
+**18 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
 
 ## Cerca per sintomo
 
@@ -32,6 +32,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `il runner ha un tag (es. azure-runner) e i job del .gitlab-ci.yml non ne hanno` | [LL-011](LL-011_pipeline-stuck-runner-taggato.md) |
 | `il vacuum gira da 20+ minuti senza variazione dello spazio libero` | [LL-002](LL-002_vacuum-per-database-unbuffered.md) |
 | `INVALID_PARAMETER_VALUE: refers to an undefined job parameter 'X` | [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) |
+| `l'identità legge le risorse (data source) ma non può crearle` | [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) |
 | `l'upload/chiamata verso l'host aziendale (GitLab/Nexus/Databricks) fallisce in TLS` | [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) |
 | `la copia manuale dei repo si porta dietro __pycache__/artefatti di build` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `la landing conserva un solo snapshot per una tabella giornaliera` | [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) |
@@ -49,12 +50,14 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `notebook presenti nel repo ma non orchestrati da alcun job` | [LL-007](LL-007_dag-derivato-dal-codice.md) |
 | `notebook_path in un workflow punta a un notebook inesistente` | [LL-007](LL-007_dag-derivato-dal-codice.md) |
 | `partizione con colonna di partizione NULL e DWH_UPDATED_AT vecchio` | [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) |
+| `PERMISSION_DENIED / does not have <privilegio> su un catalog/schema Unity Catalog` | [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) |
 | `quadratura KO su tutte le chiavi sito×giorno` | [LL-005](LL-005_delta-costante-accusa-colonna.md) |
 | `quadratura: una colonna di delta è esattamente 100,0% su ogni sito e ogni data` | [LL-005](LL-005_delta-costante-accusa-colonna.md) |
 | `Settings > CI/CD > Runners mostra un runner attivo (pallino verde) ma i job non partono` | [LL-011](LL-011_pipeline-stuck-runner-taggato.md) |
 | `silver ha una sola data mentre il fact gold ne ha diverse` | [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) |
 | `terraform chiede interattivamente una var che hai impostato come variabile CI` | [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) |
 | `Terraform has no command named \"sh\". Did you mean \"push\"?` | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) |
+| `terraform init/plan passano ma apply fallisce con 'User does not have CREATE SCHEMA` | [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) |
 | `un .env o un dato reale è finito in un repo condiviso/consegnato` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `un file del monorepo non compare in nessun repo derivato dopo lo split` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `un file in include: non produce alcuna risorsa nel bundle` | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) |
@@ -88,6 +91,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) | I file inclusi da un Databricks Asset Bundle devono essere `resources:`, non un job "nudo | 🔵 regola | `databricks`, `dab`, `ci-cd`, `orchestrazione` | ACT_9018, ADR-0021 | 2026-08-22 |
 | [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) | Una variabile CI "Protected" è assente sui ref non protetti — il job non la vede | 🔵 regola | `gitlab`, `ci-cd`, `variabili`, `terraform` | ACT_0.1.6 | 2026-08-27 |
 | [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) | I riferimenti `{{job.parameters.X}}` vanno dichiarati nel job — validate non lo verifica, jobs/create sì | 🟢 guardrail | `databricks`, `dab`, `ci-cd`, `orchestrazione` | ACT_9018 | 2026-08-27 |
+| [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) | Autenticazione riuscita ≠ autorizzato — con MSI/SP i grant sul data-plane sono separati | 🔵 regola | `azure`, `databricks`, `unity-catalog`, `terraform`, `permessi`, `ambiente-cliente` | ACT_0.1.6 | 2026-08-27 |
 
 ## Debito di automazione
 
@@ -103,8 +107,9 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 
 ## Per tag
 
-- **`ambiente-cliente`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
+- **`ambiente-cliente`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) · [LL-018](LL-018_auth-ok-non-significa-autorizzato.md)
 - **`ambiente-locale`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) · [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
+- **`azure`**: [LL-018](LL-018_auth-ok-non-significa-autorizzato.md)
 - **`backfill`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`bronze`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`certificati`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
@@ -112,7 +117,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`container`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`csv`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`dab`**: [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md)
-- **`databricks`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md)
+- **`databricks`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) · [LL-018](LL-018_auth-ok-non-significa-autorizzato.md)
 - **`dati`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) · [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`delta`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md)
 - **`derby`**: [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
@@ -135,6 +140,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`orchestrazione`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md)
 - **`packaging`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
 - **`partizionamento`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
+- **`permessi`**: [LL-018](LL-018_auth-ok-non-significa-autorizzato.md)
 - **`python`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
 - **`quadratura`**: [LL-005](LL-005_delta-costante-accusa-colonna.md)
 - **`release`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
@@ -144,9 +150,10 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`sicurezza`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`snapshot`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`spark`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
-- **`terraform`**: [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md)
+- **`terraform`**: [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-018](LL-018_auth-ok-non-significa-autorizzato.md)
 - **`tls`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`tooling`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
+- **`unity-catalog`**: [LL-018](LL-018_auth-ok-non-significa-autorizzato.md)
 - **`vacuum`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md)
 - **`variabili`**: [LL-016](LL-016_gitlab-protected-var-ref-protetto.md)
 - **`wheel`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
