@@ -1,9 +1,9 @@
 # ACT_0.1.6 · Consegna Terraform `brownfield/` in multi-repo GitLab
 
-**Status**: in-progress (credenziali DEV ricevute 2026-08-27 — Managed Identity; da impostare variabili CI + Retry `plan`)
+**Status**: in-progress (✅ **`terraform plan` verde in DEV** 2026-08-27 via MSI; restano review MR + `apply`)
 **Type**: infra
 **Origin**: sprint 0.1   **Sprint**: 0.1   **Fase / Wave**: FASE 0 — Fondamenta
-**Gg (stima)**: 1   **Blocco**: 🏗️ **`ARM_*` (service principal Azure, utenza A7)** per `init/plan` — subgroup, repo e runner ora **disponibili**
+**Gg (stima)**: 1   **Blocco**: 🟢 `plan` DEV verde; restano review MR (Reply) e `apply` (gate [[ACT_8.1.2]])
 **Created**: 2026-07-05   **Closed**: —
 **Dipende da**: ACT_0.1.1, ACT_0.1.2 (codice risorse), [[ACT_9011]] (split → repo `logistico-infrastructure`)   **Blocca**: apply infra (0.1.1/0.1.2/0.1.3/0.1.7)
 **ADR collegate**: ADR-0016 (multi-repo GitLab), ADR-0004 (naming ambienti)   **OP collegati**: —
@@ -69,15 +69,18 @@ fr.giambona@reply.it) se il `plan` segnala mancanze.
 MR approvata da Ippazio (Reply).
 
 ## Esito
-- Repo su GitHub (SoT) pronto; **promosso su GitLab** (`logistico-infrastructure`, snapshot `v0.1.2`); runner ok.
+- Repo su GitHub (SoT) pronto; **promosso su GitLab** (`logistico-infrastructure`, snapshot `v0.1.3`); runner ok.
 - Pipeline non distruttiva (`validate` ✅ / `plan` bloccato all'auth backend). CI provato corretto fino
   all'autenticazione.
 - **2026-08-27 — credenziali ricevute (Managed Identity)**: adeguati codice e CI (`ARM_USE_MSI=true`,
-  `azure_use_msi` sul provider databricks, `databricks_host` DEV via CI var). Restano **azioni utente**:
-  impostare le 4 variabili CI (vedi sezione Autenticazione) e fare **Retry** del job `plan` — poi si legge il
-  primo `plan` reale in DEV (sola lettura).
+  `azure_use_msi` sul provider databricks, `databricks_host` DEV via CI var).
+- **2026-08-27 — `plan` DEV VERDE** ✅: impostate le 4 variabili CI. Nota: le variabili sono **Protected** e
+  funzionano perché `main` è un **branch protetto** → esposte al job (con `main` non protetto sparivano e il
+  `plan` chiedeva `databricks_host` — [[LL-016]]). `init` autentica al backend via MSI, `plan` legge lo stato
+  in sola lettura. **Correzione al mio consiglio precedente**: le var vanno bene **Protected** (posture
+  corretta) purché `main` sia protetto — non serve toglierle.
 
 ## Follow-up
-- Promuovere `logistico-infrastructure` sul GitLab cliente (snapshot via `promote_to_gitlab.py`).
-- Ottenere/impostare le **`ARM_*` DEV** (service principal) come variabili CI masked/protected → far girare `plan`.
-- Review MR con Ippazio (Reply); poi `apply` DEV → [[ACT_8.1.2]] per PROD.
+- ✅ Promosso su GitLab; ✅ variabili CI (MSI) impostate; ✅ `plan` DEV verde.
+- Rivedere l'output del `plan` (add/change/**destroy**: atteso 0 destroy — additivo) prima di ogni `apply`.
+- Review MR con Ippazio (Reply); poi `apply` DEV; PROD → [[ACT_8.1.2]] (gate dedicato).

@@ -4,7 +4,7 @@
 > `python scripts/lessons/lessons_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0020](../adr/0020_lezioni_operative.md).
 
-**15 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
+**16 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
 
 ## Cerca per sintomo
 
@@ -19,6 +19,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `conteggi corretti ma contenuti spostati di una posizione` | [LL-008](LL-008_csv-bronze-schema-per-nome.md) |
 | `databricks bundle validate non vede il job / dopo il deploy il job non c'è` | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) |
 | `docker system df: RECLAIMABLE 0B ma il disco C: è pieno` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
+| `Error: No value for required variable (ma la variabile CI esiste)` | [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) |
 | `errori tipo '<tool> has no command named sh/-c' all'avvio del job` | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) |
 | `fstrim: 0 B (0 bytes) trimmed` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
 | `il build fallisce con 'unexpected EOF while looking for matching quote' nel sed della versione` | [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) |
@@ -50,6 +51,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `quadratura: una colonna di delta è esattamente 100,0% su ogni sito e ogni data` | [LL-005](LL-005_delta-costante-accusa-colonna.md) |
 | `Settings > CI/CD > Runners mostra un runner attivo (pallino verde) ma i job non partono` | [LL-011](LL-011_pipeline-stuck-runner-taggato.md) |
 | `silver ha una sola data mentre il fact gold ne ha diverse` | [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) |
+| `terraform chiede interattivamente una var che hai impostato come variabile CI` | [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) |
 | `Terraform has no command named \"sh\". Did you mean \"push\"?` | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) |
 | `un .env o un dato reale è finito in un repo condiviso/consegnato` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `un file del monorepo non compare in nessun repo derivato dopo lo split` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
@@ -58,6 +60,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `una misura di business è NULL su tutte le righe del fact` | [LL-005](LL-005_delta-costante-accusa-colonna.md) |
 | `una modifica fatta sul repo cliente non si ritrova a monte` | [LL-009](LL-009_due-host-git-una-direzione.md) |
 | `una partizione storica non ha più sorgente a monte in nessun livello` | [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) |
+| `una variabile CI/CD sembra ignorata solo in alcune pipeline` | [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) |
 | `Unable to instantiate org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient` | [LL-003](LL-003_docker-exec-troncato-lock-derby.md) |
 | `valori numerici finiti in una colonna di testo (o viceversa) senza errore` | [LL-008](LL-008_csv-bronze-schema-per-nome.md) |
 
@@ -80,6 +83,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) | La versione del pacchetto viene da setup.py, non dal tag git — vanno sincronizzati | 🔵 regola ⚠️ da automatizzare | `ci-cd`, `packaging`, `python`, `wheel`, `release` | ACT_9017 | 2026-08-22 |
 | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) | Immagine CI con ENTRYPOINT non-shell (terraform, kaniko…) → resettare entrypoint in GitLab | 🔵 regola ⚠️ da automatizzare | `gitlab`, `ci-cd`, `docker`, `terraform` | ACT_0.1.6, ACT_9017 | 2026-08-22 |
 | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) | I file inclusi da un Databricks Asset Bundle devono essere `resources:`, non un job "nudo | 🔵 regola | `databricks`, `dab`, `ci-cd`, `orchestrazione` | ACT_9018, ADR-0021 | 2026-08-22 |
+| [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) | Una variabile CI "Protected" è assente sui ref non protetti — il job non la vede | 🔵 regola | `gitlab`, `ci-cd`, `variabili`, `terraform` | ACT_0.1.6 | 2026-08-27 |
 
 ## Debito di automazione
 
@@ -100,7 +104,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`backfill`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`bronze`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`certificati`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
-- **`ci-cd`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) · [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md)
+- **`ci-cd`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) · [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md)
 - **`container`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`csv`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`dab`**: [LL-015](LL-015_dab-file-inclusi-resources-jobs.md)
@@ -113,7 +117,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`docker`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) · [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md)
 - **`dq`**: [LL-005](LL-005_delta-costante-accusa-colonna.md)
 - **`git`**: [LL-009](LL-009_due-host-git-una-direzione.md) · [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
-- **`gitlab`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md)
+- **`gitlab`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md)
 - **`gold`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`governance`**: [LL-009](LL-009_due-host-git-una-direzione.md)
 - **`guardrail`**: [LL-007](LL-007_dag-derivato-dal-codice.md)
@@ -136,10 +140,11 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`sicurezza`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`snapshot`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`spark`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
-- **`terraform`**: [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md)
+- **`terraform`**: [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md)
 - **`tls`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`tooling`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`vacuum`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md)
+- **`variabili`**: [LL-016](LL-016_gitlab-protected-var-ref-protetto.md)
 - **`wheel`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
 - **`workflow`**: [LL-007](LL-007_dag-derivato-dal-codice.md)
 - **`wsl`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md)
