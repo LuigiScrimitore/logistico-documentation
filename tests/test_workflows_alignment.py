@@ -53,7 +53,10 @@ def _tasks(job: dict) -> list[dict]:
 def _nb_rel(task: dict) -> str | None:
     nt = task.get("notebook_task") or {}
     p = nt.get("notebook_path")
-    return p.replace("../notebooks/", "") if p else None
+    if not p:
+        return None
+    rel = p.replace("../notebooks/", "")
+    return rel[:-3] if rel.endswith(".py") else rel   # DAB vuole .py nel path; il test lavora senza
 
 
 @pytest.mark.parametrize("wf", _workflows(), ids=lambda p: p.name)
