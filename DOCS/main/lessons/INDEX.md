@@ -4,7 +4,7 @@
 > `python scripts/lessons/lessons_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0020](../adr/0020_lezioni_operative.md).
 
-**16 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
+**17 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
 
 ## Cerca per sintomo
 
@@ -13,6 +13,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | Sintomo | Lezione |
 |---|---|
 | `Binary file (standard input) matches su un log di testo` | [LL-003](LL-003_docker-exec-troncato-lock-derby.md) |
+| `bundle validate passa ma bundle deploy fallisce alla creazione dei job (400)` | [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) |
 | `CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate` | [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) |
 | `colonne bronze popolate con i valori di un'altra colonna` | [LL-008](LL-008_csv-bronze-schema-per-nome.md) |
 | `compact vdisk completato ma il file resta della stessa dimensione` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
@@ -30,6 +31,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `il rilancio di un notebook fallisce subito dopo un tentativo interrotto` | [LL-003](LL-003_docker-exec-troncato-lock-derby.md) |
 | `il runner ha un tag (es. azure-runner) e i job del .gitlab-ci.yml non ne hanno` | [LL-011](LL-011_pipeline-stuck-runner-taggato.md) |
 | `il vacuum gira da 20+ minuti senza variazione dello spazio libero` | [LL-002](LL-002_vacuum-per-database-unbuffered.md) |
+| `INVALID_PARAMETER_VALUE: refers to an undefined job parameter 'X` | [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) |
 | `l'upload/chiamata verso l'host aziendale (GitLab/Nexus/Databricks) fallisce in TLS` | [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) |
 | `la copia manuale dei repo si porta dietro __pycache__/artefatti di build` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `la landing conserva un solo snapshot per una tabella giornaliera` | [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) |
@@ -56,6 +58,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `un .env o un dato reale è finito in un repo condiviso/consegnato` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `un file del monorepo non compare in nessun repo derivato dopo lo split` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `un file in include: non produce alcuna risorsa nel bundle` | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) |
+| `un task usa {{job.parameters.X}} ma il job non dichiara X in parameters` | [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) |
 | `una misura aggregata è inspiegabilmente gonfiata rispetto alla sorgente` | [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) |
 | `una misura di business è NULL su tutte le righe del fact` | [LL-005](LL-005_delta-costante-accusa-colonna.md) |
 | `una modifica fatta sul repo cliente non si ritrova a monte` | [LL-009](LL-009_due-host-git-una-direzione.md) |
@@ -84,6 +87,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) | Immagine CI con ENTRYPOINT non-shell (terraform, kaniko…) → resettare entrypoint in GitLab | 🔵 regola ⚠️ da automatizzare | `gitlab`, `ci-cd`, `docker`, `terraform` | ACT_0.1.6, ACT_9017 | 2026-08-22 |
 | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) | I file inclusi da un Databricks Asset Bundle devono essere `resources:`, non un job "nudo | 🔵 regola | `databricks`, `dab`, `ci-cd`, `orchestrazione` | ACT_9018, ADR-0021 | 2026-08-22 |
 | [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) | Una variabile CI "Protected" è assente sui ref non protetti — il job non la vede | 🔵 regola | `gitlab`, `ci-cd`, `variabili`, `terraform` | ACT_0.1.6 | 2026-08-27 |
+| [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) | I riferimenti `{{job.parameters.X}}` vanno dichiarati nel job — validate non lo verifica, jobs/create sì | 🟢 guardrail | `databricks`, `dab`, `ci-cd`, `orchestrazione` | ACT_9018 | 2026-08-27 |
 
 ## Debito di automazione
 
@@ -104,11 +108,11 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`backfill`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`bronze`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`certificati`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
-- **`ci-cd`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) · [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md)
+- **`ci-cd`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) · [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md)
 - **`container`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`csv`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
-- **`dab`**: [LL-015](LL-015_dab-file-inclusi-resources-jobs.md)
-- **`databricks`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md)
+- **`dab`**: [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md)
+- **`databricks`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md)
 - **`dati`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) · [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`delta`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md)
 - **`derby`**: [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
@@ -128,7 +132,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`metastore`**: [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
 - **`migrazione`**: [LL-009](LL-009_due-host-git-una-direzione.md) · [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`multi-repo`**: [LL-009](LL-009_due-host-git-una-direzione.md) · [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
-- **`orchestrazione`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md)
+- **`orchestrazione`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md)
 - **`packaging`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
 - **`partizionamento`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`python`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)

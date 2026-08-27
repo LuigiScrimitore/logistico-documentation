@@ -138,6 +138,20 @@ def test_nessun_notebook_orfano():
     )
 
 
+@pytest.mark.parametrize("wf", _workflows(), ids=lambda p: p.name)
+def test_job_parameters_referenziati_sono_dichiarati(wf: Path):
+    """Ogni `{{job.parameters.X}}` usato dai task DEVE essere dichiarato nei `parameters` del job.
+    `bundle validate` NON lo verifica, ma l'API jobs/create lo rifiuta (400 INVALID_PARAMETER_VALUE)
+    al deploy — quindi lo intercettiamo qui in locale (ACT_9018, deploy_dev)."""
+    import re
+
+    job = _load(wf)
+    declared = {p["name"] for p in (job.get("parameters") or [])}
+    used = set(re.findall(r"\{\{job\.parameters\.([a-zA-Z_]+)\}\}", wf.read_text(encoding="utf-8")))
+    missing = sorted(used - declared)
+    assert not missing, f"{wf.name}: job.parameters usati ma non dichiarati nel job: {missing}"
+
+
 def test_parametri_task_esistono_come_widget():
     """Un base_parameter senza widget corrispondente sarebbe silenziosamente ignorato."""
     import re
