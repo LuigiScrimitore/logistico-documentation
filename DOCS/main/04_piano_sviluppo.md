@@ -1,6 +1,6 @@
 # Piano di Sviluppo — Logistico 2.0
 
-**Ultimo aggiornamento:** 2026-08-22  
+**Ultimo aggiornamento:** 2026-08-27  
 **Versione documento:** 3.1 (stato corrente + certifica wave + readiness brownfield)  
 **Progetto:** Logistico 2.0 — CNO Data Platform  
 **Stack:** PySpark · Delta Lake · Azure ADLS Gen2 · Unity Catalog · Databricks Workflows · GitLab CI/CD · Terraform
@@ -17,7 +17,7 @@
 
 | Fase | Descrizione | Sprint | Gg totali | Gg completati | Stato | Note |
 |------|-------------|--------|-----------|---------------|-------|------|
-| **FASE 0** | Fondamenta Infrastrutturali | 0.1–0.3 | 18 | 13 | 🔵 IN CORSO | Sprint 0.1 IN CORSO (Terraform scritto, apply pendente provisioning workspace); D1/D2/D3/D5 ✅ decisi; 0.1.4 ridisegnata (AKV → GitLab CI/CD); 0.2/0.3 ✅; split multi-repo eseguito (4 repo GitHub, pilot lib su GitLab CI+Registry ✅ — ACT_9011) |
+| **FASE 0** | Fondamenta Infrastrutturali | 0.1–0.3 | 18 | 13 | 🔵 IN CORSO | Sprint 0.1 IN CORSO (Terraform scritto, apply pendente provisioning workspace); D1/D2/D3/D5 ✅ decisi; 0.1.4 ridisegnata (AKV → GitLab CI/CD); 0.2/0.3 ✅; **multi-repo eseguito**: 4 repo GitHub + 3 su GitLab con CI in DEV via Managed Identity — lib (wheel nel Package Registry ✅), workflows (deploy_dev DEV ✅, 7 job), infrastructure (plan DEV ✅, apply in attesa grant UC alla MI — OP-INF-1). ACT_9011/9017/9018 |
 | **FASE 1** | Master Data & Dimensioni | 1.1–1.3 | 19 | 17 | 🔵 PARZ. | DIM offline ✅; first-run landing + workflow yml da eseguire su cloud |
 | **FASE 2** | Wave A — Carichi (Inbound) | 2.1–2.4 | 26 | 21 | 🔵 PARZ. | F_CARICO 0.0% orphan locale; backfill/quadratura/BA-validation pendenti |
 | **FASE 3** | Wave B — Giacenze (Stock) | 3.1–3.4 | 26 | 22 | 🔵 PARZ. | T_STOCK OK locale; backfill/quadratura/BA-validation pendenti |
