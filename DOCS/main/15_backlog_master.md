@@ -34,7 +34,7 @@ del singolo tema. Questo file è la **mappa**; i file ACT/ADR sono il **territor
 | 0.1.3 | Landing storage — UC Volume | 0.1 | 🔵 in-progress | 🏗️☁️ | [acts/ACT_0.1.3](acts/ACT_0.1.3_landing-uc-volume.md) |
 | 0.1.4 | GitLab CI/CD (ex Key Vault) — no segreti Oracle | 0.1 | ✅ done | 🟢 | [acts/ACT_0.1.4](acts/ACT_0.1.4_gitlab-cicd-no-secret-oracle.md) |
 | 0.1.5 | Compute serverless (policy rimossa, ACT_9007) | 0.1 | ✅ done | 🟢 | [acts/ACT_0.1.5](acts/ACT_0.1.5_cluster-policy-serverless.md) |
-| 0.1.6 | Consegna `brownfield/` multi-repo | 0.1 | ⏸️ on-hold (attesa ARM_* DEV) | 🏗️ | [acts/ACT_0.1.6](acts/ACT_0.1.6_consegna-brownfield-multi-repo.md) |
+| 0.1.6 | Consegna `brownfield/` multi-repo | 0.1 | 🔵 in-progress (creds MSI ricevute; set CI vars + retry plan) | 🏗️ | [acts/ACT_0.1.6](acts/ACT_0.1.6_consegna-brownfield-multi-repo.md) |
 | 0.1.7 | Grants least-privilege | 0.1 | 🔵 in-progress | 🏗️ | [acts/ACT_0.1.7](acts/ACT_0.1.7_grants-least-privilege.md) |
 | 0.2.1 | Struttura repository GitLab | 0.2 | ✅ done | 🟢 | [acts/ACT_0.2.1](acts/ACT_0.2.1_struttura-repo-gitlab.md) |
 | 0.2.2 | Databricks Asset Bundles (dev) | 0.2 | ✅ done | 🟢 | [acts/ACT_0.2.2](acts/ACT_0.2.2_databricks-asset-bundles.md) |
@@ -340,7 +340,7 @@ _(sezioni da popolare in Fase 2)_
 | 9015 | Verifica integrità baseline Gold + rebuild storico movimentazione (17 date) | follow-up ACT_9005 | ✅ done | [acts/ACT_9015](acts/ACT_9015_verifica-integrita-baseline-gold.md) |
 | 9016 | Guardrail pytest eseguibili in locale (classpath Delta + fixture Decimal + FQN) | follow-up ACT_9015 | ✅ done | [acts/ACT_9016](acts/ACT_9016_guardrail-pytest-eseguibili-locale.md) |
 | 9017 | Script split monorepo → multi-repo (tooling di transizione, mono-direzionale) | domanda utente in ACT_9011 | 🔵 in-progress | [acts/ACT_9017](acts/ACT_9017_script-split-monorepo-transizione.md) |
-| 9018 | Consolidamento dei due databricks.yml in logistico-workflows (ADR-0021) | split multi-repo | 🔵 in-progress (decisioni prese, piano pronto) | [acts/ACT_9018](acts/ACT_9018_consolidamento-databricks-yml.md) |
+| 9018 | Consolidamento dei due databricks.yml in logistico-workflows (ADR-0021) | split multi-repo | 🔵 in-progress (consolidato in locale, 111/111 verde; resta bundle validate cloud) | [acts/ACT_9018](acts/ACT_9018_consolidamento-databricks-yml.md) |
 
 ---
 

@@ -127,7 +127,9 @@ def head_sha(root: Path) -> str:
 
 
 def working_tree_dirty(root: Path) -> bool:
-    return bool(run_git(root, "status", "--porcelain").strip())
+    # Solo modifiche a file TRACCIATI: la proiezione parte da git ls-files, quindi i file
+    # untracked (es. export/artefatti) non la influenzano e non devono bloccare la rigenerazione.
+    return bool(run_git(root, "status", "--porcelain", "--untracked-files=no").strip())
 
 
 # ===========================================================================
@@ -294,6 +296,13 @@ variables:
   # Config brownfield sotto terraform/brownfield/ (la root ha solo il modulo greenfield
   # deprecato: "Non eseguire terraform apply"). Tutti i comandi usano -chdir su questa dir.
   TF_DIR: terraform/brownfield
+  # Auth via Managed Identity (team 2026-08-27): niente client_secret né token Databricks.
+  # ARM_USE_MSI=true fa autenticare azurerm (provider + backend use_azuread_auth) con la MI
+  # del runner Azure. Il provider databricks usa azure_use_msi=true (in main.tf) + ARM_CLIENT_ID.
+  # Da impostare come variabili CI (Settings > CI/CD > Variables, Protected — NON sono segreti):
+  #   ARM_CLIENT_ID (client id user-assigned MI), ARM_TENANT_ID, ARM_SUBSCRIPTION_ID (DEV),
+  #   TF_VAR_databricks_host (URL workspace DEV).
+  ARM_USE_MSI: "true"
 
 validate:
   stage: validate

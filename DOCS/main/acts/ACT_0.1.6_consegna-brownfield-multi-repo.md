@@ -1,6 +1,6 @@
 # ACT_0.1.6 · Consegna Terraform `brownfield/` in multi-repo GitLab
 
-**Status**: on-hold (⏸️ in attesa credenziali DEV dal team piattaforma — mail inviata 2026-08-22)
+**Status**: in-progress (credenziali DEV ricevute 2026-08-27 — Managed Identity; da impostare variabili CI + Retry `plan`)
 **Type**: infra
 **Origin**: sprint 0.1   **Sprint**: 0.1   **Fase / Wave**: FASE 0 — Fondamenta
 **Gg (stima)**: 1   **Blocco**: 🏗️ **`ARM_*` (service principal Azure, utenza A7)** per `init/plan` — subgroup, repo e runner ora **disponibili**
@@ -26,22 +26,25 @@ verde in DEV, MR revisionata con Reply. Fatto = pronti per `apply`.
 - Multi-repo (ADR-0016): `logistico-infrastructure`, `logistico-workflows`, `logistico-lib` nel subgroup
   `logistico`. `git_monorepo_import.sh` **obsoleto**, non usarlo.
 
-## Credenziali necessarie per DEV (da richiedere al team piattaforma)
-Ricavate dal codice reale (`terraform/brownfield/main.tf`): backend `azurerm` con **`use_azuread_auth = true`**
-(niente storage key → auth via Entra ID/SP) e provider `databricks` con `host = var.databricks_host`.
+## Autenticazione DEV — Managed Identity (risposta team 2026-08-27)
+Il team ha scelto **Managed Identity** per autenticarsi ad Azure/Databricks dal runner GitLab: **niente
+`client_secret`, niente token Databricks**. Il runner Azure (`vm-prod-devops-00`) ha una MI user-assigned; TF
+la usa via `ARM_USE_MSI=true`. Backend `azurerm` (`use_azuread_auth=true`) e provider azurerm autenticano con
+la MI; il provider `databricks` con `azure_use_msi = true` (aggiunto in `main.tf`).
 
-**1. Service principal Azure (utenza A7)** — i 4 valori → variabili CI **Masked+Protected** sul progetto
-`logistico-infrastructure`:
-- `ARM_CLIENT_ID`, `ARM_CLIENT_SECRET`, `ARM_TENANT_ID`, `ARM_SUBSCRIPTION_ID` (subscription **DEV**).
-- RBAC del SP: **Storage Blob Data Contributor** su `stdevdataplatformweu00`/container `statefile` (per lo
-  state, dato `use_azuread_auth`); **Reader** su `rg-dev-dataplatform-00` per il `plan` (Contributor solo per
-  l'`apply`, [[ACT_8.1.2]]).
+**Variabili CI da impostare** (Settings → CI/CD → Variables, **Protected** — NON sono segreti, sono identificatori):
+| Variabile | Valore |
+|---|---|
+| `ARM_CLIENT_ID` | client id della **user-assigned MI** DEV |
+| `ARM_TENANT_ID` | tenant DEV |
+| `ARM_SUBSCRIPTION_ID` | subscription DEV |
+| `TF_VAR_databricks_host` | `https://adb-3179436993731139.19.azuredatabricks.net` (workspace DEV) |
 
-**2. Databricks DEV** (modulo Unity Catalog) → variabili CI:
-- `TF_VAR_databricks_host` = URL workspace DEV; auth via `DATABRICKS_TOKEN` (PAT DEV) o SP Azure abilitato come
-  principal Databricks. Serve al `plan` perché il modulo UC referenzia catalog esistenti.
-
-Segreti (`ARM_CLIENT_SECRET`, `DATABRICKS_TOKEN`) = **Masked**; tutte **Protected** (branch/tag protetti).
+(`ARM_USE_MSI=true` è già nel `.gitlab-ci.yml` generato.) I valori DEV sono stati forniti dal team e vanno
+inseriti come variabili CI — **non** si committano nel repo.
+**Permessi MI**: attesi sufficienti per il rilascio (state storage `stdevdataplatformweu00/statefile`,
+subscription/RG DEV, workspace Databricks). Referente permessi: Francesco Giambona (Technology Reply,
+fr.giambona@reply.it) se il `plan` segnala mancanze.
 
 ## Sviluppo (diario)
 - 2026-07-03 · backend DEV compilato; codice pronto; MR pendente su creazione subgroup.
@@ -69,9 +72,10 @@ MR approvata da Ippazio (Reply).
 - Repo su GitHub (SoT) pronto; **promosso su GitLab** (`logistico-infrastructure`, snapshot `v0.1.2`); runner ok.
 - Pipeline non distruttiva (`validate` ✅ / `plan` bloccato all'auth backend). CI provato corretto fino
   all'autenticazione.
-- ⏸️ **Stand-by 2026-08-22**: richieste via mail al team piattaforma le credenziali DEV (service principal
-  `ARM_*` + Databricks — vedi sezione Credenziali). Alla risposta: impostare le variabili CI e **Retry** del
-  job `plan` (nessun nuovo tag).
+- **2026-08-27 — credenziali ricevute (Managed Identity)**: adeguati codice e CI (`ARM_USE_MSI=true`,
+  `azure_use_msi` sul provider databricks, `databricks_host` DEV via CI var). Restano **azioni utente**:
+  impostare le 4 variabili CI (vedi sezione Autenticazione) e fare **Retry** del job `plan` — poi si legge il
+  primo `plan` reale in DEV (sola lettura).
 
 ## Follow-up
 - Promuovere `logistico-infrastructure` sul GitLab cliente (snapshot via `promote_to_gitlab.py`).
