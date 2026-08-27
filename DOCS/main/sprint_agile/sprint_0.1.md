@@ -17,12 +17,12 @@
 | **Fase** | FASE 0 — Fondamenta Infrastrutturali |
 | **Obiettivo** | Provisioning Unity Catalog (schemi logistici nei catalog DWH), landing UC Volume, compute serverless, grants least-privilege — tutto via Terraform brownfield |
 | **Gg stimati** | 7 |
-| **Gg completati** | 0 (codice pronto; esecuzione bloccata su prerequisiti piattaforma) |
-| **% avanzamento** | ~85% codice / 0% esecuzione |
+| **Gg completati** | codice pronto; **esecuzione avviata in DEV** (repo su GitLab, `plan` verde) |
+| **% avanzamento** | codice ~85% · esecuzione: `plan` DEV ✅ (15 add, 0 destroy); `apply` in attesa grant UC alla MI (OP-INF-1) |
 | **Stato** | 🔵 IN CORSO |
 | **Data inizio** | _da definire_ |
-| **Data fine prevista** | _da definire_ (dipende da utenza Azure + subgroup GitLab) |
-| **Ultimo aggiornamento** | 2026-07-03 |
+| **Data fine prevista** | _da definire_ (dipende dai grant `CREATE SCHEMA` alla MI — Reply) |
+| **Ultimo aggiornamento** | 2026-08-27 |
 
 ### Note di sprint
 - **Decisioni D1-D5 chiuse** (02-03/07/2026): controllo `config_dev` (D1), anagrafiche `bronze_dev.condiviso` (D2), landing UC Volume (D3), prod `_prod`/stage `_stage` non configurati ora (D4), quadratura via export su landing (D5).
@@ -49,7 +49,7 @@
 | 0.1.3 | Landing storage — UC Volume | 1 | 🔵 IN CORSO | D3: Volume in `landing_dev` |
 | 0.1.4 | ~~Key Vault + Secret Scope~~ → GitLab CI/CD | 0 | ✅ CHIUSA | Ridisegnata: no segreti Oracle |
 | 0.1.5 | Cluster Policy — serverless | 1 | ✅ CHIUSA | Job cluster serverless |
-| 0.1.6 | ~~TF state & moduli~~ → consegna `brownfield/` multi-repo | 1 | 🟡 QUASI PRONTA | Backend DEV compilato; MR pendente |
+| 0.1.6 | ~~TF state & moduli~~ → consegna `brownfield/` multi-repo | 1 | 🔵 su GitLab; `plan` DEV ✅ | repo pushato, auth MSI, `apply` in attesa grant (OP-INF-1) |
 | 0.1.7 | Grants least-privilege | 2 | 🟡 IN ATTESA | Writer `Engineering-dev` ✅; reader condizionale |
 
 ---
@@ -78,9 +78,10 @@
 **Confermato Reply 2026-07-03:** job **serverless** ("nasce col job, killato al termine"). Nessun `node_type_id`/`num_workers`.
 **Correzione 2026-08-04 (ACT_9007):** la policy `logistico-serverless-job-policy` (`runtime_engine=SERVERLESS`) è stata **rimossa** — valore non valido e **le compute policy non si applicano al serverless**. Il serverless si ottiene **non dichiarando compute** nei job; dipendenze via `environments`/`environment_key`. Vedi ADR-0009.
 
-### 0.1.6 — Consegna `brownfield/` multi-repo 🟡 QUASI PRONTA
-**Ridisegnata.** Root module greenfield `infra/terraform/` **deprecato**. Solo `brownfield/` va applicato. Backend `azurerm` compilato coi valori DEV reali (`rg-dev-dataplatform-00` / `stdevdataplatformweu00` / `statefile`). Git: **multi-repo** in subgroup `logistico` (`logistico-infrastructure`/`-workflows`/`-lib`), non mono-repo. `git_monorepo_import.sh` obsoleto.
-**Azione:** creare subgroup (mail Extrared) → creare repo → `terraform init/plan` → review con Ippazio → apply.
+### 0.1.6 — Consegna `brownfield/` multi-repo 🔵 su GitLab, `plan` DEV verde
+**Ridisegnata.** Root module greenfield `infra/terraform/` **deprecato**. Solo `brownfield/` va applicato. Backend `azurerm` DEV (`rg-dev-dataplatform-00` / `stdevdataplatformweu00` / `statefile`). Git: **multi-repo** in subgroup `logistico`. Dettaglio in [[ACT_0.1.6]].
+**Stato (2026-08-27):** `logistico-infrastructure` su GitLab; CI `validate`+`plan` **verdi** via **Managed Identity** (`ARM_USE_MSI`); `terraform plan` DEV = **15 add, 0 destroy** (8 schemi + Volume landing + 6 grants). Stage `apply` **manuale** (gate) predisposto.
+**Blocco:** `apply` fermo — la MI non ha `CREATE SCHEMA` sui catalog DEV → grant richiesti a Reply/Giambona (**OP-INF-1**). Ottenuti → ri-run pipeline + `apply`.
 
 ### 0.1.7 — Grants least-privilege 🟡 IN ATTESA
 **Cosa:** grant in `brownfield/main.tf`: `engineer_group` (full su schemi logistici), reader (SELECT su Gold).
