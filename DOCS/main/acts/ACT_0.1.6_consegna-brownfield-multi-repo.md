@@ -81,6 +81,9 @@ MR approvata da Ippazio (Reply).
   corretta) purché `main` sia protetto — non serve toglierle.
 
 ## Follow-up
-- ✅ Promosso su GitLab; ✅ variabili CI (MSI) impostate; ✅ `plan` DEV verde.
-- Rivedere l'output del `plan` (add/change/**destroy**: atteso 0 destroy — additivo) prima di ogni `apply`.
-- Review MR con Ippazio (Reply); poi `apply` DEV; PROD → [[ACT_8.1.2]] (gate dedicato).
+- ✅ Promosso su GitLab; ✅ variabili CI (MSI) impostate; ✅ `plan` DEV verde; ✅ stage `apply` manuale in CI.
+- ✅ **Plan rivisto (2026-08-27)**: `15 to add, 0 to change, 0 to destroy` — additivo, brownfield corretto (5
+  catalog letti, non toccati). Crea 8 schemi + Volume `landing.files` + 6 grants `Engineering-dev`, tutti
+  `force_destroy=false`/`managed_by=terraform`. **Safe da applicare.** `tfplan` salvato come artefatto.
+- Prossimo: review MR con Ippazio (Reply) → **clic manuale su `apply`** (DEV). È il **primo write** e testa i
+  permessi di *create* della MI (se mancano → 403 → Francesco Giambona). PROD → [[ACT_8.1.2]].
