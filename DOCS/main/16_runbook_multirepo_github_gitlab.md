@@ -15,7 +15,7 @@ L'autenticazione della CI verso Azure/Databricks usa la **Managed Identity del g
 deploy** sui repo (niente `ARM_CLIENT_SECRET`, niente `DATABRICKS_TOKEN`). Terraform gira con `ARM_USE_MSI=true`; la
 Databricks CLI usa la stessa MSI. Le uniche variabili CI sono **identificativi non sensibili**, impostati come
 **protected** (attivi solo su `main` e tag `v*` → [[LL-016]]): `ARM_CLIENT_ID`/`ARM_TENANT_ID`/`ARM_SUBSCRIPTION_ID`
-e `DATABRICKS_HOST`. Vedi [[ACT_0.1.6]] e [[LL-018]] (authN ≠ authZ).
+e `DATABRICKS_HOST`. Decisione formalizzata in [[ADR-0022]]. Vedi [[ACT_0.1.6]] e [[LL-018]] (authN ≠ authZ).
 **Credenziali**: `push` e login (`gh`/GitLab PAT/SSH) verso gli host remoti restano **azione dell'utente**;
 questo runbook fornisce i comandi esatti.
 

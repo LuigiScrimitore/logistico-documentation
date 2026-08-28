@@ -438,7 +438,7 @@ verde**, sia coi 5 file nominati sia con `pytest` bare (aggiunto `--ignore=tests
 ### OP-INF-1 — Grant `CREATE SCHEMA` alla Managed Identity sui catalog DEV 🟡 (attesa Reply)
 **Aperto**: 2026-08-27 ([[ACT_0.1.6]])   **Da confermare (Reply/piattaforma)**
 
-L'`apply` Terraform DEV (via MSI) è autenticato ma bloccato: la MI (SP applicationId `54d17490-…`) non ha
+L'`apply` Terraform DEV (via MSI — auth: [[ADR-0022]]) è autenticato ma bloccato: la MI (SP applicationId `54d17490-…`) non ha
 `CREATE SCHEMA` su `bronze_dev`/`silver_dev`/`gold_dev`/`config_dev`/`landing_dev`. Il `plan` è verde
 (15 add, 0 destroy); 0 risorse create (stato invariato) → [[LL-018]] (authN ≠ authZ).
 

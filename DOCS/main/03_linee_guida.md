@@ -181,7 +181,7 @@ con **CI in DEV via Managed Identity**. `databricks.yml` (DAB) versiona i job co
 Lo script `git_monorepo_import.sh` è **obsoleto** (usato `promote_to_gitlab.py`). Runbook completo:
 `16_runbook_multirepo_github_gitlab.md`.
 
-### 🟢 Gap #5 — Auth CI (rivisto → Managed Identity, 2026-08-27)
+### 🟢 Gap #5 — Auth CI (rivisto → Managed Identity, 2026-08-27, [[ADR-0022]])
 
 **Aggiornamento:** le credenziali **Oracle non servono più** su Databricks (ingestion in **push**) →
 niente secret scope Oracle. L'auth CI verso Azure/Databricks è **via Managed Identity** del group runner:

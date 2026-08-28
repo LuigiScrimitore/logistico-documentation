@@ -370,6 +370,7 @@ _(sezioni da popolare in Fase 2)_
 | 0019 | Orchestrazione: DAG derivato dal codice | accepted | 2026-08-04 | [adr/0019](adr/0019_orchestrazione_dag_derivato.md) |
 | 0020 | Lezioni operative: tracciamento cumulativo e scala di maturità | accepted | 2026-08-21 | [adr/0020](adr/0020_lezioni_operative.md) |
 | 0021 | Modello di deploy DAB: pipeline per-area (non wave) | accepted | 2026-08-22 | [adr/0021](adr/0021_modello_deploy_dab_pipeline_per_area.md) |
+| 0022 | Auth CI/CD via Managed Identity (no secret) | accepted | 2026-08-27 | [adr/0022](adr/0022_auth_ci_managed_identity.md) |
 
 ---
 

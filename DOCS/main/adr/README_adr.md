@@ -73,3 +73,7 @@ approfondire altrove?"* Se restano zone grigie, aggiungere contesto. In particol
 | [0016](0016_multi_repo_gitlab.md) | Codice GitLab multi-repo | accepted | 2026-07 |
 | [0017](0017_rilascio_a_fasi.md) | Go-live a fasi (no big-bang) per DAG | accepted | 2026-07-05 |
 | [0018](0018_reply_scope_governance.md) | Perimetro decisionale Reply (solo anagrafiche/setup/standard) | accepted | 2026-07-05 |
+| [0019](0019_orchestrazione_dag_derivato.md) | Orchestrazione: DAG derivato dal codice | accepted | 2026-08-04 |
+| [0020](0020_lezioni_operative.md) | Lezioni operative: tracciamento cumulativo + maturità | accepted | 2026-08-21 |
+| [0021](0021_modello_deploy_dab_pipeline_per_area.md) | Modello deploy DAB = pipeline per-area | accepted | 2026-08-22 |
+| [0022](0022_auth_ci_managed_identity.md) | Auth CI/CD via Managed Identity (no secret) | accepted | 2026-08-27 |
