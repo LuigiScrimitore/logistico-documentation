@@ -1,7 +1,7 @@
 # 16 · Runbook multi-repo — locale → GitHub → GitLab cliente
 
-**Owner**: Team Logistico 2.0   **Ultimo aggiornamento**: 2026-08-22
-**Collegati**: [[ACT_9011]] (split), [[ACT_9017]] (script), ADR-0016 (multi-repo), ADR-0005 (secret CI/CD)
+**Owner**: Team Logistico 2.0   **Ultimo aggiornamento**: 2026-08-27
+**Collegati**: [[ACT_9011]] (split), [[ACT_9017]] (script), [[ACT_9018]] (DAB), [[ACT_0.1.6]] (infra multi-repo), ADR-0016 (multi-repo), ADR-0005 (auth CI)
 
 ## Governance dei due host (modello di lavoro)
 | Host | Repo | Contenuto | Ruolo |
@@ -10,23 +10,30 @@
 | **GitLab cliente** (`CNO/cno-data-platform/logistico`) | **3** (lib, workflows, infrastructure — **documentation MAI**) | solo **release testate, complete, stabili** | ambiente di **rilascio/deploy** |
 
 Direzione **sempre mono-direzionale**: monorepo → GitHub → GitLab. Mai il contrario.
-**Segreti**: mai `.env`/`terraform.tfvars`/token nei repo (già in `.gitignore`); su GitLab i secret di
-deploy sono **variabili CI/CD masked per-repo** (ADR-0005): `ARM_*` (infrastructure), `DATABRICKS_HOST/TOKEN`
-(workflows).
-**Credenziali**: l'autenticazione (PAT/SSH) e i `push` verso host remoti sono **azione dell'utente**;
+**Auth CI / segreti** (aggiornato 2026-08-27): mai `.env`/`terraform.tfvars`/token nei repo (già in `.gitignore`).
+L'autenticazione della CI verso Azure/Databricks usa la **Managed Identity del group runner** — **nessun secret di
+deploy** sui repo (niente `ARM_CLIENT_SECRET`, niente `DATABRICKS_TOKEN`). Terraform gira con `ARM_USE_MSI=true`; la
+Databricks CLI usa la stessa MSI. Le uniche variabili CI sono **identificativi non sensibili**, impostati come
+**protected** (attivi solo su `main` e tag `v*` → [[LL-016]]): `ARM_CLIENT_ID`/`ARM_TENANT_ID`/`ARM_SUBSCRIPTION_ID`
+e `DATABRICKS_HOST`. Vedi [[ACT_0.1.6]] e [[LL-018]] (authN ≠ authZ).
+**Credenziali**: `push` e login (`gh`/GitLab PAT/SSH) verso gli host remoti restano **azione dell'utente**;
 questo runbook fornisce i comandi esatti.
 
-## Stato pubblicazione (aggiornato 2026-08-22)
+## Stato pubblicazione (aggiornato 2026-08-27)
+**Sintesi:** tutti e 3 i repo di codice sono su GitLab con **CI in DEV via Managed Identity** (no secret). Unico blocco
+residuo: l'`apply` infra è in attesa del grant Unity Catalog alla MI ([[ACT_0.1.6]] / OP-INF-1).
+
 | Repo | GitHub (SoT) | GitLab cliente | Note |
 |------|:---:|:---:|------|
 | `logistico-lib` | ✅ | ✅ `v1.0.4` | wheel `logistica_utils 1.0.4` nel Package Registry (CI verde) |
-| `logistico-infrastructure` | ✅ | ✅ `v0.1.2` | CI `validate` ✅ / `plan` ⏸️ in attesa `ARM_*` DEV ([[ACT_0.1.6]]) |
-| `logistico-workflows` | ✅ | ✅ `v0.1.5` | DAB consolidato ([[ACT_9018]]/[[ADR-0021]]); CI `main` verde → **deploy_dev in DEV** (7 job, sandbox mode:development). Wheel dal registry a run-time (DBR-05) |
+| `logistico-infrastructure` | ✅ | ✅ `v0.1.2` | CI `validate` ✅ / **`plan` ✅ verde via MSI** (15 add, 0 destroy); **`apply` ⏸️ bloccato sul grant `CREATE SCHEMA` alla MI** — OP-INF-1 ([[ACT_0.1.6]]) |
+| `logistico-workflows` | ✅ | ✅ `v0.1.5` | DAB consolidato ([[ACT_9018]]/[[ADR-0021]]); CI `main` verde → **`deploy_dev` in DEV via MSI** (7 job, sandbox mode:development). Wheel dal registry a run-time (DBR-05) |
 | `logistico-documentation` | ✅ | ❌ (mai) | solo GitHub, per scelta |
 
 Lezioni operative emerse durante la migrazione (per il team): [[LL-009]] una direzione sola · [[LL-010]] split
 da file tracciati · [[LL-011]] runner tag · [[LL-012]] CA aziendale nel container · [[LL-013]] versione wheel
-dal tag · [[LL-014]] entrypoint immagine CI · [[LL-015]] formato `resources:` dei file DAB.
+dal tag · [[LL-014]] entrypoint immagine CI · [[LL-015]] formato `resources:` dei file DAB · [[LL-016]] protected
+var solo su ref protetti · [[LL-017]] `job.parameters` DAB da dichiarare · [[LL-018]] auth OK ≠ autorizzato.
 
 ---
 
@@ -84,7 +91,10 @@ Ripetere per gli altri 3. **documentation va anch'esso su GitHub.**
 Obiettivo: sul GitLab cliente arrivano **solo** stati testati/stabili, **senza** la storia di sviluppo, e
 **mai** `documentation`. Due modelli possibili — **scegliere uno** (vedi nota decisione in fondo):
 
-### Modello A — snapshot di release (consigliato, allineato ad ADR-0016)
+> ✅ **Modello scelto: A (snapshot di release)** — adottato e implementato in `scripts/promote_to_gitlab.py`
+> ([[ACT_9017]]). Il modello B resta documentato solo come alternativa non adottata.
+
+### Modello A — snapshot di release (SCELTO, allineato ad ADR-0016)
 Il repo GitLab riceve **snapshot puliti** di release, non la history di GitHub. Coerente con l'"init pulito"
 e con "solo release stabili".
 1. Su GitHub, quando un repo è testato/stabile, si tagga la release: `git tag vX.Y.Z && git push origin vX.Y.Z`.
@@ -103,8 +113,8 @@ e con "solo release stabili".
 3. La CI GitLab parte sul tag: **lib** pubblica il wheel nel Package Registry; **workflows** fa
    `bundle deploy` con **gate PROD manuale** (ACT_0.2.4); **infrastructure** fa `terraform plan`.
 
-> Questo passo è **standardizzabile con uno script** analogo a `split_to_multirepo.py` (es.
-> `promote_to_gitlab.py`, snapshot GitHub-stabile → GitLab). Da implementare dopo aver scelto il modello.
+> ✅ **Implementato**: `scripts/promote_to_gitlab.py` (analogo a `split_to_multirepo.py`) materializza lo
+> snapshot GitHub-stabile → working copy GitLab, senza history. Usato per la pubblicazione dei 3 repo (2026-08-27).
 
 ### Modello B — dual-remote con push dei tag (git standard)
 Un solo repo con due remote (`origin`=GitHub, `gitlab`=cliente); si pushano a GitLab **solo i tag di release**:
@@ -127,7 +137,7 @@ si accetta storia condivisa tra i due host.
 - `git log`/scan: nessun `.env`/tfvars/token nella storia.
 - `documentation` **assente** sul GitLab cliente.
 
-## Nota decisione (aperta)
-Il modello di promozione (A snapshot vs B dual-remote) va confermato: raccomandato **A** per coerenza con
-ADR-0016. Il modello continuativo "GitHub=evolutive / GitLab=release stabili" **raffina** l'ADR-0016
-(che citava un seed one-shot al cutover): proposta di aggiornare ADR-0016 di conseguenza.
+## Nota decisione (chiusa 2026-08-27)
+Modello di promozione **deciso: A (snapshot di release)**, per coerenza con ADR-0016; implementato in
+`scripts/promote_to_gitlab.py`. Il modello continuativo "GitHub=evolutive / GitLab=release stabili" **raffina**
+l'ADR-0016 (che citava un seed one-shot al cutover) — recepito in ADR-0016.

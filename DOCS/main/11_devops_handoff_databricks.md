@@ -1,8 +1,17 @@
 # Handoff DevOps — Deploy Logistico 2.0 sul Databricks esistente
 
-**Data:** 2026-07-03 (agg. post-call Reply/DevOps del 03/07)
+**Data:** 2026-07-03 · **Ultimo aggiornamento:** 2026-08-27 (post multi-repo deploy su GitLab)
 **Destinatario:** DevOps Senior / Platform Engineer
 **Owner tecnico dominio:** Team Logistico 2.0
+
+> **⚡ Stato al 2026-08-27 — gran parte di questo handoff è già ESEGUITA dal team.**
+> - **FASE C (Git multi-repo + CI/CD): FATTA.** 3 repo su GitLab (`logistico-infrastructure/-workflows/-lib`),
+>   CI in DEV **via Managed Identity** (nessun secret di deploy). Vedi `16_runbook_multirepo_github_gitlab.md`.
+> - **FASE A (Terraform UC): `plan` FATTO** — verde via MSI (15 add, 0 destroy). **`apply` bloccato** sul grant
+>   `CREATE SCHEMA` alla MI → **OP-INF-1** ([[ACT_0.1.6]]).
+> - **FASE B (wheel + DAB): FATTA in DEV** — wheel `v1.0.4` nel Package Registry; `deploy_dev` verde (7 job).
+> - **FASE D (ingestion & primo run): da fare** al gate (credenziali SFTP + `apply`).
+> Le righe sotto restano come riferimento; gli stati puntuali sono aggiornati in linea.
 **Scopo:** lista completa e ordinata delle attività per portare la pipeline Logistico 2.0 sul
 **Databricks/Unity Catalog aziendale già esistente**, senza rompere il DWH, con tutto il codice
 (Terraform, Git, CI/CD, bundle) pronto e referenziato in questo documento.
@@ -33,7 +42,8 @@ Fatti che riducono lo scope rispetto all'infra greenfield preesistente in `infra
 4. **Job cluster SERVERLESS** → nessuna cluster policy con `node_type_id`/VM da gestire.
 
 **Effort stimato DevOps:** ~4-6 giornate (setup UC + bundle + CI/CD multi-repo), escluse le attese
-di attivazione utenze/permessi di piattaforma e la definizione del meccanismo secret (Technology).
+di attivazione utenze/permessi di piattaforma. **Auth risolta**: Managed Identity del group runner (no secret) —
+il meccanismo "certificate vs secret manager" non è più un blocco.
 
 ---
 
@@ -50,7 +60,7 @@ cosa si sostituisce:
 | `infra/terraform/modules/networking` (VNet/Oracle) | ❌ Non serve | **Escluso** (ingestion in push) |
 | `infra/terraform/modules/compute` (cluster policy VM) | ❌ Superato | **Sostituito** da cluster policy SERVERLESS in `brownfield/main.tf` |
 | `databricks.yml` + `workflows/*.yml` (DAB, 8 job) | ✅ Riusabile | Default landing Volume + `retail_master_schema` per target dev; workflow ereditano via `${var.*}` |
-| `.gitlab-ci.yml` (validate→deploy) | ✅ Riusabile | Adattare ai **3 repo** del subgroup e ai secret CI (auth) |
+| `.gitlab-ci.yml` (validate→deploy) | ✅ **Fatto** | Un `.gitlab-ci.yml` per-repo generato dallo split ([[ACT_9017]]); auth **via MSI** (no secret CI di deploy) |
 | `lib/setup.py` (wheel `logistica_utils`) | ✅ Riusabile | Nessuna modifica; build wheel invariata |
 | `scripts/migration/git_monorepo_import.sh` | ❌ **Obsoleto** | Non usare: la scelta è multi-repo, non mono-repo. |
 
@@ -91,7 +101,7 @@ cosa si sostituisce:
 | 0-1 | Attivazione utenze GitLab aziendale + subgroup `logistico` con permessi (creare repo + gestire pipeline) | Extrared + Ippazio | 🔴 mail inviata (§F.1 checklist) |
 | 0-2 | Utenza Azure per navigazione/terraform | Francesco Giambona (PM) | 🔴 mail (§F.3 checklist) |
 | 0-3 | Credenziali SFTP per push landing Logistico | Team Azure/DevOps | 🔴 mail (§F.2 checklist) |
-| 0-4 | Meccanismo secret auth (certificato vs secret manager) | Technology / Ippazio | ⏸️ ping mensile |
+| 0-4 | Meccanismo auth CI | Team Logistico | ✅ **Risolto**: Managed Identity del group runner (no secret) — 2026-08-27 |
 
 ### FASE A — Setup Unity Catalog (DEV)
 
@@ -107,7 +117,7 @@ Comandi FASE A:
 ```bash
 # A-1 preflight
 export DATABRICKS_HOST=https://adb-3179436993731139.19.azuredatabricks.net
-export DATABRICKS_TOKEN=...   # o auth SP quando definita
+# In CI: auth via Managed Identity del runner (ARM_USE_MSI=true; Databricks CLI via MSI). In locale: PAT dev.
 bash scripts/migration/preflight_databricks.sh --catalog-control config_dev
 
 # A-2..A-5 terraform (backend DEV già compilato in main.tf)
@@ -134,11 +144,11 @@ terraform apply
 
 | # | Attività | Comando / file | Owner | Effort |
 |---|----------|----------------|-------|--------|
-| C-1 | Creare i 3 repo nel subgroup `logistico`: `logistico-infrastructure`, `logistico-workflows`, `logistico-lib` | GitLab (dopo 0-1) | DevOps | 0.25g |
-| C-2 | Push del codice nei rispettivi repo (infra → Terraform, workflows → notebook+DAB, lib → `logistica_utils`) | git | DevOps + Eng | 0.5g |
-| C-3 | Adattare `.gitlab-ci.yml` per repo (stages validate→plan→deploy) | `.gitlab-ci.yml` | DevOps | 1g |
-| C-4 | Configurare secret CI (**solo auth**: `ARM_*` + `DATABRICKS_HOST/TOKEN`) come masked var, quando il meccanismo è definito (0-4) | GitLab Settings → CI/CD | DevOps | 0.25g |
-| C-5 | Verificare disponibilità **GitLab Runner** sul subgroup | GitLab | DevOps | — |
+| C-1 | Creare i 3 repo nel subgroup `logistico` | GitLab | Team | ✅ **Fatto** ([[ACT_9011]]) |
+| C-2 | Push del codice nei rispettivi repo (snapshot di release, no history) | `promote_to_gitlab.py` | Team | ✅ **Fatto** ([[ACT_9017]]) |
+| C-3 | `.gitlab-ci.yml` per repo (validate→plan/deploy) | `.gitlab-ci.yml` | Team | ✅ **Fatto** (generato dallo split) |
+| C-4 | Auth CI **via Managed Identity** (no secret di deploy); variabili non sensibili come **protected** ([[LL-016]]) | GitLab CI/CD | Team | ✅ **Fatto** (2026-08-27) |
+| C-5 | **GitLab Runner** del subgroup — job **taggati** `azure-runner` | GitLab | Team | ✅ **Fatto** ([[LL-011]]) |
 
 ### FASE D — Ingestion & primo run
 
@@ -199,12 +209,12 @@ terraform apply
 
 ## 7. Definition of Done
 
-- [ ] Utenze GitLab attive + subgroup `logistico` creato con permessi (pipeline incluse)
+- [x] Utenze GitLab attive + subgroup `logistico` creato con permessi (pipeline incluse) — 2026-08-03
 - [ ] Utenza Azure attiva + credenziali SFTP Logistico ricevute
 - [ ] `preflight_databricks.sh` verde su tutti i catalog target
-- [ ] `terraform plan` revisionato con Ippazio → `terraform apply` brownfield completato
-- [ ] wheel `logistica_utils` buildato e `bundle deploy -t dev` OK
-- [ ] 3 repo popolati nel subgroup + CI verde (secret auth configurati)
+- [~] `terraform plan` **verde via MSI** (15 add, 0 destroy) → **`apply` bloccato** sul grant UC alla MI (OP-INF-1)
+- [x] wheel `logistica_utils` buildato e pubblicato (`v1.0.4`) + `deploy_dev` OK (7 job in DEV)
+- [x] 3 repo popolati nel subgroup + **CI verde via Managed Identity** (no secret di deploy) — 2026-08-27
 - [ ] push sorgenti su landing concordato e primo file atterrato
 - [ ] primo run Bronze→Silver→Gold su Databricks con quadratura vs CDT_DW nei limiti attesi
 - [ ] scheduling/trigger attivi sui workflow (SLA 04:00)

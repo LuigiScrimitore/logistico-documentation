@@ -1,8 +1,14 @@
 # Checklist Infrastruttura & Setup — Logistico 2.0
 
-**Ultimo aggiornamento:** 2026-07-03 (post-call Ippazio Alessio / Reply)  
-**Partecipanti call:** Luigi Scrimitore, Francesco Foconi, Ippazio Alessio (Reply)  
+**Ultimo aggiornamento:** 2026-08-27 (post multi-repo deploy su GitLab — CI in DEV via Managed Identity)  
+**Partecipanti call originaria (2026-07-03):** Luigi Scrimitore, Francesco Foconi, Ippazio Alessio (Reply)  
 **Scopo:** stato aggiornato di tutti i punti infrastrutturali — risposte ricevute, azioni già implementate, punti ancora aperti.
+
+> **Aggiornamento 2026-08-27 — deploy GitLab eseguito.** I 3 repo di codice sono su GitLab con **CI in DEV via
+> Managed Identity** (nessun secret): `logistico-lib` (wheel `v1.0.4` nel Package Registry), `logistico-workflows`
+> (`deploy_dev` verde → 7 job in DEV), `logistico-infrastructure` (`terraform plan` verde, 15 add/0 destroy).
+> **Unico blocco residuo:** l'`apply` infra attende il grant `CREATE SCHEMA` alla MI sui catalog DEV → **OP-INF-1**
+> ([[ACT_0.1.6]]). Dettaglio multi-repo: `16_runbook_multirepo_github_gitlab.md`.
 
 > Dettaglio tecnico sprint → `04_piano_sviluppo.md` | Decisioni architetturali → `10_piano_migrazione_databricks.md` | **Rilascio a fasi post-accesso → `14_release_kit.md`**
 
@@ -38,11 +44,12 @@
 | # | Punto | Stato | Decisione / Risposta | Azione |
 |---|-------|-------|----------------------|--------|
 | B0 | Attivazione utenze GitLab | ✅ | **Accesso confermato** (2026-08-03): utenze attive, accesso al subgroup con ruolo **Maintainer**. | — |
-| B1 | Struttura repo | ✅ | Path reale: **`CNO / cno-data-platform / logistico`** (subgroup). **Un progetto = un repository**. **4 repo**: 3 sul GitLab cliente — `logistico-infrastructure` (Terraform), `logistico-workflows` (notebook + DAB + SQL), `logistico-lib` (wheel `logistica_utils`) — + **`logistico-documentation`** che resta **solo sul nostro git** (non sul GitLab cliente). Vedi [[ACT_0.1.6]] / ADR-0016. | Eseguire lo split del monorepo → 4 repo |
+| B1 | Struttura repo | ✅ | Path reale: **`CNO / cno-data-platform / logistico`** (subgroup). **Un progetto = un repository**. **4 repo**: 3 sul GitLab cliente — `logistico-infrastructure` (Terraform), `logistico-workflows` (notebook + DAB + SQL), `logistico-lib` (wheel `logistica_utils`) — + **`logistico-documentation`** che resta **solo sul nostro git** (non sul GitLab cliente). Vedi [[ACT_0.1.6]] / ADR-0016. | ✅ **Split eseguito** (2026-08) — 3 repo pubblicati su GitLab ([[ACT_9011]]/[[ACT_9017]]) |
 | B2 | Creazione subgruppo + permessi | ✅ | **Fatto** (2026-08-03): subgroup `CNO/cno-data-platform/logistico` creato, ruolo **Maintainer** assegnato. (Mail §F.1 inviata; risposta ricevuta.) | — |
-| B3 | Secrets CI/CD | 🟡 | DevOps (2026-07-03): "le potete settare voi se avete i permessi". **Servono SOLO i secret di auth** (verificato nel codice): `ARM_CLIENT_ID/SECRET/TENANT_ID/SUBSCRIPTION_ID` (Terraform su Azure) + `DATABRICKS_HOST/TOKEN` (deploy DAB). **Nessun altro secret**: i job runtime non usano `dbutils.secrets`/`SecretHelper` (managed identity sul Volume); le credenziali Oracle restano solo in `.env` locale (tool dev). Meccanismo auth (certificato vs secret manager) ancora in definizione con Technology → ping mensile a Ippazio. | Settare le variabili CI/CD noi, appena abbiamo i permessi (B2) e il meccanismo auth stabile |
+| B3 | Auth CI/CD | ✅ | **Risolto via Managed Identity** (2026-08-27): la CI si autentica verso Azure/Databricks con la **MI del group runner** — **nessun secret di deploy** (no `ARM_CLIENT_SECRET`, no `DATABRICKS_TOKEN`). Terraform: `ARM_USE_MSI=true`; Databricks CLI: stessa MI. Le uniche variabili CI sono **identificativi non sensibili** impostati come **protected** (solo `main`+tag `v*`, [[LL-016]]): `ARM_CLIENT_ID`/`ARM_TENANT_ID`/`ARM_SUBSCRIPTION_ID`, `DATABRICKS_HOST`. I job runtime non usano `dbutils.secrets`/`SecretHelper`; le credenziali Oracle restano solo in `.env` locale (tool dev). | — (fatto). NB: authN ≠ authZ → serve comunque il grant UC alla MI (B6/OP-INF-1) |
 | B4 | Branch strategy | ✅ | Seguire `DOCS/linee_guida/CNO_DataPlatform_linee-guida_v1.1.0` (feature branch → main, MR obbligatoria) | Da leggere prima della prima MR |
-| B5 | Pipeline Terraform su GitLab | 🟡 | Obiettivo: arrivare a `terraform plan` via pipeline. **Prima del `apply`: sessione di review con Ippazio.** | Configurare pipeline CI/CD una volta ottenuto il subgruppo (B2) |
+| B5 | Pipeline Terraform su GitLab | ✅ | **`terraform plan` verde via MSI** (2026-08-27): 15 add, 0 destroy, 0 risorse create (stato invariato). CI `validate`→`plan` operativa. | ✅ plan fatto → resta `apply` (B6) |
+| B6 | Deploy CI in DEV (3 repo) | 🟡 | `logistico-lib` wheel `v1.0.4` pubblicato; `logistico-workflows` `deploy_dev` verde (7 job in DEV, sandbox mode:development); `logistico-infrastructure` `plan` verde. **`apply` bloccato** sul grant `CREATE SCHEMA` alla MI → **OP-INF-1** ([[ACT_0.1.6]], mail a Giambona 2026-08-27). | Ottenuto il grant → ri-run pipeline `infrastructure` + clic `apply` |
 
 ---
 
@@ -73,23 +80,26 @@
 ```
 ✅ A1 backend state     → terraform init pronto
 ✅ A2 URL workspace     → terraform plan pronto
-✅ A3 cluster serverless → cluster policy corretta
+✅ A3 cluster serverless → nessun compute nei job (policy rimossa, ADR-0009)
 ✅ A4 gruppo engineer   → grants writer pronti
 ✅ A6 naming PROD       → utils.py aggiornato, D4 chiuso
-🟡 A7 utenza Azure      → mail inviata, in attesa risposta (Giambona)
+🟡 A7 utenza Azure      → solo per navigazione portale in locale; il plan/apply gira in CI via MSI (non più bloccante)
 ✅ B2 subgruppo GitLab  → CNO/cno-data-platform/logistico, Maintainer (2026-08-03)
-⏸️ B3 secrets CI/CD    → pipeline bloccata (on hold, ping mensile)
-🟡 B5 pipeline → plan   → dopo A7: configurare CI/CD, arrivare a plan, review con Ippazio → apply
+✅ B3 auth CI/CD        → Managed Identity (no secret) — 2026-08-27
+✅ B5 pipeline → plan   → terraform plan verde via MSI (15 add, 0 destroy)
+🔴 B6 apply infra       → BLOCCA: serve grant CREATE SCHEMA alla MI sui catalog DEV → OP-INF-1
 🟡 C5 SFTP Logistico    → mail inviata, risposta parziale (tema SFTP dedicato)
 🟡 A5 reader group      → da fare quando il gruppo sarà creato (non bloccante per apply)
 ```
 
 **Stato mail (tutte inviate):**
-1. **Francesco Giambona** → utenza Azure (§F.3) — 🟡 in attesa risposta
+1. **Francesco Giambona** → utenza Azure (§F.3) — 🟡 in attesa; + **grant `CREATE SCHEMA` alla MI** (mail 2026-08-27, OP-INF-1)
 2. **Extrared** (Ippazio CC) → subgruppo GitLab (§F.1) — ✅ **risolto**: subgroup + Maintainer
 3. **team DevOps/Azure** → credenziali SFTP (§F.2) — 🟡 risposta parziale (da chiudere)
 
-**Prossimo passo attivo:** eseguire lo **split del monorepo → 4 repo** nel subgroup `logistico` (B1).
+**Prossimo passo attivo:** ottenere il **grant `CREATE SCHEMA` alla Managed Identity** sui 5 catalog DEV
+(**OP-INF-1** — mail a Giambona del 2026-08-27) → ri-run pipeline `infrastructure` + `apply`. Lo split
+multi-repo e il deploy CI in DEV sono **fatti**.
 
 ---
 
@@ -199,8 +209,9 @@ Grazie,
 | B2 Subgruppo GitLab | Extrared + Ippazio | ✅ **Fatto** — `CNO/cno-data-platform/logistico`, Maintainer (2026-08-03) | ✅ |
 | C5 SFTP Logistico | Team DevOps/Azure | Username + container + credenziali per sorgenti Logistix/STAT/CND | 🟡 risposta parziale |
 | A5 Reader UC group | Cliente (quando creato) | Nome gruppo analisti/MicroStrategy → `enable_reader_grants=true` + `terraform apply` | 🟡 non urgente |
-| B3 Secrets CI/CD | Ippazio / Technology | Soluzione stabile certificate vs secret manager | ⏸️ ping mensile |
+| B3 Auth CI/CD | Team Logistico | **Risolto**: Managed Identity del runner, nessun secret (2026-08-27) | ✅ |
+| **OP-INF-1 Grant UC alla MI** | **Reply / F. Giambona** | **`USE CATALOG` + `CREATE SCHEMA` alla MI sui 5 catalog DEV** (mail 2026-08-27) → sblocca `apply` | 🔴 **bloccante** |
 | D1 Service Principal | Ippazio / Technology | SP condiviso data platform → comunicare ID | ⏸️ ping mensile |
-| B5 Review plan | Ippazio | Sessione review `terraform plan` prima di `apply` | 🟡 dopo B2+A7 |
+| B5 Review plan | Ippazio | `terraform plan` verde via MSI; review + `apply` dopo il grant (OP-INF-1) | 🟡 |
 | H1 Tagging costi Databricks | Data Reply (Ippazio) | Standard naming tag (min. `business_unit=logistica`) + **serverless budget policy a livello di account** per applicare i tag ai job. Il tagging trasversale per applicazione Azure è governance di piattaforma (non nostro). | 🟡 (call 2026-07-03, tema costi sollevato da Silvio/Marcello) |
 | H2 Retention & governance storage | Team Logistico + piattaforma | Definire e **schedulare** retention: ~90 gg su landing (UC Volume → job cleanup/lifecycle policy), 3-5 anni sul data lake; VACUUM Delta per pulizia fisica versioni. | 🟡 (governo di lungo periodo, sollevato da Silvio) |

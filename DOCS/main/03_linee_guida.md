@@ -173,23 +173,20 @@ credential+external location) **non si applica**. Push file via **SFTP**, format
 
 **Effort:** ~0.25 gg DevOps (`terraform apply` overlay). Vedi `11_devops_handoff_databricks.md`.
 
-### ✅ Gap #4 — Multi-repo GitLab (confermato DevOps 2026-07-03)
+### ✅ Gap #4 — Multi-repo GitLab (ESEGUITO 2026-08-27)
 
-**Aggiornamento:** target confermato = **multi-repo in un subgroup GitLab** `logistico` (NON mono-repo).
-Un progetto = un repository: `logistico-infrastructure`, `logistico-workflows`, `logistico-lib`.
-`databricks.yml` (DAB) versiona i job con compute **serverless**. Lo script `git_monorepo_import.sh`
-è **obsoleto**. Prerequisiti: attivazione utenze + creazione subgroup con permessi (mail a Extrared,
-vedi `12_checklist_infra_setup.md`).
+**Aggiornamento:** **multi-repo in un subgroup GitLab** `logistico` (NON mono-repo) — **eseguito**.
+Un progetto = un repository: `logistico-infrastructure`, `logistico-workflows`, `logistico-lib`; tutti
+con **CI in DEV via Managed Identity**. `databricks.yml` (DAB) versiona i job con compute **serverless**.
+Lo script `git_monorepo_import.sh` è **obsoleto** (usato `promote_to_gitlab.py`). Runbook completo:
+`16_runbook_multirepo_github_gitlab.md`.
 
-**Effort:** ~1.5 gg DevOps (FASE C in `11_devops_handoff_databricks.md`).
-
-### 🟡 Gap #5 — Secret Databricks via GitLab CI (rivisto brownfield 2026-07-02)
+### 🟢 Gap #5 — Auth CI (rivisto → Managed Identity, 2026-08-27)
 
 **Aggiornamento:** le credenziali **Oracle non servono più** su Databricks (ingestion in **push**) →
-niente secret scope Oracle. Restano solo i token Databricks (`DATABRICKS_HOST/TOKEN` dev+prod) come
-masked variable GitLab CI per il deploy del bundle. `secret_helper.py` invariato.
-
-**Effort:** ~0.25 gg DevOps.
+niente secret scope Oracle. L'auth CI verso Azure/Databricks è **via Managed Identity** del group runner:
+**nessun secret di deploy** (no `DATABRICKS_TOKEN`, no `ARM_CLIENT_SECRET`). Solo identificativi non
+sensibili come variabili CI protected ([[LL-016]]). `secret_helper.py` invariato.
 
 ### 🟢 Gap #1 — Condivisione Anagrafiche (COERENTE)
 Le `LU_*` condivise sono in `gold` per dominio con permessi di lettura. Nome/percorso definitivo da OP-02.

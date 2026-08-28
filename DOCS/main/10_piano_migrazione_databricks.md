@@ -1,6 +1,6 @@
 # Piano di migrazione — da Docker/Spark locale ad Azure Databricks
 
-**Data:** 2026-07-02 (agg. 2026-07-03 post-call DevOps)
+**Data:** 2026-07-02 (agg. 2026-07-03 post-call DevOps) · **Ultimo aggiornamento:** 2026-08-27 (multi-repo su GitLab eseguito — vedi §7)
 **Contesto:** il flusso Logistico gira oggi in locale (container `logistico-spark`, Delta su
 filesystem, metastore Hive/Derby). Va migrato su un **Azure Databricks già esistente** (DWH
 aziendale con Unity Catalog), **integrandosi senza rompere** ciò che c'è. Repo: **multi-repo** in un
@@ -167,6 +167,9 @@ Trigger: schedule giornaliero o **file arrival** sul Volume landing. I widget `d
 
 ## 7. Git — strategia multi-repo (subgroup)
 
+> ✅ **Eseguito (2026-08-27):** i 3 repo sono su GitLab con CI in DEV via **Managed Identity**. Runbook operativo
+> completo (flusso GitHub SoT → GitLab release, promote script, lezioni): `16_runbook_multirepo_github_gitlab.md`.
+
 **Decisione DevOps 2026-07-03: NON mono-repo.** Subgroup GitLab `logistico` sotto il macro-gruppo
 data-platform, con **un progetto = un repository** per componente:
 ```
@@ -183,7 +186,8 @@ subgroup: logistico   (sotto macro-gruppo data-platform)
   job e target dev. Compute = job cluster **serverless**.
 - **Branching**: seguire il documento di best practice del cliente
   (`DOCS/linee_guida/CNO_DataPlatform_linee-guida_v1.1.0`).
-- **Secret CI/CD**: solo auth (`ARM_*` + Databricks); meccanismo in definizione con Technology.
+- **Auth CI/CD**: ✅ **Managed Identity** del group runner (`ARM_USE_MSI=true`; Databricks CLI via MSI) —
+  **nessun secret di deploy**. Solo identificativi non sensibili come variabili CI protected ([[LL-016]]).
 
 ---
 
@@ -192,7 +196,7 @@ subgroup: logistico   (sotto macro-gruppo data-platform)
 1. **Assessment/decisioni** D1-D5 con il team DWH (mezza giornata).
 2. **Interventi 4.1-4.4** in locale (restano retro-compatibili), test locale verde.
 3. **Setup UC** (§5): schemi, volume, permessi, wheel.
-4. **Mono-repo** (§7): import in `logistico/`, primo commit, DAB skeleton.
+4. **Multi-repo** (§7): ✅ **fatto** — split in 3 repo GitLab + DAB + CI in DEV via MSI.
 5. **Migrazione Bronze**: puntare la landing al Volume, primo run bronze su Databricks; validare
    conteggi vs locale.
 6. **Silver → Gold** layer per layer; ad ogni layer, **quadratura** (ora Spark-native) vs CDT_DW.

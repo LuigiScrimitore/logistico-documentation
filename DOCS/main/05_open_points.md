@@ -1,6 +1,6 @@
 # Open Points — Logistico 2.0
 
-**Ultimo aggiornamento:** 2026-07-05  
+**Ultimo aggiornamento:** 2026-08-27  
 **Owner documento:** Cloud Data Architect — Team Logistico 2.0  
 **Scopo:** registro dei punti **ancora aperti** che richiedono conferme esterne (Reply o sistemi sorgente) o che sono stati messi in stand-by per fase successiva.
 
@@ -330,16 +330,16 @@ cdt_dw) arrivano in **push** dai sorgenti. Elimina secret scope Oracle, VNet pee
 
 ---
 
-## Riepilogo per stato (aggiornato 2026-07-02)
+## Riepilogo per stato (aggiornato 2026-08-27)
 
 | Stato | Open points |
 |-------|-------------|
-| 🔴 Aperto / Bloccante | **OP-21** (DQ framework — senza risposta Reply), **OP-32** (LAD ri-risoluzione orphan) |
-| 🟠 Da confermare (sorgente) | OP-08, OP-09, OP-10, OP-11, OP-31 |
-| 🟡 Da confermare (Reply/DWH) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25 |
-| 🔵 Stand-by / Fisiologico / Bassa priorità | OP-03, **OP-29** (ordering fisiologico locale), OP-33, OP-34, OP-36, **OP-CAR-1** |
+| 🔴 Aperto / Bloccante | **OP-21** (DQ framework — senza risposta Reply), **OP-QDR-1** (quadratura non significativa senza backfill storico) |
+| 🟠 Da confermare (sorgente) | OP-08, OP-09, OP-10, OP-11, OP-31, **OP-CAR-7** (CORRIERE_COD → 'ND') |
+| 🟡 Da confermare (Reply/DWH/piattaforma) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25, **OP-INF-1** (grant CREATE SCHEMA alla MI → blocca `apply` infra DEV), **OP-GIA-1** (170k righe giacenze — decisione) |
+| 🔵 Stand-by / Fisiologico / Bassa priorità | OP-03, **OP-29** (ordering fisiologico locale), OP-33, OP-34, OP-36, **OP-CAR-1**, **OP-MOV-1** (grana per-movimento — futuro) |
 | ⏸️ On hold (Technology) | **OP-18** (Service Principal unico data platform) |
-| 🟢 Risolto | **OP-19** (job cluster serverless), **OP-28** (orphan 0.0%), **OP-30** (incrementalità), **OP-35** (watermark), **OP-CAR-4/A** (tombstone quadratura), **OP-PSP-1** (scartate — chiuso), **OP-PSP-2** (DATA_PREL_INIZ), **D1-D5** (migrazione Databricks) |
+| 🟢 Risolto | **OP-19** (serverless), **OP-28** (orphan 0.0%), **OP-30** (incrementalità), **OP-32** (LAD framework completo+validato; residuo ART/FORN gated OP-02), **OP-35** (watermark), **OP-CAR-4/A** (tombstone quadratura), **OP-CAR-6** (fallback anagrafiche non più silenzioso), **OP-PSP-1** (scartate), **OP-PSP-2** (DATA_PREL_INIZ), **OP-TST-1/2** (fixture/FQN test), **D1-D5** (migrazione Databricks) |
 
 ---
 

@@ -299,10 +299,10 @@ Senza watermark: il catch-up di N giorni di solo-landing richiedeva N run sequen
 - [ ] Azure ADLS Gen2 storage account + container landing
 - [ ] `terraform apply` (unity_catalog: schemi, Volume/external location landing, grants) — **nessuna
       risorsa compute**: i job girano su serverless e le cluster policy non si applicano (ADR-0009, ACT_9007)
-- [ ] ~~Azure Key Vault + Databricks Secret Scope~~ → **non necessario** (D5/ADR-0005: nessun segreto Oracle;
-      secret di deploy come variabili CI/CD GitLab — vedi ACT_0.1.4)
+- [ ] ~~Azure Key Vault + Databricks Secret Scope~~ → **non necessario** (D5/ADR-0005: nessun segreto Oracle).
+      Auth CI **via Managed Identity** (no secret di deploy) — già attiva in DEV (2026-08-27)
 - [ ] Storage Credential separata per dominio Logistica (Gap #3)
-- [ ] GitLab secrets → Databricks Secret Scope (Gap #5)
+- [x] ~~GitLab secrets → Databricks Secret Scope~~ → superato: **auth via Managed Identity**, nessun secret (Gap #5)
 
 ### Configurazione Sorgenti
 - [ ] Configurazione push CSV/Parquet sistemi sorgente → ADLS (Logistix 22 siti, CND/STAT)
@@ -313,7 +313,7 @@ Senza watermark: il catch-up di N giorni di solo-landing richiedeva N run sequen
 - [ ] `databricks bundle deploy --target prod` (**7** workflow visibili in Databricks Jobs UI)
 - [ ] `logistica_utils`: wheel dichiarato come dipendenza nell'`environments` dei job serverless
       (non più "cluster library" — ACT_9007); su GitLab pubblicato nel Package Registry (ADR-0016)
-- [ ] GitLab CI/CD: tutti e 4 gli stage passano su `main`
+- [ ] GitLab CI/CD PROD: gate manuale sui tag `v*` (in DEV: `deploy_dev` già verde via MSI, 7 job)
 - [ ] Supporto Parquet implementato nei Bronze (Gap #2)
 
 ### Validazione

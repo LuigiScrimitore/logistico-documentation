@@ -147,6 +147,12 @@ run#2 (stesso run_date) -> le stesse righe/SUM = idempotente; crescita = MERGE k
 
 ## 4. Gate di accesso → cosa si sblocca
 
+> **Stato gate al 2026-08-27:** ✅ **Git/GitLab** (subgroup + runner) e ✅ **CI/CD** (pipeline in DEV **via Managed
+> Identity**, no secret) sono **passati**: `logistico-workflows` `deploy_dev` verde (7 job in DEV), `logistico-lib`
+> wheel `v1.0.4` pubblicato. Restano i gate **Azure** (credenziali SFTP) e **IAM/grant** — quest'ultimo è l'unico
+> blocco attivo: grant `CREATE SCHEMA` alla MI per sbloccare l'`apply` infra (**OP-INF-1**). Dettaglio:
+> `12_checklist_infra_setup.md` / `16_runbook_multirepo_github_gitlab.md`.
+
 | Gate | Sblocca | Attività kit abilitate |
 |------|---------|------------------------|
 | **Azure** (utenza/RG) | area SFTP, storage, workspace | C (send SFTP), B (tagging), A (schemi) |
