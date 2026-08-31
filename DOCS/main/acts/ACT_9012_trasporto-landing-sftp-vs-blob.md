@@ -73,8 +73,11 @@ concordato; un Bronze legge la landing via UC senza modifiche di logica; `landin
 punti di **ownership estrazione** (#3/#4) e **C6** (`landing_mode`).
 
 ## Follow-up
-1. **Branch dedicato** per il backend AzCopy in `send_to_landing.py` (evolvere `send_to_sftp.py`, KIT-01) —
-   auth container (SAS/SP/MI), path OP-07, formato invariato. Lo script attuale si mantiene nel frattempo.
+1. ✅ **Backend AzCopy implementato** su branch `feature/azcopy-send`: `scripts/sftp/send_to_landing.py`
+   (`--transport azcopy|sftp`) riusa `build_upload_plan`; comando `azcopy copy ... --overwrite=ifSourceNewer`;
+   auth SAS/AAD(MSI/SPN) da env; **dry-run** (default) stampa i comandi con **SAS mascherato**, senza azcopy/credenziali.
+   `send_to_sftp.py` mantenuto come backend legacy. Test `tests/test_send_to_landing.py` (**15 pass**). **Resta la
+   validazione reale col container** (dopo la risposta §F.2). NB dev: output reso ASCII-safe (console cp1252).
 2. **C6** — confermare con la piattaforma `landing_mode` (external probabile) → eventuale revisione di
    [[ADR-0003]]; flip in Terraform ([[ACT_0.1.3]]) a valle.
 3. ✅ **Inviata (2026-08-31)** la richiesta accesso landing (§F.2 riformulata): **un container ADLS unico** su

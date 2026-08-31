@@ -167,7 +167,7 @@ run#2 (stesso run_date) -> le stesse righe/SUM = idempotente; crescita = MERGE k
 ## 5. Attività da mettere in piedi (checklist)
 
 ### Ora (pre-accesso — azionabile in locale/dev)
-- [x] **KIT-01** Script send `scripts/sftp/send_to_sftp.py` (dry-run testato: 8419 file/31GB; layout mirror|datefirst; idempotente+retry; import lazy paramiko). ✅ 2026-07-05. **Protocollo deciso = AzCopy** ([[ADR-0023]], 2026-08-31): backend AzCopy (`send_to_landing.py --transport azcopy`) da sviluppare su **branch dedicato** (auth SAS/SP/MI); SFTP/`paramiko` non più il target
+- [x] **KIT-01** Script send `scripts/sftp/send_to_sftp.py` (dry-run testato: 8419 file/31GB; layout mirror|datefirst; idempotente+retry; import lazy paramiko). ✅ 2026-07-05. **Protocollo deciso = AzCopy** ([[ADR-0023]], 2026-08-31): ✅ **backend AzCopy implementato** su branch `feature/azcopy-send` — `send_to_landing.py --transport azcopy|sftp`, comando `azcopy copy --overwrite=ifSourceNewer`, auth SAS/AAD(MSI/SPN) da env, **dry-run** con SAS mascherato, 15 test verdi. Resta la validazione reale col container (§F.2). SFTP/`paramiko` = legacy
 - [x] **KIT-02** Acceptance-criteria + smoke-test: `acceptance.py` (criteri dichiarativi + runner + registry). ✅ 2026-07-05 (validato locale F_CARICO/MOV/A_INBOUND)
 - [x] **KIT-03** DQ interno: `dq_monitor.py` — tabella `control_<env>.etl.dq_results`, severità, volume-anomaly. ✅ 2026-07-05 (validato locale)
 - [x] **KIT-04** Alerting: interfaccia `Notifier` + `LogNotifier` + `gate()` bloccante; `WebhookNotifier` da attivare in cloud. ✅ 2026-07-05 (design+base; webhook in cloud)
