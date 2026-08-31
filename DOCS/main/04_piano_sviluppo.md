@@ -88,7 +88,7 @@
 | 8.3 | Preparazione Cut-Over | 2/5 | 40% | 🔵 PARZ. | [8.3](sprint_agile/sprint_8.3.md) |
 | 8.4 | Cut-Over & Stabilizzazione | 0/7 | 0% | ⏳ | [8.4](sprint_agile/sprint_8.4.md) |
 
-\* 0.1: infra su GitLab con CI in DEV via **Managed Identity** — `terraform plan` verde (15 add, 0 destroy). `apply` bloccato **solo** sul grant `CREATE SCHEMA` alla MI (**OP-INF-1**). Subgroup GitLab e auth CI: ✅ fatti. Resta il gate SFTP per l'ingestion.
+\* 0.1: infra su GitLab con CI in DEV via **Managed Identity** — `terraform plan` verde (15 add, 0 destroy). `apply` bloccato **solo** sul grant `CREATE SCHEMA` alla MI (**OP-INF-1**). Subgroup GitLab e auth CI: ✅ fatti. Trasporto landing deciso = **AzCopy** ([[ADR-0023]]); resta il gate **accesso container** per l'ingestion.
 
 ---
 

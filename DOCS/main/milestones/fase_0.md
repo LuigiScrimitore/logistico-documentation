@@ -12,9 +12,9 @@
 
 La Fase 0 predispone le **fondamenta infrastrutturali** su cui gira l'intera pipeline Logistico 2.0: gli spazi dati su Unity Catalog (Databricks brownfield), la zona di atterraggio dei file (landing), il compute, la libreria condivisa, la CI/CD e i template di sviluppo.
 
-Il principio guida è **integrarsi nel Databricks/DWH aziendale esistente senza romperlo**: non creiamo un workspace nuovo, ma i nostri schemi accanto a quelli esistenti. L'ingestion avviene in **push (SFTP)** dai sistemi sorgente, eliminando ogni connettività Oracle diretta.
+Il principio guida è **integrarsi nel Databricks/DWH aziendale esistente senza romperlo**: non creiamo un workspace nuovo, ma i nostri schemi accanto a quelli esistenti. L'ingestion avviene in **push via AzCopy** ([[ADR-0023]], deciso 2026-08-31 al posto di SFTP; a tendere via processi ODI) dai sistemi sorgente, eliminando ogni connettività Oracle diretta.
 
-Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **completi**; lo sprint 0.1 (Unity Catalog & Storage) ha il **codice pronto** e l'esecuzione è **avviata in DEV** — infra su GitLab, `terraform plan` verde via Managed Identity (15 add, 0 destroy). L'`apply` resta in attesa dei grant Unity Catalog alla MI ([[ACT_0.1.6]]/OP-INF-1); restano prerequisiti di piattaforma per l'ingestion (credenziali SFTP) e per l'ambiente PROD.
+Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **completi**; lo sprint 0.1 (Unity Catalog & Storage) ha il **codice pronto** e l'esecuzione è **avviata in DEV** — infra su GitLab, `terraform plan` verde via Managed Identity (15 add, 0 destroy). L'`apply` resta in attesa dei grant Unity Catalog alla MI ([[ACT_0.1.6]]/OP-INF-1); restano prerequisiti di piattaforma per l'ingestion (accesso container per **AzCopy** — [[ADR-0023]]) e per l'ambiente PROD.
 
 ---
 
@@ -23,7 +23,7 @@ Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **
 | Obiettivo | Esito |
 |-----------|-------|
 | Spazi dati Unity Catalog per dominio logistico | ✅ codice pronto (overlay brownfield) |
-| Zona di landing per i file in push | ✅ definita (UC Volume / container SFTP dedicato) |
+| Zona di landing per i file in push | ✅ definita (container ADLS via AzCopy; `landing_mode` external vs managed da confermare — C6) |
 | Compute per i job | ✅ job cluster serverless |
 | Libreria condivisa `logistica_utils` | ✅ 6 moduli, 64 test |
 | CI/CD e Databricks Asset Bundles | ✅ pipeline + `databricks.yml` |
@@ -39,7 +39,7 @@ Catalog esistenti **referenziati** (non creati): `bronze_dev`, `silver_dev`, `go
 `bronze.logistica`, `bronze.condiviso` (D2), `silver.logistica`, `silver.logistica_curated`, `gold.logistica`, `gold.logistica_dm`, `config.logistica_etl`, `landing.logistica` + Volume `files`.
 
 ### 3.2 Ingestion
-**Push SFTP** dai sorgenti (Logistix + cdt_dw) → landing. Nessuna connettività Oracle / VNet / Key Vault credenziali sorgente su Databricks. Struttura `<source>-landing/<tabella>/YYYY/MM/DD/`, formato CSV (Parquet pronto lato codice), SLA disponibilità 04:00.
+**Push via AzCopy** ([[ADR-0023]]) dai sorgenti (Logistix + cdt_dw) → landing; a tendere eseguito da processi ODI (owner: team). Nessuna connettività Oracle / VNet / Key Vault credenziali sorgente su Databricks. Struttura `<source>-landing/<tabella>/YYYY/MM/DD/`, formato CSV (Parquet pronto lato codice), SLA disponibilità 04:00.
 
 ### 3.3 Compute
 Job **serverless**: nessuna VM da gestire, avvio col job e terminazione al completamento; Photon e
@@ -85,8 +85,8 @@ Databricks Asset Bundles (`databricks.yml`) + GitLab CI (`.gitlab-ci.yml`). Git:
 - **DBR-01/02/03** — storage abstraction, helper condiviso anagrafiche, riconciliazione `_CATALOG_MAP`.
 
 ## 7. Punti aperti
-- **Prerequisiti piattaforma** (non decisioni): utenza Azure, subgroup GitLab + runner, credenziali SFTP. Vedi [`../12_checklist_infra_setup.md`](../12_checklist_infra_setup.md).
-- **C6** — riconciliazione `landing_mode` managed vs external (dipende da risposta SFTP Tech Reply).
+- **Prerequisiti piattaforma** (non decisioni): utenza Azure, subgroup GitLab + runner, accesso container per **AzCopy** ([[ADR-0023]]). Vedi [`../12_checklist_infra_setup.md`](../12_checklist_infra_setup.md).
+- **C6** — riconciliazione `landing_mode` managed vs external (dopo la scelta AzCopy: direzione probabile external, da confermare con la piattaforma).
 - **OP-18** — Service Principal unico data platform (⏸️ Technology).
 - **Modello costi/chargeback** tra aree (retail vs logistica) — in discussione con infra (tag/budget policy vs RG/catalog dedicati).
 

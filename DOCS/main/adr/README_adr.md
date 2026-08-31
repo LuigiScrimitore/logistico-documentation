@@ -77,3 +77,4 @@ approfondire altrove?"* Se restano zone grigie, aggiungere contesto. In particol
 | [0020](0020_lezioni_operative.md) | Lezioni operative: tracciamento cumulativo + maturità | accepted | 2026-08-21 |
 | [0021](0021_modello_deploy_dab_pipeline_per_area.md) | Modello deploy DAB = pipeline per-area | accepted | 2026-08-22 |
 | [0022](0022_auth_ci_managed_identity.md) | Auth CI/CD via Managed Identity (no secret) | accepted | 2026-08-27 |
+| [0023](0023_trasporto_landing_azcopy.md) | Trasporto landing = AzCopy (processi ODI), non SFTP | accepted | 2026-08-31 |

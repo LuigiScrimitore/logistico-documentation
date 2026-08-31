@@ -1,12 +1,18 @@
 # ACT_9012 · Trasporto verso landing — SFTP vs Blob (AzCopy/API) + `send_to_landing` pluggable
 
-**Status**: proposed
+**Status**: resolved (protocollo) — 2026-08-31, [[ADR-0023]]
 **Type**: analysis   **Origin**: emerged (thread mail "attivazione servizio sftp per logistico", 6 lug–3 ago 2026)
 **Sprint**: fuori-sprint (emergente)   **Fase / Wave**: FASE 0 — Landing & Ingestion
-**Gg (stima)**: 1 (parte pluggable) + call   **Blocco**: 🤝 decisione cliente/Reply (call da fissare)
-**Created**: 2026-08-03   **Closed**: —
-**Dipende da**: esito call SFTP/Blob   **Blocca**: C5 (credenziali/accesso landing), C6 (`landing_mode`), primo push in landing
-**ADR collegate**: ADR-0003 (landing UC Volume), ADR-0005 (no segreti/canale export)   **OP collegati**: OP-07 (path landing), C5, C6, OP-02 (estrazione anagrafiche)
+**Gg (stima)**: 1 (parte pluggable) + call   **Blocco**: 🤝 decisione cliente/Reply → **decisa: AzCopy** (2026-08-31)
+**Created**: 2026-08-03   **Closed**: 2026-08-31 (protocollo; residuo C6 landing_mode aperto)
+**Dipende da**: ~~esito call SFTP/Blob~~ → **deciso AzCopy** ([[ADR-0023]])   **Blocca**: C6 (`landing_mode`, ancora aperto), primo trasporto in landing
+**ADR collegate**: [[ADR-0023]] (trasporto AzCopy — decisione), ADR-0003 (landing UC Volume), ADR-0005 (no segreti/canale export)   **OP collegati**: OP-07 (path landing), C5 (chiuso), C6 (aperto), OP-02 (estrazione anagrafiche)
+
+> **Aggiornamento 2026-08-31 — deciso AzCopy (dai sistemi).** Il protocollo di trasporto è **AzCopy**, non SFTP
+> ([[ADR-0023]]). **A tendere** eseguito da **processi ODI** (che invocano AzCopy), **owner: team** (ODI
+> trasversale). **Per ora** si tiene lo script `send_to_sftp.py`; il backend AzCopy (`send_to_landing.py
+> --transport azcopy`) si sviluppa su **branch dedicato**. Resta aperto **C6** (`landing_mode` external vs
+> managed, da confermare con la piattaforma).
 
 ## Contesto e motivazione
 Thread mail (`DOCS/altro/logistico azure sftp.pdf`, 7 messaggi 6 lug→3 ago 2026). **Reply** (Eddy Boscolo,
@@ -62,8 +68,15 @@ Decisione protocollo verbalizzata; a valle: `send_to_landing.py` col backend sce
 concordato; un Bronze legge la landing via UC senza modifiche di logica; `landing_mode=external` compilato.
 
 ## Esito
-— (in attesa call; parte pluggable eseguibile su go)
+**Protocollo deciso: AzCopy** (2026-08-31, dai sistemi → [[ADR-0023]]). Trasporto a tendere via **processi ODI**
+(owner: team). Punto #1 (SFTP vs Blob) chiuso; punto #2 (nessun SFTP da riusare) confermato. Restano aperti i
+punti di **ownership estrazione** (#3/#4) e **C6** (`landing_mode`).
 
 ## Follow-up
-Alla decisione: implementare il backend scelto in `send_to_landing.py` (release-kit, [[ACT_9004]]); flip
-`landing_mode=external` in Terraform ([[ACT_0.1.3]]); definire ownership/host estrazione (collega [[ACT_OP-02]]).
+1. **Branch dedicato** per il backend AzCopy in `send_to_landing.py` (evolvere `send_to_sftp.py`, KIT-01) —
+   auth container (SAS/SP/MI), path OP-07, formato invariato. Lo script attuale si mantiene nel frattempo.
+2. **C6** — confermare con la piattaforma `landing_mode` (external probabile) → eventuale revisione di
+   [[ADR-0003]]; flip in Terraform ([[ACT_0.1.3]]) a valle.
+3. Riformulare la richiesta accesso landing (era §F.2 "credenziali SFTP") come **container + path + auth AzCopy
+   + accesso lettura UC**.
+4. Ownership/host **estrazione** dati operativi + CDT_DW (invariato: on-prem, collega [[ACT_OP-02]]).

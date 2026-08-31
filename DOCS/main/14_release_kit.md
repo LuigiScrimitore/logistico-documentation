@@ -27,7 +27,7 @@
 [1] ANAGRAFICHE / DIMENSIONI  (LU_SITO, LU_OPERATORE, LU_CORRIERE, LU_TOPOGRAFIA,
      LU_AREA, calendario, struttura merceologica)  ← prerequisito dei fact
         │
-[2] F_CARICO (pilota end-to-end)  ingestion SFTP → bronze → silver → gold → KPI
+[2] F_CARICO (pilota end-to-end)  ingestion AzCopy → bronze → silver → gold → KPI
         │
 [3] ALTRI FACT per wave:  F_PREP_SPED → F_GIACENZE → F_TRASPORTO → F_TURNO →
      F_TRACCIABILITA → F_MOVIMENTAZIONE → F_ORDINI
@@ -60,11 +60,11 @@ Valida il plumbing end-to-end "a vuoto" prima dei dati.
 - Dashboard costi (system tables `system.billing.usage`) filtrata per tag.
 - **Obiettivo:** dal 1° run sapere quanto costa ogni pipeline.
 
-### C. Script send SFTP (testabile in dev ORA)
-- Script di **send dati → area SFTP Azure** (`stdevdataplatformweudata...:22`), struttura `YYYY/MM/DD`, CSV+Parquet.
+### C. Script send landing — AzCopy (testabile in dev ORA)
+- Script di **send dati → container ADLS via AzCopy** ([[ADR-0023]], deciso 2026-08-31 al posto di SFTP; a tendere via processi ODI), struttura `YYYY/MM/DD`, CSV+Parquet.
+- `scripts/sftp/send_to_sftp.py` (KIT-01) si mantiene; il **backend AzCopy** (`send_to_landing.py --transport azcopy`) si sviluppa su **branch dedicato**. Auth: SAS/SP/MI per-container.
 - Sorgente: estrazioni Oracle READ-ONLY → landing (Oracle resta read-only, mai update).
-- Testabile contro endpoint dev prima della CI/CD.
-- Idempotenza upload + retry + logging.
+- Testabile contro endpoint dev prima della CI/CD. Idempotenza upload + retry + logging.
 
 ### D. Workflow/DAB per pipeline (dichiarativo)
 - Una definizione workflow (Databricks Asset Bundle) **per wave/pipeline**, così il rilascio è dichiarativo e versionato.
@@ -149,13 +149,13 @@ run#2 (stesso run_date) -> le stesse righe/SUM = idempotente; crescita = MERGE k
 
 > **Stato gate al 2026-08-27:** ✅ **Git/GitLab** (subgroup + runner) e ✅ **CI/CD** (pipeline in DEV **via Managed
 > Identity**, no secret) sono **passati**: `logistico-workflows` `deploy_dev` verde (7 job in DEV), `logistico-lib`
-> wheel `v1.0.4` pubblicato. Restano i gate **Azure** (credenziali SFTP) e **IAM/grant** — quest'ultimo è l'unico
+> wheel `v1.0.4` pubblicato. Restano i gate **Azure** (accesso container per AzCopy — [[ADR-0023]]) e **IAM/grant** — quest'ultimo è l'unico
 > blocco attivo: grant `CREATE SCHEMA` alla MI per sbloccare l'`apply` infra (**OP-INF-1**). Dettaglio:
 > `12_checklist_infra_setup.md` / `16_runbook_multirepo_github_gitlab.md`.
 
 | Gate | Sblocca | Attività kit abilitate |
 |------|---------|------------------------|
-| **Azure** (utenza/RG) | area SFTP, storage, workspace | C (send SFTP), B (tagging), A (schemi) |
+| **Azure** (utenza/RG) | container AzCopy, storage, workspace | C (send AzCopy), B (tagging), A (schemi) |
 | **Git/GitLab** (subgroup+runner) | repo, test script, creazione schemi | D (DAB), test end-to-end, A |
 | **IAM/grant** (gruppo UC) | create/write schemi, RBAC | A (fondamenta complete) |
 | **CI/CD** (secrets, pipeline) | deploy automatico per fasi | D (rilascio dichiarativo), rollout wave |
@@ -167,7 +167,7 @@ run#2 (stesso run_date) -> le stesse righe/SUM = idempotente; crescita = MERGE k
 ## 5. Attività da mettere in piedi (checklist)
 
 ### Ora (pre-accesso — azionabile in locale/dev)
-- [x] **KIT-01** Script send SFTP `scripts/sftp/send_to_sftp.py` (dry-run testato: 8419 file/31GB; layout mirror|datefirst; idempotente+retry; import lazy paramiko). ✅ 2026-07-05 — restano da integrare i **parametri SFTP** (host/user/cred via env) + `paramiko` nei requirements
+- [x] **KIT-01** Script send `scripts/sftp/send_to_sftp.py` (dry-run testato: 8419 file/31GB; layout mirror|datefirst; idempotente+retry; import lazy paramiko). ✅ 2026-07-05. **Protocollo deciso = AzCopy** ([[ADR-0023]], 2026-08-31): backend AzCopy (`send_to_landing.py --transport azcopy`) da sviluppare su **branch dedicato** (auth SAS/SP/MI); SFTP/`paramiko` non più il target
 - [x] **KIT-02** Acceptance-criteria + smoke-test: `acceptance.py` (criteri dichiarativi + runner + registry). ✅ 2026-07-05 (validato locale F_CARICO/MOV/A_INBOUND)
 - [x] **KIT-03** DQ interno: `dq_monitor.py` — tabella `control_<env>.etl.dq_results`, severità, volume-anomaly. ✅ 2026-07-05 (validato locale)
 - [x] **KIT-04** Alerting: interfaccia `Notifier` + `LogNotifier` + `gate()` bloccante; `WebhookNotifier` da attivare in cloud. ✅ 2026-07-05 (design+base; webhook in cloud)
@@ -177,7 +177,7 @@ run#2 (stesso run_date) -> le stesse righe/SUM = idempotente; crescita = MERGE k
 - [x] **KIT-08** Checklist tuning cloud (cosa NON portare dal locale: memoria/spill/partitionOverwriteMode; ri-tarare su serverless). ✅ 2026-07-05 (§3.G)
 
 ### Al gate Azure
-- [ ] **KIT-09** Provisioning area SFTP + test upload reale (KIT-01)
+- [ ] **KIT-09** Provisioning container AzCopy (accesso + auth) + test upload reale (KIT-01 → backend AzCopy)
 - [ ] **KIT-10** Applicazione tag/budget policy (KIT-05) + dashboard costi
 
 ### Al gate IAM+schemi

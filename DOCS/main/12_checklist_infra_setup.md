@@ -57,13 +57,13 @@
 
 | # | Punto | Stato | Decisione / Risposta | Azione |
 |---|-------|-------|----------------------|--------|
-| C1 | Meccanismo push | ✅ | **SFTP** su `stdevdataplatformweudata.blob.core.windows.net:22`. Stesso schema di G5/PJ — un container/username per sorgente. | Richiedere credenziali Logistico-specific (template §F.2) |
+| C1 | Meccanismo di trasporto | ✅ | **AzCopy** (deciso dai sistemi 2026-08-31, [[ADR-0023]]) — **non** più SFTP (evitata la fee ~195€/mese). A tendere eseguito da **processi ODI** (owner: team). File depositati sullo stesso storage ADLS, un container/path per sorgente. | Richiedere **accesso container per AzCopy** (§F.2, da riformulare): container + path + auth + lettura UC |
 | C2 | Formato file | ✅ | Logistico usa **CSV** oggi. Il codice è **già pronto anche per Parquet**: i Bronze notebook rilevano il formato automaticamente (`detect_format()`) e il widget `file_format` accetta `csv`/`parquet`/`auto`. Nessuna azione richiesta ora. Il passaggio a Parquet è un'opzione futura lato push — zero modifiche al nostro codice quando avverrà. | Nessuna — completato per la scope attuale (CSV). |
 | C3 | Struttura cartelle | ✅ | **`YYYY/MM/DD`** (3 livelli separati). Confermato dalla call — il YYYYMMDD era riferito a un altro progetto. | Già corretto nel codice (`storage.py`, notebook Bronze) |
 | C4 | SLA completamento push | ✅ | **04:00**. Potrà essere rivisto al go-live. Schedule Databricks Workflows da spostare: landing check → 04:30, primo processing → 05:00. | Aggiornare YAML schedule quando i Workflows saranno creati (DBR-06) |
-| C5 | Alimentazione landing (SFTP vs Blob) | 🟡 | **Thread mail analizzato** (`DOCS/altro/logistico azure sftp.pdf`, 6 lug→3 ago 2026): Reply spinge per **Blob via AzCopy/API** (evita fee SFTP ~195€/mese); Conad cauta (volumi ~1 GB/sett). **Aperto, call da fissare.** Per **noi trasparente** (stesso container ADLS in entrambi i casi). Analisi + punti-call in [[ACT_9012]]. | Portare alla call: SFTP vs Blob + **chi estrae i file** (vero nodo). La nostra richiesta: container + path + accesso lettura UC + formato |
-| C7 | Trasporto ≠ estrazione | 🟡 | AzCopy/API = **trasporto** (spostano file già esistenti); l'**estrazione** Oracle→file sta a monte e per D5 **non gira su Databricks** (host on-prem). Nostri script `send_to_sftp` (→ pluggable `send_to_landing`), `cdtdw_lookup_extractor` (ponte OP-02), `quadratura` (export CDT_DW). | Definire ownership estrazione dati operativi + CDT_DW (Conad / host on-prem) → [[ACT_9012]] |
-| C6 | Riconciliazione `landing_mode` (managed vs external) | 🟡 | Il Terraform modella la landing come **Volume MANAGED in `landing_dev`** (`landing_mode="volume"`), ma il push SFTP arriva su un **container dedicato** (`logisticolanding`). Se il push è esterno, UC deve leggerlo via **external** location/volume (un managed volume non vede file pushati esternamente). Direzione probabile: `landing_mode="external"`. | **Dipende da C5** (risposta SFTP di Tech Reply: container + storage credential). Poi flip `landing_mode` → external + compilare path. Nessun apply in corso: non urgente. |
+| C5 | Alimentazione landing (SFTP vs Blob) | ✅ | **DECISO: AzCopy** (2026-08-31, dai sistemi → [[ADR-0023]]), non SFTP. Chiude l'analisi [[ACT_9012]]. Per **noi trasparente** (stesso container ADLS). A tendere via **processi ODI**; per ora si tiene lo script e si sviluppa il backend AzCopy su **branch dedicato**. | Resta: definire **chi estrae i file** (a monte, on-prem) e confermare accesso container (§F.2). |
+| C7 | Trasporto ≠ estrazione | 🟡 | **AzCopy = trasporto** (sposta file già esistenti, via processi ODI a tendere); l'**estrazione** Oracle→file sta a monte e per D5 **non gira su Databricks** (host on-prem). Nostri script `send_to_sftp` (→ backend AzCopy in `send_to_landing`, branch dedicato), `cdtdw_lookup_extractor` (ponte OP-02), `quadratura` (export CDT_DW). | Definire ownership estrazione dati operativi + CDT_DW (Conad / host on-prem) → [[ACT_9012]] |
+| C6 | Riconciliazione `landing_mode` (managed vs external) | 🟡 **APERTO** | Il Terraform modella la landing come **Volume MANAGED in `landing_dev`** (`landing_mode="volume"`), ma **AzCopy** (C5, [[ADR-0023]]) scrive su un **container dedicato** popolato esternamente. Un managed volume **non vede** file scritti da fuori UC → direzione probabile **`landing_mode="external"`** (External Location + Storage Credential/MI). **Da confermare con la piattaforma** (non deciso in ADR-0023). Impatta [[ADR-0003]]/D3. | Confermare container + storage credential; poi flip `landing_mode` → external + compilare path. Nessun apply in corso: non urgente. |
 
 ---
 
@@ -88,14 +88,15 @@
 ✅ B3 auth CI/CD        → Managed Identity (no secret) — 2026-08-27
 ✅ B5 pipeline → plan   → terraform plan verde via MSI (15 add, 0 destroy)
 🔴 B6 apply infra       → BLOCCA: serve grant CREATE SCHEMA alla MI sui catalog DEV → OP-INF-1
-🟡 C5 SFTP Logistico    → mail inviata, risposta parziale (tema SFTP dedicato)
+✅ C5 protocollo landing → deciso AzCopy (ADR-0023, 2026-08-31), non SFTP
+🟡 C6 landing_mode      → external (probabile) da confermare con la piattaforma
 🟡 A5 reader group      → da fare quando il gruppo sarà creato (non bloccante per apply)
 ```
 
 **Stato mail (tutte inviate):**
 1. **Francesco Giambona** → utenza Azure (§F.3) — 🟡 in attesa; + **grant `CREATE SCHEMA` alla MI** (mail 2026-08-27, OP-INF-1)
 2. **Extrared** (Ippazio CC) → subgruppo GitLab (§F.1) — ✅ **risolto**: subgroup + Maintainer
-3. **team DevOps/Azure** → credenziali SFTP (§F.2) — 🟡 risposta parziale (da chiudere)
+3. **team DevOps/Azure** → ~~credenziali SFTP~~ → **accesso container per AzCopy** (§F.2, riformulata dopo [[ADR-0023]]) — 🟡 da inviare
 
 **Prossimo passo attivo:** ottenere il **grant `CREATE SCHEMA` alla Managed Identity** sui 5 catalog DEV
 (**OP-INF-1** — mail a Giambona del 2026-08-27) → ri-run pipeline `infrastructure` + `apply`. Lo split
@@ -155,18 +156,24 @@ Grazie,
 
 ---
 
-### F.2 — Al team DevOps/Azure (SFTP credenziali Logistico)
+### F.2 — Al team DevOps/Azure (accesso container per AzCopy — Logistico)
 
-**Oggetto:** Richiesta credenziali SFTP — Progetto Logistico 2.0
+> ⚠️ **Superata la richiesta SFTP** (decisione 2026-08-31: trasporto via **AzCopy**, non SFTP — [[ADR-0023]]).
+> Testo originale SFTP conservato in fondo per storico; sotto la richiesta aggiornata per AzCopy.
+
+**Oggetto:** Richiesta accesso container ADLS (AzCopy) — Progetto Logistico 2.0
 
 Buongiorno,
 
-per il progetto **Logistico 2.0** dobbiamo configurare il canale SFTP per il push dei file dalla sorgente verso la landing zone su Azure Blob Storage, replicando il modello già usato per G5 e PJ.
+per il progetto **Logistico 2.0** il trasporto dei file verso la landing avverrà via **AzCopy** (a tendere da
+processi ODI). Ci serve l'accesso al container di destinazione su Azure Blob Storage.
 
-**Informazioni di cui abbiamo bisogno (sul modello G5/PJ):**
-1. **Username SFTP** dedicato al flusso Logistico
-2. **Container / path ADLS** di destinazione (es. `stdevdataplatformweudata.logisticolanding`)
-3. **Credenziali di accesso** (chiave SSH o password, con le stesse modalità usate per G5/PJ)
+**Informazioni di cui abbiamo bisogno:**
+1. **Container / path ADLS** di destinazione (es. `stdevdataplatformweudata/logisticolanding`), struttura `<sorgente>-landing/<tabella>/YYYY/MM/DD/`
+2. **Modalità di auth per AzCopy**: SAS token, Service Principal o Managed Identity (con permessi di scrittura per-container)
+3. **Accesso in lettura da Unity Catalog** (External Location + Storage Credential / Managed Identity), per i notebook Bronze
+
+_(Richiesta SFTP originale — storico, non più valida: username SFTP dedicato + credenziali SSH/password sul modello G5/PJ.)_
 
 **Struttura path attesa:**
 ```
@@ -207,7 +214,8 @@ Grazie,
 |-------|-------------|------------|----------|
 | A7 Utenza Azure | Francesco Giambona (PM) | Account Azure per navigazione e terraform init/plan | 🟡 mail inviata, in attesa |
 | B2 Subgruppo GitLab | Extrared + Ippazio | ✅ **Fatto** — `CNO/cno-data-platform/logistico`, Maintainer (2026-08-03) | ✅ |
-| C5 SFTP Logistico | Team DevOps/Azure | Username + container + credenziali per sorgenti Logistix/STAT/CND | 🟡 risposta parziale |
+| C5 Trasporto landing | — (deciso) | **AzCopy** (ADR-0023), non SFTP — a tendere via processi ODI (team) | ✅ |
+| C6 Accesso landing (AzCopy) | Team DevOps/Azure | Container + path + auth AzCopy + lettura UC; conferma `landing_mode` external | 🟡 |
 | A5 Reader UC group | Cliente (quando creato) | Nome gruppo analisti/MicroStrategy → `enable_reader_grants=true` + `terraform apply` | 🟡 non urgente |
 | B3 Auth CI/CD | Team Logistico | **Risolto**: Managed Identity del runner, nessun secret (2026-08-27) | ✅ |
 | **OP-INF-1 Grant UC alla MI** | **Reply / F. Giambona** | **`USE CATALOG` + `CREATE SCHEMA` alla MI sui 5 catalog DEV** (mail 2026-08-27) → sblocca `apply` | 🔴 **bloccante** |
