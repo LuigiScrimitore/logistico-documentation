@@ -96,7 +96,7 @@
 **Stato mail (tutte inviate):**
 1. **Francesco Giambona** → utenza Azure (§F.3) — 🟡 in attesa; + **grant `CREATE SCHEMA` alla MI** (mail 2026-08-27, OP-INF-1)
 2. **Extrared** (Ippazio CC) → subgruppo GitLab (§F.1) — ✅ **risolto**: subgroup + Maintainer
-3. **team DevOps/Azure** → ~~credenziali SFTP~~ → **accesso container per AzCopy** (§F.2, riformulata dopo [[ADR-0023]]) — 🟡 da inviare
+3. **team DevOps/Azure** → ~~credenziali SFTP~~ → **accesso container per AzCopy** (§F.2, dopo [[ADR-0023]]) — ✅ **inviata 2026-08-31**, in attesa risposta
 
 **Prossimo passo attivo:** ottenere il **grant `CREATE SCHEMA` alla Managed Identity** sui 5 catalog DEV
 (**OP-INF-1** — mail a Giambona del 2026-08-27) → ri-run pipeline `infrastructure` + `apply`. Lo split
@@ -158,20 +158,25 @@ Grazie,
 
 ### F.2 — Al team DevOps/Azure (accesso container per AzCopy — Logistico)
 
-> ⚠️ **Superata la richiesta SFTP** (decisione 2026-08-31: trasporto via **AzCopy**, non SFTP — [[ADR-0023]]).
-> Testo originale SFTP conservato in fondo per storico; sotto la richiesta aggiornata per AzCopy.
+> ✅ **INVIATA il 2026-08-31.** Framing: Logistico come **prototipo** per AzCopy come metodo standard di trasporto
+> verso Azure (in sostituzione dell'SFTP, con dismissione a tendere degli SFTP esistenti); trasporto orchestrato
+> da **processi ODI**. Caveat segnalato: da verificare che le macchine Linux d'invio (versione datata) supportino
+> il client AzCopy. **In attesa di risposta.** Superata la precedente richiesta SFTP ([[ADR-0023]]).
 
 **Oggetto:** Richiesta accesso container ADLS (AzCopy) — Progetto Logistico 2.0
 
-Buongiorno,
+Contenuto della richiesta (versione inviata):
 
-per il progetto **Logistico 2.0** il trasporto dei file verso la landing avverrà via **AzCopy** (a tendere da
-processi ODI). Ci serve l'accesso al container di destinazione su Azure Blob Storage.
+**Per la configurazione DEV (scrittura via AzCopy):**
+1. **Un container ADLS unico** per l'area di landing del Logistico sullo storage account `stdevdataplatformweudata`
+   (le sottocartelle `<sorgente>-landing/<tabella>/YYYY/MM/DD/` le crea AzCopy in scrittura).
+2. **Modalità di auth per AzCopy**: SAS token, Service Principal o Managed Identity (secondo gli standard di piattaforma).
 
-**Informazioni di cui abbiamo bisogno:**
-1. **Container / path ADLS** di destinazione (es. `stdevdataplatformweudata/logisticolanding`), struttura `<sorgente>-landing/<tabella>/YYYY/MM/DD/`
-2. **Modalità di auth per AzCopy**: SAS token, Service Principal o Managed Identity (con permessi di scrittura per-container)
-3. **Accesso in lettura da Unity Catalog** (External Location + Storage Credential / Managed Identity), per i notebook Bronze
+**Per la lettura da Databricks (indipendente dal trasporto):**
+3. **Accesso in lettura da Unity Catalog** (catalog `landing_dev`): External Location + Storage Credential
+   (Access Connector / Managed Identity del workspace) sul container — come è gestito sulla piattaforma?
+4. **`landing_mode` external vs managed**: essendo il push esterno (AzCopy), un managed Volume non vedrebbe i
+   file → ipotesi **External Location** (`landing_mode=external`) da confermare, per allineare il Terraform (C6).
 
 _(Richiesta SFTP originale — storico, non più valida: username SFTP dedicato + credenziali SSH/password sul modello G5/PJ.)_
 
@@ -215,7 +220,7 @@ Grazie,
 | A7 Utenza Azure | Francesco Giambona (PM) | Account Azure per navigazione e terraform init/plan | 🟡 mail inviata, in attesa |
 | B2 Subgruppo GitLab | Extrared + Ippazio | ✅ **Fatto** — `CNO/cno-data-platform/logistico`, Maintainer (2026-08-03) | ✅ |
 | C5 Trasporto landing | — (deciso) | **AzCopy** (ADR-0023), non SFTP — a tendere via processi ODI (team) | ✅ |
-| C6 Accesso landing (AzCopy) | Team DevOps/Azure | Container + path + auth AzCopy + lettura UC; conferma `landing_mode` external | 🟡 |
+| C6 Accesso landing (AzCopy) | Team DevOps/Azure | Container unico + auth AzCopy + lettura UC; conferma `landing_mode` external — **richiesta inviata 2026-08-31** (§F.2) | 🟡 in attesa risposta |
 | A5 Reader UC group | Cliente (quando creato) | Nome gruppo analisti/MicroStrategy → `enable_reader_grants=true` + `terraform apply` | 🟡 non urgente |
 | B3 Auth CI/CD | Team Logistico | **Risolto**: Managed Identity del runner, nessun secret (2026-08-27) | ✅ |
 | **OP-INF-1 Grant UC alla MI** | **Reply / F. Giambona** | **`USE CATALOG` + `CREATE SCHEMA` alla MI sui 5 catalog DEV** (mail 2026-08-27) → sblocca `apply` | 🔴 **bloccante** |

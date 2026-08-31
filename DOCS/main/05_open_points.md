@@ -72,7 +72,7 @@ per-nome e la migrazione MSTR → **rinviato**. Il tracking rename per MSTR è i
 ### OP-07 — Struttura path landing zone 🟡
 **Descrizione:** pattern `<nome_sorgente>-landing` con struttura concordata per i flussi ODI.  
 **Stato (agg. 2026-08-31):** trasporto via **AzCopy** ([[ADR-0023]]), **non** più SFTP — a tendere eseguito da **processi ODI** (owner: team). File sullo stesso storage ADLS. Cartelle **`YYYY/MM/DD`** (3 livelli, confermato). Formato **CSV** (Parquet da abilitare in futuro). Convenzione `<source>-landing/{tabella}/YYYY/MM/DD/` già nei Bronze. **`landing_mode` external vs managed (C6) ancora da confermare** con la piattaforma (probabile external, dato il write esterno di AzCopy) → impatta D3/[[ADR-0003]].  
-**Azione residua:** riformulare la richiesta accesso landing come **container + path + auth AzCopy + lettura UC** (§F.2 di `12_checklist_infra_setup.md`); confermare con Foconi i nomi sorgente esatti (`logistix-landing`, `cdtdw-landing`, `stat-landing`); sviluppare backend AzCopy in `send_to_landing.py` (branch dedicato).
+**Azione residua:** richiesta accesso landing (container unico + auth AzCopy + lettura UC + conferma `landing_mode` external) **inviata al team piattaforma il 2026-08-31** (§F.2 di `12_checklist_infra_setup.md`) — **in attesa risposta**; confermare con Foconi i nomi sorgente esatti (`logistix-landing`, `cdtdw-landing`, `stat-landing`); sviluppare backend AzCopy in `send_to_landing.py` (branch dedicato).
 
 ### OP-08 — FULL vs DELTA e naming file 🟠
 **Stato implementativo:** modalità Bronze definite per ciascuna tabella secondo l'analisi AS-IS verificata (DELTA_MERGE / FULL_OVERWRITE / SNAPSHOT). Il separatore CSV è hardcoded `;` (template).  

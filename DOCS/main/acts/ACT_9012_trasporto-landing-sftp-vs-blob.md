@@ -77,6 +77,7 @@ punti di **ownership estrazione** (#3/#4) e **C6** (`landing_mode`).
    auth container (SAS/SP/MI), path OP-07, formato invariato. Lo script attuale si mantiene nel frattempo.
 2. **C6** — confermare con la piattaforma `landing_mode` (external probabile) → eventuale revisione di
    [[ADR-0003]]; flip in Terraform ([[ACT_0.1.3]]) a valle.
-3. Riformulare la richiesta accesso landing (era §F.2 "credenziali SFTP") come **container + path + auth AzCopy
-   + accesso lettura UC**.
+3. ✅ **Inviata (2026-08-31)** la richiesta accesso landing (§F.2 riformulata): **un container ADLS unico** su
+   `stdevdataplatformweudata` + auth AzCopy (SAS/SP/MI) + accesso lettura UC + conferma `landing_mode` external.
+   In attesa risposta piattaforma. Framing: Logistico prototipo per AzCopy standard (dismissione SFTP a tendere).
 4. Ownership/host **estrazione** dati operativi + CDT_DW (invariato: on-prem, collega [[ACT_OP-02]]).
