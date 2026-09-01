@@ -4,7 +4,7 @@
 > `python scripts/lessons/lessons_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0020](../adr/0020_lezioni_operative.md).
 
-**18 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
+**19 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
 
 ## Cerca per sintomo
 
@@ -20,7 +20,9 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `conteggi corretti ma contenuti spostati di una posizione` | [LL-008](LL-008_csv-bronze-schema-per-nome.md) |
 | `databricks bundle validate non vede il job / dopo il deploy il job non c'è` | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) |
 | `docker system df: RECLAIMABLE 0B ma il disco C: è pieno` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
+| `Error: Inconsistent dependency lock file — The given plan file was created with a different set of external dependency selections` | [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) |
 | `Error: No value for required variable (ma la variabile CI esiste)` | [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) |
+| `Error: Saved plan is stale — the state was changed by another operation after the plan was created` | [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) |
 | `errori tipo '<tool> has no command named sh/-c' all'avvio del job` | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) |
 | `fstrim: 0 B (0 bytes) trimmed` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
 | `il build fallisce con 'unexpected EOF while looking for matching quote' nel sed della versione` | [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) |
@@ -32,9 +34,8 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `il runner ha un tag (es. azure-runner) e i job del .gitlab-ci.yml non ne hanno` | [LL-011](LL-011_pipeline-stuck-runner-taggato.md) |
 | `il vacuum gira da 20+ minuti senza variazione dello spazio libero` | [LL-002](LL-002_vacuum-per-database-unbuffered.md) |
 | `INVALID_PARAMETER_VALUE: refers to an undefined job parameter 'X` | [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) |
+| `l'apply in CI fallisce mentre lo stesso codice applicato a mano funziona` | [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) |
 | `l'identità legge le risorse (data source) ma non può crearle` | [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) |
-| `Inconsistent dependency lock file (apply di un tfplan salvato in CI)` | [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) |
-| `Saved plan is stale (apply di un tfplan salvato in CI)` | [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) |
 | `l'upload/chiamata verso l'host aziendale (GitLab/Nexus/Databricks) fallisce in TLS` | [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) |
 | `la copia manuale dei repo si porta dietro __pycache__/artefatti di build` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `la landing conserva un solo snapshot per una tabella giornaliera` | [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) |
@@ -94,6 +95,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) | Una variabile CI "Protected" è assente sui ref non protetti — il job non la vede | 🔵 regola | `gitlab`, `ci-cd`, `variabili`, `terraform` | ACT_0.1.6 | 2026-08-27 |
 | [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) | I riferimenti `{{job.parameters.X}}` vanno dichiarati nel job — validate non lo verifica, jobs/create sì | 🟢 guardrail | `databricks`, `dab`, `ci-cd`, `orchestrazione` | ACT_9018 | 2026-08-27 |
 | [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) | Autenticazione riuscita ≠ autorizzato — con MSI/SP i grant sul data-plane sono separati | 🔵 regola | `azure`, `databricks`, `unity-catalog`, `terraform`, `permessi`, `ambiente-cliente` | ACT_0.1.6 | 2026-08-27 |
+| [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) | Applicare un tfplan salvato in CI richiede lo STESSO lock/provider del plan e uno stato non cambiato | 🔵 regola ⚠️ da automatizzare | `gitlab`, `ci-cd`, `terraform`, `tfplan`, `lockfile`, `state` | ACT_0.1.6 | 2026-09-01 |
 
 ## Debito di automazione
 
@@ -106,6 +108,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) — CERTIFICATE_VERIFY_FAILED in un job container verso un host aziendale → manca la CA interna nel container
 - [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) — La versione del pacchetto viene da setup.py, non dal tag git — vanno sincronizzati
 - [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) — Immagine CI con ENTRYPOINT non-shell (terraform, kaniko…) → resettare entrypoint in GitLab
+- [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) — Applicare un tfplan salvato in CI richiede lo STESSO lock/provider del plan e uno stato non cambiato
 
 ## Per tag
 
@@ -115,7 +118,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`backfill`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`bronze`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`certificati`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
-- **`ci-cd`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) · [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md)
+- **`ci-cd`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) · [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) · [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
 - **`container`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`csv`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`dab`**: [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md)
@@ -128,12 +131,13 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`docker`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) · [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md)
 - **`dq`**: [LL-005](LL-005_delta-costante-accusa-colonna.md)
 - **`git`**: [LL-009](LL-009_due-host-git-una-direzione.md) · [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
-- **`gitlab`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md)
+- **`gitlab`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
 - **`gold`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`governance`**: [LL-009](LL-009_due-host-git-una-direzione.md)
 - **`guardrail`**: [LL-007](LL-007_dag-derivato-dal-codice.md)
 - **`idempotenza`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md)
 - **`landing`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
+- **`lockfile`**: [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
 - **`logging`**: [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
 - **`manutenibilita`**: [LL-007](LL-007_dag-derivato-dal-codice.md)
 - **`metastore`**: [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
@@ -152,7 +156,9 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`sicurezza`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`snapshot`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`spark`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
-- **`terraform`**: [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-018](LL-018_auth-ok-non-significa-autorizzato.md)
+- **`state`**: [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
+- **`terraform`**: [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) · [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
+- **`tfplan`**: [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
 - **`tls`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`tooling`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`unity-catalog`**: [LL-018](LL-018_auth-ok-non-significa-autorizzato.md)

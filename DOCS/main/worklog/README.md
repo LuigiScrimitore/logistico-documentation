@@ -24,6 +24,13 @@ python scripts/worklog/worklog_index.py        # rigenera INDEX.md
 `new_entry.py` di default usa il range `<ultima-voce>..HEAD`; con `--range a..b` lo forzi.
 `worklog_index.py --check` fallisce (exit 1) se l'INDEX non è allineato — utile in CI/pre-commit.
 
+**Guardrail — setup una tantum per clone:**
+```bash
+git config core.hooksPath .githooks
+```
+Attiva l'hook **pre-push** (`.githooks/pre-push`) che **blocca il push** se `worklog/INDEX.md` o
+`lessons/INDEX.md` sono stale: ti ricorda di rigenerarli. Degrada in modo sicuro (skip) se python non c'è.
+
 ## Formato di una voce
 
 ```markdown

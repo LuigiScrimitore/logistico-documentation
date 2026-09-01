@@ -31,6 +31,7 @@ CI **GitLab**, **Terraform** brownfield. Multi-repo ([[ADR-0016]]): **GitHub = S
   ACT → `15_backlog_master` → sprint → doc globali impattati → eventuali ADR/ACT-9000 → **voce worklog del
   push** (`scripts/worklog/new_entry.py` + `worklog_index.py`).
 - **Indici generati** (`lessons/INDEX.md`, `worklog/INDEX.md`): non editare a mano, **rigenerare** con i
-  rispettivi script.
+  rispettivi script. Setup una tantum del guardrail: `git config core.hooksPath .githooks` (hook pre-push che
+  blocca il push se un INDEX è stale).
 - **Segreti**: mai `.env` / `terraform.tfvars` / token nei repo. Auth via Managed Identity.
 - **Push**: sviluppo su GitHub (branch → PR → `main`); `documentation` **solo GitHub**, mai GitLab.

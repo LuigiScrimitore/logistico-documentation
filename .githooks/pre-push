@@ -1,0 +1,35 @@
+#!/bin/sh
+# pre-push — blocca il push se gli INDEX generati sono stale (worklog, lessons).
+#
+# Setup UNA TANTUM per ogni clone (non si propaga da solo):
+#     git config core.hooksPath .githooks
+# Se un INDEX risulta stale, rigeneralo e ricommitta:
+#     python scripts/worklog/worklog_index.py     (idem lessons_index.py)
+#
+# Decisione: ADR-0024. Degrada in modo sicuro (skip) se python o gli script non ci sono.
+
+# Detection robusta: ESEGUE ogni candidato (non basta `command -v`, perche' su Windows
+# lo stub "App execution alias" di python e' nel PATH ma non e' Python vero). `py -3`
+# per primo (launcher Windows affidabile), poi python3/python per Linux/Mac.
+PY=""
+for c in "py -3" "python3" "python"; do
+  if $c -c "import sys" >/dev/null 2>&1; then PY="$c"; break; fi
+done
+if [ -z "$PY" ]; then echo "[pre-push] python non trovato: salto il check INDEX."; exit 0; fi
+
+fail=0
+if [ -f scripts/worklog/worklog_index.py ]; then
+  $PY scripts/worklog/worklog_index.py --check || {
+    echo "[pre-push] worklog/INDEX.md STALE -> $PY scripts/worklog/worklog_index.py (poi ricommitta)" >&2
+    fail=1
+  }
+fi
+if [ -f scripts/lessons/lessons_index.py ]; then
+  $PY scripts/lessons/lessons_index.py --check || {
+    echo "[pre-push] lessons/INDEX.md STALE -> $PY scripts/lessons/lessons_index.py (poi ricommitta)" >&2
+    fail=1
+  }
+fi
+
+[ "$fail" = 0 ] && echo "[pre-push] INDEX allineati."
+exit $fail

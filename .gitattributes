@@ -1,0 +1,3 @@
+# Gli hook git devono avere line-ending LF: un CRLF romperebbe lo shebang (#!/bin/sh)
+# per chi fa checkout su Windows con autocrlf attivo.
+.githooks/** text eol=lf
