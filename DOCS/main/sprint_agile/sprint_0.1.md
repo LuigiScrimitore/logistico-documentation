@@ -17,12 +17,12 @@
 | **Fase** | FASE 0 — Fondamenta Infrastrutturali |
 | **Obiettivo** | Provisioning Unity Catalog (schemi logistici nei catalog DWH), landing UC Volume, compute serverless, grants least-privilege — tutto via Terraform brownfield |
 | **Gg stimati** | 7 |
-| **Gg completati** | codice pronto; **esecuzione avviata in DEV** (repo su GitLab, `plan` verde) |
-| **% avanzamento** | codice ~85% · esecuzione: `plan` DEV ✅ (15 add, 0 destroy); grant UC alla MI ottenuto (OP-INF-1 chiuso 2026-09-01) → `apply` da eseguire |
-| **Stato** | 🔵 IN CORSO |
+| **Gg completati** | 7/7 — **infra DEV provisionata** (apply v0.1.6 verde: 8 schemi + Volume + 6 grants) |
+| **% avanzamento** | **100%** · `apply` DEV verde (2026-09-01): 8 schemi + Volume `landing.files` + 6 grants `Group-Engineering-dev`, 0 destroy |
+| **Stato** | ✅ COMPLETO (DEV) |
 | **Data inizio** | _da definire_ |
-| **Data fine prevista** | all'esito dell'`apply` (grant MI ottenuti 2026-09-01; resta ri-lanciare pipeline + `apply`) |
-| **Ultimo aggiornamento** | 2026-08-27 |
+| **Data fine** | 2026-09-01 (`apply` v0.1.6 verde) |
+| **Ultimo aggiornamento** | 2026-09-01 |
 
 ### Note di sprint
 - **Decisioni D1-D5 chiuse** (02-03/07/2026): controllo `config_dev` (D1), anagrafiche `bronze_dev.condiviso` (D2), landing UC Volume (D3), prod `_prod`/stage `_stage` non configurati ora (D4), quadratura via export su landing (D5).
@@ -30,13 +30,15 @@
 - **0.1.4 ridisegnata** (Key Vault → GitLab CI/CD) e **0.1.6 ridisegnata** (multi-repo, non mono-repo).
 - Il codice Terraform (`infra/terraform/brownfield/`) è completo; manca solo l'esecuzione, bloccata su prerequisiti esterni.
 
-### Blocchi attivi (🔴)
-| Blocco | Owner | Riferimento |
-|--------|-------|-------------|
-| Utenza Azure (per `terraform init/plan`) | Francesco Giambona (PM) | [`../12_checklist_infra_setup.md`](../12_checklist_infra_setup.md) §F.3 |
-| Subgroup GitLab `logistico` + permessi | Extrared + Ippazio (Reply) | §F.1 |
-| Credenziali SFTP landing Logistico | Tech Reply | §F.2 |
-| Meccanismo secret auth (cert vs secret manager) | Technology | ⏸️ ping mensile |
+### Blocchi — RISOLTI (sprint chiuso)
+| Ex-blocco | Esito |
+|-----------|-------|
+| Subgroup GitLab + auth CI | ✅ subgroup creato; auth via **Managed Identity** (no secret, ADR-0022) |
+| Grant UC alla MI (`CREATE SCHEMA`) | ✅ ottenuto 2026-09-01 (OP-INF-1) |
+| Nome gruppo engineer | ✅ `Group-Engineering-dev` (OP-INF-2) |
+| Utenza Azure per plan/apply | ✅ non più bloccante: plan/apply girano in CI via MSI |
+
+**Residui (fuori sprint 0.1, per l'ingestion/PROD):** accesso **container AzCopy** (§F.2, ingestion) e provisioning **PROD**.
 
 ---
 

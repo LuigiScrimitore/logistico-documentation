@@ -4,7 +4,7 @@
 > Contiene il quadro tecnico e funzionale della Fase 0: perimetro, architettura, decisioni, stato, punti aperti/risolti, decisioni out-of-scope e sviluppi futuri.
 > Sostituisce il precedente `fasi/F0_infrastruttura.md` (archiviato). Stato di dettaglio degli sprint: [`../sprint_agile/`](../sprint_agile/) (0.1, 0.2, 0.3).
 
-**Ultimo aggiornamento:** 2026-09-01 · **Stato fase:** 🔵 IN CORSO (0.2/0.3 ✅; multi-repo eseguito; **apply DEV parziale (v0.1.5): 8 schemi + Volume creati**; grants → fix nome gruppo `Group-Engineering-dev` (OP-INF-2 chiuso), applicati con **v0.1.6**)
+**Ultimo aggiornamento:** 2026-09-01 · **Stato fase:** 🟢 INFRA DEV COMPLETA (sprint 0.1/0.2/0.3 ✅; **`apply` v0.1.6 verde**: 8 schemi + Volume landing + 6 grants `Group-Engineering-dev` provisionati in DEV). Residui: ingestion (container AzCopy §F.2) e PROD.
 
 ---
 
@@ -14,7 +14,7 @@ La Fase 0 predispone le **fondamenta infrastrutturali** su cui gira l'intera pip
 
 Il principio guida è **integrarsi nel Databricks/DWH aziendale esistente senza romperlo**: non creiamo un workspace nuovo, ma i nostri schemi accanto a quelli esistenti. L'ingestion avviene in **push via AzCopy** ([[ADR-0023]], deciso 2026-08-31 al posto di SFTP; a tendere via processi ODI) dai sistemi sorgente, eliminando ogni connettività Oracle diretta.
 
-Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **completi**; lo sprint 0.1 (Unity Catalog & Storage) ha il **codice pronto** e l'esecuzione è **avviata in DEV** — infra su GitLab, `terraform plan` verde via Managed Identity (15 add, 0 destroy). I grant UC alla MI sono stati **ottenuti** (OP-INF-1 chiuso) e l'`apply` v0.1.5 ha **creato gli 8 schemi + il Volume di landing**; è fallito sui **grants** per un **nome gruppo errato** (reale `Group-Engineering-dev`, non `Engineering-dev`) → OP-INF-2 chiuso, applicati con **v0.1.6** ([[ACT_0.1.6]]). Restano prerequisiti di piattaforma per l'ingestion (accesso container per **AzCopy** — [[ADR-0023]]) e per l'ambiente PROD.
+Alla data, **tutti e tre gli sprint sono completi**: 0.2 (CI/CD & DAB) e 0.3 (template & connettività) offline; **0.1 (Unity Catalog & Storage) eseguito in DEV** — `apply` v0.1.6 verde via Managed Identity: **8 schemi + Volume di landing + 6 grants `Group-Engineering-dev`** (0 destroy), dopo aver chiuso i grant MI (OP-INF-1) e il nome gruppo (OP-INF-2) ([[ACT_0.1.6]]). Le **fondamenta UC in DEV sono provisionate**. Restano prerequisiti di piattaforma per l'ingestion (accesso container per **AzCopy** — [[ADR-0023]]) e per l'ambiente PROD.
 
 ---
 
@@ -22,7 +22,7 @@ Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **
 
 | Obiettivo | Esito |
 |-----------|-------|
-| Spazi dati Unity Catalog per dominio logistico | ✅ codice pronto (overlay brownfield) |
+| Spazi dati Unity Catalog per dominio logistico | ✅ **provisionati in DEV** (apply v0.1.6: 8 schemi + grants) |
 | Zona di landing per i file in push | ✅ definita (container ADLS via AzCopy; `landing_mode` external vs managed da confermare — C6) |
 | Compute per i job | ✅ job cluster serverless |
 | Libreria condivisa `logistica_utils` | ✅ 6 moduli, 64 test |
@@ -59,7 +59,7 @@ Databricks Asset Bundles (`databricks.yml`) + GitLab CI (`.gitlab-ci.yml`). Git:
 
 | Sprint | Titolo | Stato | Doc |
 |--------|--------|-------|-----|
-| 0.1 | Unity Catalog & Storage Foundation | 🔵 IN CORSO | [sprint_0.1](../sprint_agile/sprint_0.1.md) |
+| 0.1 | Unity Catalog & Storage Foundation | ✅ (DEV, apply v0.1.6) | [sprint_0.1](../sprint_agile/sprint_0.1.md) |
 | 0.2 | GitLab CI/CD & Databricks Asset Bundles | ✅ | [sprint_0.2](../sprint_agile/sprint_0.2.md) |
 | 0.3 | Connettività Sorgenti & Template Notebook | ✅ | [sprint_0.3](../sprint_agile/sprint_0.3.md) |
 

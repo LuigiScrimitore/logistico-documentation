@@ -7,10 +7,9 @@
 > **Aggiornamento 2026-08-27 — deploy GitLab eseguito.** I 3 repo di codice sono su GitLab con **CI in DEV via
 > Managed Identity** (nessun secret): `logistico-lib` (wheel `v1.0.4` nel Package Registry), `logistico-workflows`
 > (`deploy_dev` verde → 7 job in DEV), `logistico-infrastructure` (`terraform plan` verde, 15 add/0 destroy).
-> **Apply DEV parziale (2026-09-01):** grant MI ottenuto (**OP-INF-1 chiuso**); `apply` v0.1.5 ha **creato 8
-> schemi + Volume `landing.files`**, poi fallito sui grants. **Causa trovata (OP-INF-2 chiuso):** nome gruppo
-> errato — reale = **`Group-Engineering-dev`** (era `Engineering-dev`). Fix in `variables.tf` → **release v0.1.6
-> da promuovere + ri-run pipeline** per applicare i 6 grants. Dettaglio: [[ACT_0.1.6]].
+> **✅ Infra DEV completa (2026-09-01):** `apply` v0.1.6 verde (`6 added, 0 changed, 0 destroyed`). Provisionati in
+> DEV: **8 schemi + Volume `landing.files` + 6 grants** a `Group-Engineering-dev`. OP-INF-1 e OP-INF-2 chiusi;
+> **ACT_0.1.6 chiuso**. Restano prereq di piattaforma: **container AzCopy** (§F.2, ingestion) e **PROD**. Dettaglio: [[ACT_0.1.6]].
 
 > Dettaglio tecnico sprint → `04_piano_sviluppo.md` | Decisioni architetturali → `10_piano_migrazione_databricks.md` | **Rilascio a fasi post-accesso → `14_release_kit.md`**
 
@@ -89,9 +88,9 @@
 ✅ B2 subgruppo GitLab  → CNO/cno-data-platform/logistico, Maintainer (2026-08-03)
 ✅ B3 auth CI/CD        → Managed Identity (no secret) — 2026-08-27
 ✅ B5 pipeline → plan   → terraform plan verde via MSI (15 add, 0 destroy)
-🟢 B6 grant MI ottenuto → OP-INF-1 chiuso; apply v0.1.5 PARZIALE (schemi+Volume creati)
+🟢 B6 grant MI ottenuto → OP-INF-1 chiuso; apply v0.1.5 (schemi+Volume creati)
 🟢 B7 nome gruppo        → OP-INF-2 chiuso: reale `Group-Engineering-dev` (fix in variables.tf)
-🟡 B8 grants da applicare → release v0.1.6 → promozione GitLab → ri-run pipeline
+✅ B8 apply v0.1.6 VERDE → 6 grants applicati (0 destroy) → infra DEV COMPLETA
 ✅ C5 protocollo landing → deciso AzCopy (ADR-0023, 2026-08-31), non SFTP
 🟡 C6 landing_mode      → external (probabile) da confermare con la piattaforma
 🟡 A5 reader group      → da fare quando il gruppo sarà creato (non bloccante per apply)
@@ -102,9 +101,9 @@
 2. **Extrared** (Ippazio CC) → subgruppo GitLab (§F.1) — ✅ **risolto**: subgroup + Maintainer
 3. **team DevOps/Azure** → ~~credenziali SFTP~~ → **accesso container per AzCopy** (§F.2, dopo [[ADR-0023]]) — ✅ **inviata 2026-08-31**, in attesa risposta
 
-**Prossimo passo attivo:** nome gruppo corretto (`Group-Engineering-dev`, OP-INF-2 chiuso) → **release v0.1.6**,
-promozione GitLab e **ri-lancio pipeline** per applicare i 6 grants (idempotente, 0 destroy). Schemi + Volume di
-landing sono **già creati** (apply v0.1.5 parziale).
+**Prossimo passo attivo:** infra DEV **completa** (`apply` v0.1.6 verde). Il gate attivo ora è l'**ingestion**:
+ricevere l'**accesso al container AzCopy** (§F.2, inviata 2026-08-31) per validare il `--send` reale e far
+atterrare i primi file in landing. Poi provisioning **PROD**.
 
 ---
 
@@ -228,8 +227,8 @@ Grazie,
 | A5 Reader UC group | Cliente (quando creato) | Nome gruppo analisti/MicroStrategy → `enable_reader_grants=true` + `terraform apply` | 🟡 non urgente |
 | B3 Auth CI/CD | Team Logistico | **Risolto**: Managed Identity del runner, nessun secret (2026-08-27) | ✅ |
 | **OP-INF-1 Grant UC alla MI** | Team infrastructure | `USE CATALOG` + `CREATE SCHEMA` alla MI `id-dev-dataplatform-workload-00` sui 5 catalog DEV — **assegnati 2026-09-01** | ✅ |
-| **Apply infra DEV** | Team Logistico | apply v0.1.5 **parziale**: 8 schemi + Volume creati; grants con v0.1.6 | 🟡 parziale |
-| **OP-INF-2 Nome gruppo** | Team Logistico | Reale = **`Group-Engineering-dev`** (fix `variables.tf`) → v0.1.6 + ri-run | ✅ |
+| **Apply infra DEV** | Team Logistico | ✅ **completo** (v0.1.6): 8 schemi + Volume + 6 grants (0 destroy) | ✅ |
+| **OP-INF-2 Nome gruppo** | Team Logistico | Reale = **`Group-Engineering-dev`** (fix `variables.tf`, v0.1.6) | ✅ |
 | D1 Service Principal | Ippazio / Technology | SP condiviso data platform → comunicare ID | ⏸️ ping mensile |
 | B5 Review plan | Ippazio | `terraform plan` verde via MSI; review + `apply` dopo il grant (OP-INF-1) | 🟡 |
 | H1 Tagging costi Databricks | Data Reply (Ippazio) | Standard naming tag (min. `business_unit=logistica`) + **serverless budget policy a livello di account** per applicare i tag ai job. Il tagging trasversale per applicazione Azure è governance di piattaforma (non nostro). | 🟡 (call 2026-07-03, tema costi sollevato da Silvio/Marcello) |

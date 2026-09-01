@@ -20,14 +20,14 @@ e `DATABRICKS_HOST`. Decisione formalizzata in [[ADR-0022]]. Vedi [[ACT_0.1.6]] 
 questo runbook fornisce i comandi esatti.
 
 ## Stato pubblicazione (aggiornato 2026-08-27)
-**Sintesi:** tutti e 3 i repo di codice sono su GitLab con **CI in DEV via Managed Identity** (no secret). Grant MI
-ottenuto (OP-INF-1 chiuso); `apply` v0.1.5 **parziale**: 8 schemi + Volume creati. Grants falliti per **nome gruppo
-errato** → corretto **`Group-Engineering-dev`** (OP-INF-2 chiuso): **release v0.1.6** → ri-run applica i grants ([[ACT_0.1.6]]).
+**Sintesi:** tutti e 3 i repo di codice sono su GitLab con **CI in DEV via Managed Identity** (no secret). **Infra DEV
+completa** (`apply` v0.1.6 verde 2026-09-01): 8 schemi + Volume landing + 6 grants `Group-Engineering-dev` (0 destroy).
+OP-INF-1/2 chiusi, **ACT_0.1.6 chiuso** ([[ACT_0.1.6]]). Prossimo gate: ingestion (container AzCopy §F.2).
 
 | Repo | GitHub (SoT) | GitLab cliente | Note |
 |------|:---:|:---:|------|
 | `logistico-lib` | ✅ | ✅ `v1.0.4` | wheel `logistica_utils 1.0.4` nel Package Registry (CI verde) |
-| `logistico-infrastructure` | ✅ | ✅ `v0.1.5` → `v0.1.6` | `apply` v0.1.5 parziale: 8 schemi + Volume creati; grants falliti per nome gruppo errato → fix `Group-Engineering-dev` (OP-INF-2). **v0.1.6** applica i grants ([[ACT_0.1.6]]/[[LL-019]]) |
+| `logistico-infrastructure` | ✅ | ✅ `v0.1.6` | **`apply` v0.1.6 verde**: 8 schemi + Volume + 6 grants `Group-Engineering-dev` in DEV (0 destroy). ACT_0.1.6 chiuso; fix apply lock ([[LL-019]]), nome gruppo (OP-INF-2) |
 | `logistico-workflows` | ✅ | ✅ `v0.1.5` | DAB consolidato ([[ACT_9018]]/[[ADR-0021]]); CI `main` verde → **`deploy_dev` in DEV via MSI** (7 job, sandbox mode:development). Wheel dal registry a run-time (DBR-05) |
 | `logistico-documentation` | ✅ | ❌ (mai) | solo GitHub, per scelta |
 

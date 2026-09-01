@@ -1,6 +1,6 @@
 # ACT_0.1.6 · Consegna Terraform `brownfield/` in multi-repo GitLab
 
-**Status**: apply-parziale → fix pronto (✅ 8 schemi + Volume creati; grants falliti per nome gruppo errato → corretto `Group-Engineering-dev`, OP-INF-2 chiuso; release v0.1.6 da promuovere + ri-run)
+**Status**: ✅ done (2026-09-01 — `apply` v0.1.6 verde: 8 schemi + Volume landing + 6 grants `Group-Engineering-dev` in DEV; 0 destroy)
 **Type**: infra
 **Origin**: sprint 0.1   **Sprint**: 0.1   **Fase / Wave**: FASE 0 — Fondamenta
 **Gg (stima)**: 1   **Blocco**: 🟢 sbloccato — resta solo l'esecuzione dell'`apply` (gate manuale in CI, [[ACT_8.1.2]])
@@ -112,3 +112,8 @@ MR approvata da Ippazio (Reply).
   workspace con `ALL PRIVILEGES`/`MANAGE`. Il default storico `Engineering-dev` era sbagliato. **Fix**:
   `variables.tf` → `default = "Group-Engineering-dev"`. **Next**: release **v0.1.6** → promozione GitLab → ri-run
   pipeline → i 6 grant si applicano (idempotente, 0 destroy). Chiude l'`apply` DEV completo.
+- **2026-09-01 — `apply` v0.1.6 VERDE ✅ (infra DEV completa)**: `Apply complete! Resources: 6 added, 0 changed,
+  0 destroyed`. Applicati i 6 `databricks_grants` a `Group-Engineering-dev` su bronze/silver/silver_curated/gold/
+  gold_dm/config.logistica_etl. Output: `schemi_creati` (6+condiviso) + `landing_volume_path=/Volumes/landing_dev/
+  logistica/files`. **Fondamenta UC DEV provisionate** (8 schemi + Volume + grants). ACT_0.1.6 **chiuso** → sblocca
+  gli ACT 0.1.1/0.1.2/0.1.3/0.1.7. Restano prereq di piattaforma per l'ingestion (container AzCopy §F.2) e PROD.
