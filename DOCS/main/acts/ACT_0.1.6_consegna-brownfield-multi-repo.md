@@ -1,6 +1,6 @@
 # ACT_0.1.6 · Consegna Terraform `brownfield/` in multi-repo GitLab
 
-**Status**: apply-parziale (✅ 8 schemi + Volume `landing.files` creati in DEV 2026-09-01; ⚠️ 6 grants falliti su principal `Engineering-dev` → [[OP-INF-2]])
+**Status**: apply-parziale → fix pronto (✅ 8 schemi + Volume creati; grants falliti per nome gruppo errato → corretto `Group-Engineering-dev`, OP-INF-2 chiuso; release v0.1.6 da promuovere + ri-run)
 **Type**: infra
 **Origin**: sprint 0.1   **Sprint**: 0.1   **Fase / Wave**: FASE 0 — Fondamenta
 **Gg (stima)**: 1   **Blocco**: 🟢 sbloccato — resta solo l'esecuzione dell'`apply` (gate manuale in CI, [[ACT_8.1.2]])
@@ -106,7 +106,9 @@ MR approvata da Ippazio (Reply).
 - **2026-09-01 — `apply` v0.1.5 ESEGUITO (parziale)**: fix CI OK (nessun errore lock/stale). **Creati**: 8 schemi
   (`bronze/silver/silver_curated/gold/gold_dm/config.logistica_etl`, `condiviso`, `landing.logistica`) + **Volume
   `landing_dev.logistica.files`**. **Fallito** sui 6 `databricks_grants`: *"cannot create grants: Could not find
-  principal with name Engineering-dev"* → il gruppo writer non è risolvibile nel workspace (non un problema di
-  permessi MI né di codice). Nuovo item **[[OP-INF-2]]**: chiedere alla piattaforma nome esatto + assegnazione
-  del gruppo al workspace DEV; poi ri-run pipeline (grants idempotenti, 0 destroy). Stato Terraform consistente
-  (schemi/Volume tracciati).
+  principal with name Engineering-dev"* → **[[OP-INF-2]]**. Stato Terraform consistente (schemi/Volume tracciati).
+- **2026-09-01 — OP-INF-2 chiuso: era il NOME del gruppo.** Verificato nel workspace (Settings → Profile / Catalog
+  `bronze_dev` Permissions): il gruppo reale è **`Group-Engineering-dev`** (prefisso `Group-`), già assegnato al
+  workspace con `ALL PRIVILEGES`/`MANAGE`. Il default storico `Engineering-dev` era sbagliato. **Fix**:
+  `variables.tf` → `default = "Group-Engineering-dev"`. **Next**: release **v0.1.6** → promozione GitLab → ri-run
+  pipeline → i 6 grant si applicano (idempotente, 0 destroy). Chiude l'`apply` DEV completo.

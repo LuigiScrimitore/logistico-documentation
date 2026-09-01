@@ -88,7 +88,7 @@
 | 8.3 | Preparazione Cut-Over | 2/5 | 40% | 🔵 PARZ. | [8.3](sprint_agile/sprint_8.3.md) |
 | 8.4 | Cut-Over & Stabilizzazione | 0/7 | 0% | ⏳ | [8.4](sprint_agile/sprint_8.4.md) |
 
-\* 0.1: infra su GitLab, CI via **MSI**. **apply v0.1.5 parziale** (2026-09-01): 8 schemi + Volume di landing creati (OP-INF-1 chiuso); grants falliti sul gruppo `Engineering-dev` non risolto → **OP-INF-2** (piattaforma). Trasporto landing = **AzCopy** ([[ADR-0023]], backend in main); resta il gate **accesso container** per l'ingestion.
+\* 0.1: infra su GitLab, CI via **MSI**. **apply v0.1.5 parziale** (2026-09-01): 8 schemi + Volume di landing creati (OP-INF-1 chiuso); grants falliti per nome gruppo errato → fix `Group-Engineering-dev` (OP-INF-2 chiuso), applicati con **v0.1.6**. Trasporto landing = **AzCopy** ([[ADR-0023]], backend in main); resta il gate **accesso container** per l'ingestion.
 
 ---
 

@@ -4,7 +4,7 @@
 > Contiene il quadro tecnico e funzionale della Fase 0: perimetro, architettura, decisioni, stato, punti aperti/risolti, decisioni out-of-scope e sviluppi futuri.
 > Sostituisce il precedente `fasi/F0_infrastruttura.md` (archiviato). Stato di dettaglio degli sprint: [`../sprint_agile/`](../sprint_agile/) (0.1, 0.2, 0.3).
 
-**Ultimo aggiornamento:** 2026-09-01 · **Stato fase:** 🔵 IN CORSO (0.2/0.3 ✅; multi-repo eseguito; **apply DEV parziale (v0.1.5): 8 schemi + Volume creati**; grants bloccati sul gruppo `Engineering-dev` non risolto → **OP-INF-2**)
+**Ultimo aggiornamento:** 2026-09-01 · **Stato fase:** 🔵 IN CORSO (0.2/0.3 ✅; multi-repo eseguito; **apply DEV parziale (v0.1.5): 8 schemi + Volume creati**; grants → fix nome gruppo `Group-Engineering-dev` (OP-INF-2 chiuso), applicati con **v0.1.6**)
 
 ---
 
@@ -14,7 +14,7 @@ La Fase 0 predispone le **fondamenta infrastrutturali** su cui gira l'intera pip
 
 Il principio guida è **integrarsi nel Databricks/DWH aziendale esistente senza romperlo**: non creiamo un workspace nuovo, ma i nostri schemi accanto a quelli esistenti. L'ingestion avviene in **push via AzCopy** ([[ADR-0023]], deciso 2026-08-31 al posto di SFTP; a tendere via processi ODI) dai sistemi sorgente, eliminando ogni connettività Oracle diretta.
 
-Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **completi**; lo sprint 0.1 (Unity Catalog & Storage) ha il **codice pronto** e l'esecuzione è **avviata in DEV** — infra su GitLab, `terraform plan` verde via Managed Identity (15 add, 0 destroy). I grant UC alla MI sono stati **ottenuti** (OP-INF-1 chiuso) e l'`apply` v0.1.5 ha **creato gli 8 schemi + il Volume di landing**; è però fallito sui **grants** perché il gruppo `Engineering-dev` non è risolvibile nel workspace → **OP-INF-2** ([[ACT_0.1.6]]). Restano prerequisiti di piattaforma per l'ingestion (accesso container per **AzCopy** — [[ADR-0023]]) e per l'ambiente PROD.
+Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **completi**; lo sprint 0.1 (Unity Catalog & Storage) ha il **codice pronto** e l'esecuzione è **avviata in DEV** — infra su GitLab, `terraform plan` verde via Managed Identity (15 add, 0 destroy). I grant UC alla MI sono stati **ottenuti** (OP-INF-1 chiuso) e l'`apply` v0.1.5 ha **creato gli 8 schemi + il Volume di landing**; è fallito sui **grants** per un **nome gruppo errato** (reale `Group-Engineering-dev`, non `Engineering-dev`) → OP-INF-2 chiuso, applicati con **v0.1.6** ([[ACT_0.1.6]]). Restano prerequisiti di piattaforma per l'ingestion (accesso container per **AzCopy** — [[ADR-0023]]) e per l'ambiente PROD.
 
 ---
 

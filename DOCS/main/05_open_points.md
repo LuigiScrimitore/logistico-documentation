@@ -336,10 +336,10 @@ cdt_dw) arrivano in **push** dai sorgenti. Elimina secret scope Oracle, VNet pee
 |-------|-------------|
 | 🔴 Aperto / Bloccante | **OP-21** (DQ framework — senza risposta Reply), **OP-QDR-1** (quadratura non significativa senza backfill storico) |
 | 🟠 Da confermare (sorgente) | OP-08, OP-09, OP-10, OP-11, OP-31, **OP-CAR-7** (CORRIERE_COD → 'ND') |
-| 🟡 Da confermare (Reply/DWH/piattaforma) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25, **OP-INF-2** (gruppo `Engineering-dev` non risolto → grants apply bloccati), **OP-GIA-1** (170k righe giacenze — decisione) |
+| 🟡 Da confermare (Reply/DWH/piattaforma) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25, **OP-GIA-1** (170k righe giacenze — decisione) |
 | 🔵 Stand-by / Fisiologico / Bassa priorità | OP-03, **OP-29** (ordering fisiologico locale), OP-33, OP-34, OP-36, **OP-CAR-1**, **OP-MOV-1** (grana per-movimento — futuro) |
 | ⏸️ On hold (Technology) | **OP-18** (Service Principal unico data platform) |
-| 🟢 Risolto | **OP-19** (serverless), **OP-28** (orphan 0.0%), **OP-30** (incrementalità), **OP-32** (LAD framework completo+validato; residuo ART/FORN gated OP-02), **OP-35** (watermark), **OP-CAR-4/A** (tombstone quadratura), **OP-CAR-6** (fallback anagrafiche non più silenzioso), **OP-PSP-1** (scartate), **OP-PSP-2** (DATA_PREL_INIZ), **OP-TST-1/2** (fixture/FQN test), **OP-INF-1** (grant UC alla MI — apply DEV sbloccato), **D1-D5** (migrazione Databricks) |
+| 🟢 Risolto | **OP-19** (serverless), **OP-28** (orphan 0.0%), **OP-30** (incrementalità), **OP-32** (LAD framework completo+validato; residuo ART/FORN gated OP-02), **OP-35** (watermark), **OP-CAR-4/A** (tombstone quadratura), **OP-CAR-6** (fallback anagrafiche non più silenzioso), **OP-PSP-1** (scartate), **OP-PSP-2** (DATA_PREL_INIZ), **OP-TST-1/2** (fixture/FQN test), **OP-INF-1** (grant UC alla MI), **OP-INF-2** (nome gruppo → `Group-Engineering-dev`), **D1-D5** (migrazione Databricks) |
 
 ---
 
@@ -446,21 +446,20 @@ L'`apply` Terraform DEV (via MSI — auth: [[ADR-0022]]) era autenticato ma bloc
 `config_dev`/`landing_dev` (2026-09-01). L'`apply` (2026-09-01) ha creato **8 schemi + Volume `landing.files`**;
 si è fermato sui grants → nuovo punto **OP-INF-2**. Esito in [[ACT_0.1.6]].
 
-### OP-INF-2 — Gruppo UC `Engineering-dev` non risolto come principal (grants apply falliti) 🟡 (piattaforma)
-**Aperto**: 2026-09-01 ([[ACT_0.1.6]])   **Da confermare (Reply/piattaforma)**
+### OP-INF-2 — Gruppo UC engineer: nome errato nel Terraform (`Engineering-dev` → `Group-Engineering-dev`) 🟢 RISOLTO (2026-09-01)
+**Aperto**: 2026-09-01 · **Chiuso**: 2026-09-01 ([[ACT_0.1.6]])   **Interno (codice)**
 
-L'`apply` DEV ha creato schemi + Volume, poi è fallito sui 6 `databricks_grants` con
-**`cannot create grants: Could not find principal with name Engineering-dev`**. Non è un problema di permessi
-della MI (sarebbe "does not have privilege") né del codice: il gruppo **`Engineering-dev`** (`var.group_engineers`,
-default confermato da Ippazio 2026-07-03) **non è risolvibile** nel workspace DEV — o non esiste con quel nome
-esatto, o è un gruppo **account-level non assegnato al workspace** (identity federation). Analogo a [[OP-INF-1]]
-(item di piattaforma). Gli schemi/Volume restano creati (stato consistente); mancano solo i grant di scrittura.
+L'`apply` DEV (dopo aver creato schemi + Volume) è fallito sui 6 `databricks_grants` con
+**`cannot create grants: Could not find principal with name Engineering-dev`**. **Causa: nome del gruppo
+errato nel Terraform.** Verificato nel workspace (2026-09-01): il gruppo reale è **`Group-Engineering-dev`**
+(col prefisso `Group-`), già **assegnato al workspace** e con `ALL PRIVILEGES`/`MANAGE` su `bronze_dev` — non
+era un problema di piattaforma/assegnazione né di permessi MI, solo il nome in `var.group_engineers`
+(default storico `Engineering-dev`).
 
-**Azione**: chiedere al team infrastructure di (a) confermare il **nome esatto** del gruppo data-engineer e
-(b) **assegnarlo al workspace DEV** (`adb-3179436993731139`). Poi: se il nome differisce → aggiornare
-`TF_VAR_group_engineers`; in ogni caso ri-lanciare la pipeline → i 6 grant si applicano (idempotente, 0 destroy).
-Opz. per sbloccare intanto una pipeline verde: gate `enable_engineer_grants` (come i reader) da tenere `false`
-finché il gruppo non è pronto.
+**Risolto**: `default = "Group-Engineering-dev"` in `infra/terraform/brownfield/variables.tf`. **Prossimo passo**:
+release v0.1.6 → promozione GitLab → ri-lanciare la pipeline → i 6 grant si applicano (idempotente, 0 destroy,
+schemi/Volume intatti). NB: `Group-Data-Science-dev` esiste ma ha meno permessi (non usarlo); il gruppo reader
+analisti resta assente ([[enable_reader_grants]]=false).
 
 ## Riferimenti
 - `docs/Archive/Open Points - Logistico 2.0.md` — versione originale 2026-06-10

@@ -4,12 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Introdotto il worklog (ADR-0024)](2026-09-01-02_worklog-introdotto.md) · 2026-09-01 · monorepo `435b27d`
+**Ultimo push:** [Fix nome gruppo engineer (Group-Engineering-dev) -> OP-INF-2 chiuso, v0.1.6](2026-09-01-03_fix-nome-gruppo-engineering.md) · 2026-09-01 · monorepo `c8afe89`
 
-**7 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**8 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-09-01 | `c8afe89` | [Fix nome gruppo engineer (Group-Engineering-dev) -> OP-INF-2 chiuso, v0.1.6](2026-09-01-03_fix-nome-gruppo-engineering.md) | ACT_0.1.6 | — | — | OP-INF-2 |
 | 2026-09-01 | `435b27d` | [Introdotto il worklog (ADR-0024)](2026-09-01-02_worklog-introdotto.md) | — | ADR-0024 | — | — |
 | 2026-09-01 | `4d75de3` | [Apply infra DEV parziale — grant MI ottenuto, gruppo Engineering-dev non risolto](2026-09-01-01_apply-infra-parziale.md) | ACT_0.1.6 | — | LL-019 | OP-INF-1 OP-INF-2 |
 | 2026-08-31 | `9fac961` | [Backend AzCopy per il send verso landing](2026-08-31-03_backend-azcopy.md) | ACT_9012 | ADR-0023 | — | — |

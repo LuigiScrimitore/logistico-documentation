@@ -7,10 +7,10 @@
 > **Aggiornamento 2026-08-27 — deploy GitLab eseguito.** I 3 repo di codice sono su GitLab con **CI in DEV via
 > Managed Identity** (nessun secret): `logistico-lib` (wheel `v1.0.4` nel Package Registry), `logistico-workflows`
 > (`deploy_dev` verde → 7 job in DEV), `logistico-infrastructure` (`terraform plan` verde, 15 add/0 destroy).
-> **Apply DEV parziale (2026-09-01):** grant MI ottenuto (**OP-INF-1 chiuso**); l'`apply` v0.1.5 ha **creato 8
-> schemi + Volume `landing.files`**, ma è fallito sui **grants**: *"Could not find principal with name
-> Engineering-dev"* → il gruppo writer non è risolvibile nel workspace → nuovo item **OP-INF-2** (piattaforma).
-> Dettaglio: [[ACT_0.1.6]], `16_runbook_multirepo_github_gitlab.md`.
+> **Apply DEV parziale (2026-09-01):** grant MI ottenuto (**OP-INF-1 chiuso**); `apply` v0.1.5 ha **creato 8
+> schemi + Volume `landing.files`**, poi fallito sui grants. **Causa trovata (OP-INF-2 chiuso):** nome gruppo
+> errato — reale = **`Group-Engineering-dev`** (era `Engineering-dev`). Fix in `variables.tf` → **release v0.1.6
+> da promuovere + ri-run pipeline** per applicare i 6 grants. Dettaglio: [[ACT_0.1.6]].
 
 > Dettaglio tecnico sprint → `04_piano_sviluppo.md` | Decisioni architetturali → `10_piano_migrazione_databricks.md` | **Rilascio a fasi post-accesso → `14_release_kit.md`**
 
@@ -34,7 +34,7 @@
 | A1 | Backend TF state | ✅ | RG: `rg-dev-dataplatform-00` / SA: `stdevdataplatformweu00` / container: `statefile` | Blocco `backend "azurerm"` compilato in `brownfield/main.tf` |
 | A2 | URL workspace Databricks DEV | ✅ | `https://adb-3179436993731139.19.azuredatabricks.net` | `terraform.tfvars.example` aggiornato |
 | A3 | Tipo cluster compute | ✅ | **SERVERLESS** (confermato Ippazio). "Nasce quando ti serve, viene killato quando finisce." Nessun `node_type_id` necessario. | **Corretto 2026-08-04 (ACT_9007)**: serverless = **nessun compute dichiarato** nei job (`workflows/*.yml`) + `environments`/`environment_key` per il wheel. **Nessuna cluster policy**: non si applicano al serverless (`runtime_engine=SERVERLESS` non è valido) → policy rimossa dal Terraform. Vedi ADR-0009. |
-| A4 | Gruppo UC engineer | 🟡 | `Engineering-dev` (NON `data-science-dev`) — confermato da Ippazio, ma **all'apply il principal non è stato trovato nel workspace** → **OP-INF-2** (verificare nome esatto + assegnazione al workspace) | `group_engineers = "Engineering-dev"` (default `variables.tf`); override via `TF_VAR_group_engineers` se il nome differisce |
+| A4 | Gruppo UC engineer | ✅ | Nome reale verificato nel workspace (2026-09-01): **`Group-Engineering-dev`** (prefisso `Group-`; NON `Group-Data-Science-dev`). Il principal esiste ed è assegnato (ALL PRIVILEGES/MANAGE su `bronze_dev`) → OP-INF-2 chiuso | `group_engineers` default corretto a `"Group-Engineering-dev"` in `variables.tf` |
 | A5 | Gruppo UC reader (analisti/MicroStrategy) | 🟡 | **Non esiste ancora** (Ippazio: "per gli analisti ancora non c'è"). Serve per dare accesso in lettura al Gold a MicroStrategy. | Grant reader reso **condizionale** (`enable_reader_grants = false`). Quando il gruppo sarà creato: impostare `enable_reader_grants=true` + `group_readers=<nome>` in `terraform.tfvars` → `terraform apply` |
 | A6 | Naming cataloghi PROD/stage (D4) | ✅ | PROD = `_prod`, stage = `_stage`. Cataloghi senza suffisso saranno **eliminati**. Stage non da configurare per ora. | `_CATALOG_MAP["prod"]` aggiornato in `utils.py`. D4 chiuso. |
 | A7 | Utenza Azure per navigazione | 🟡 | **Mail inviata a Francesco Giambona (§F.3) — in attesa risposta.** Necessaria per navigare il portale Azure e lanciare `terraform init/plan`. | Sollecito se non arriva risposta |
@@ -90,7 +90,8 @@
 ✅ B3 auth CI/CD        → Managed Identity (no secret) — 2026-08-27
 ✅ B5 pipeline → plan   → terraform plan verde via MSI (15 add, 0 destroy)
 🟢 B6 grant MI ottenuto → OP-INF-1 chiuso; apply v0.1.5 PARZIALE (schemi+Volume creati)
-🔴 B7 grants apply       → gruppo Engineering-dev non risolto nel workspace → OP-INF-2 (piattaforma)
+🟢 B7 nome gruppo        → OP-INF-2 chiuso: reale `Group-Engineering-dev` (fix in variables.tf)
+🟡 B8 grants da applicare → release v0.1.6 → promozione GitLab → ri-run pipeline
 ✅ C5 protocollo landing → deciso AzCopy (ADR-0023, 2026-08-31), non SFTP
 🟡 C6 landing_mode      → external (probabile) da confermare con la piattaforma
 🟡 A5 reader group      → da fare quando il gruppo sarà creato (non bloccante per apply)
@@ -101,9 +102,9 @@
 2. **Extrared** (Ippazio CC) → subgruppo GitLab (§F.1) — ✅ **risolto**: subgroup + Maintainer
 3. **team DevOps/Azure** → ~~credenziali SFTP~~ → **accesso container per AzCopy** (§F.2, dopo [[ADR-0023]]) — ✅ **inviata 2026-08-31**, in attesa risposta
 
-**Prossimo passo attivo:** **OP-INF-2** — chiedere alla piattaforma il **nome esatto** del gruppo data-engineer
-e l'**assegnazione al workspace DEV** (`adb-3179436993731139`); poi ri-lanciare la pipeline `infrastructure` per
-applicare i 6 grants (idempotente, 0 destroy). Schemi + Volume di landing sono **già creati** (apply v0.1.5 parziale).
+**Prossimo passo attivo:** nome gruppo corretto (`Group-Engineering-dev`, OP-INF-2 chiuso) → **release v0.1.6**,
+promozione GitLab e **ri-lancio pipeline** per applicare i 6 grants (idempotente, 0 destroy). Schemi + Volume di
+landing sono **già creati** (apply v0.1.5 parziale).
 
 ---
 
@@ -227,8 +228,8 @@ Grazie,
 | A5 Reader UC group | Cliente (quando creato) | Nome gruppo analisti/MicroStrategy → `enable_reader_grants=true` + `terraform apply` | 🟡 non urgente |
 | B3 Auth CI/CD | Team Logistico | **Risolto**: Managed Identity del runner, nessun secret (2026-08-27) | ✅ |
 | **OP-INF-1 Grant UC alla MI** | Team infrastructure | `USE CATALOG` + `CREATE SCHEMA` alla MI `id-dev-dataplatform-workload-00` sui 5 catalog DEV — **assegnati 2026-09-01** | ✅ |
-| **Apply infra DEV** | Team Logistico | apply v0.1.5 **parziale**: 8 schemi + Volume creati; grants falliti | 🟡 parziale |
-| **OP-INF-2 Gruppo `Engineering-dev`** | Team infrastructure | Confermare nome esatto + **assegnare il gruppo al workspace DEV** → sblocca i 6 grants | 🔴 |
+| **Apply infra DEV** | Team Logistico | apply v0.1.5 **parziale**: 8 schemi + Volume creati; grants con v0.1.6 | 🟡 parziale |
+| **OP-INF-2 Nome gruppo** | Team Logistico | Reale = **`Group-Engineering-dev`** (fix `variables.tf`) → v0.1.6 + ri-run | ✅ |
 | D1 Service Principal | Ippazio / Technology | SP condiviso data platform → comunicare ID | ⏸️ ping mensile |
 | B5 Review plan | Ippazio | `terraform plan` verde via MSI; review + `apply` dopo il grant (OP-INF-1) | 🟡 |
 | H1 Tagging costi Databricks | Data Reply (Ippazio) | Standard naming tag (min. `business_unit=logistica`) + **serverless budget policy a livello di account** per applicare i tag ai job. Il tagging trasversale per applicazione Azure è governance di piattaforma (non nostro). | 🟡 (call 2026-07-03, tema costi sollevato da Silvio/Marcello) |
