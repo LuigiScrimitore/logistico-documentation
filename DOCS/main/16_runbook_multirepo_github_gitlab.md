@@ -27,7 +27,7 @@ ri-lanciando la pipeline ([[ACT_0.1.6]]).
 | Repo | GitHub (SoT) | GitLab cliente | Note |
 |------|:---:|:---:|------|
 | `logistico-lib` | ✅ | ✅ `v1.0.4` | wheel `logistica_utils 1.0.4` nel Package Registry (CI verde) |
-| `logistico-infrastructure` | ✅ | ✅ `v0.1.2` | CI `validate` ✅ / **`plan` ✅ verde via MSI** (15 add, 0 destroy); grant `CREATE SCHEMA` alla MI **ottenuto 2026-09-01** (OP-INF-1 chiuso) → **`apply` da eseguire** (ri-lanciare pipeline) ([[ACT_0.1.6]]) |
+| `logistico-infrastructure` | ✅ | ✅ `v0.1.5` | CI `validate` ✅ / **`plan` ✅ verde via MSI** (15 add, 0 destroy); grant `CREATE SCHEMA` alla MI **ottenuto 2026-09-01** (OP-INF-1 chiuso). `v0.1.5` include il **fix CI apply** (lock veicolato, [[LL-019]]) → **`apply` da eseguire** sulla pipeline `main` ([[ACT_0.1.6]]) |
 | `logistico-workflows` | ✅ | ✅ `v0.1.5` | DAB consolidato ([[ACT_9018]]/[[ADR-0021]]); CI `main` verde → **`deploy_dev` in DEV via MSI** (7 job, sandbox mode:development). Wheel dal registry a run-time (DBR-05) |
 | `logistico-documentation` | ✅ | ❌ (mai) | solo GitHub, per scelta |
 
