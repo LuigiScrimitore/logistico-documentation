@@ -33,6 +33,8 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `il vacuum gira da 20+ minuti senza variazione dello spazio libero` | [LL-002](LL-002_vacuum-per-database-unbuffered.md) |
 | `INVALID_PARAMETER_VALUE: refers to an undefined job parameter 'X` | [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) |
 | `l'identità legge le risorse (data source) ma non può crearle` | [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) |
+| `Inconsistent dependency lock file (apply di un tfplan salvato in CI)` | [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) |
+| `Saved plan is stale (apply di un tfplan salvato in CI)` | [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) |
 | `l'upload/chiamata verso l'host aziendale (GitLab/Nexus/Databricks) fallisce in TLS` | [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) |
 | `la copia manuale dei repo si porta dietro __pycache__/artefatti di build` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `la landing conserva un solo snapshot per una tabella giornaliera` | [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) |

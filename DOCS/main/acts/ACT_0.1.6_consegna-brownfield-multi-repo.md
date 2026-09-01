@@ -96,3 +96,10 @@ MR approvata da Ippazio (Reply).
   `infrastructure`** (rigenera `plan`/`tfplan`) e **cliccare il job `apply`** (gate manuale). Atteso: 15 add
   (8 schemi + Volume `landing.files` + 6 grants), 0 destroy. A `apply` verde → ACT_0.1.6 close + sblocco
   0.1.1/0.1.2/0.1.3/0.1.7.
+- **2026-09-01 — `apply` fallito su piano stale/lock** ([[LL-019]]): dopo il grant, l'`apply` ha dato
+  *"Inconsistent dependency lock file"* + *"Saved plan is stale"*. Causa: il job `apply` rifà `init` senza il
+  lock/provider del `plan` (lock gitignorato, veicolato solo `tfplan`) **e** applicava un piano non coerente con
+  lo stato corrente. **Fix nel generatore** `split_to_multirepo.py`: il `plan` passa all'`apply` anche
+  `.terraform.lock.hcl` + `.terraform/` (`needs:[plan]`), `apply` fa `init -lockfile=readonly`. **Procedura:**
+  ri-lanciare l'**intera** pipeline (plan+apply stesso run) contro lo stato corrente, non ri-cliccare apply
+  vecchi. NB: pinnare l'immagine Terraform (non `latest`).

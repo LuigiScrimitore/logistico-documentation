@@ -34,7 +34,8 @@ ri-lanciando la pipeline ([[ACT_0.1.6]]).
 Lezioni operative emerse durante la migrazione (per il team): [[LL-009]] una direzione sola · [[LL-010]] split
 da file tracciati · [[LL-011]] runner tag · [[LL-012]] CA aziendale nel container · [[LL-013]] versione wheel
 dal tag · [[LL-014]] entrypoint immagine CI · [[LL-015]] formato `resources:` dei file DAB · [[LL-016]] protected
-var solo su ref protetti · [[LL-017]] `job.parameters` DAB da dichiarare · [[LL-018]] auth OK ≠ autorizzato.
+var solo su ref protetti · [[LL-017]] `job.parameters` DAB da dichiarare · [[LL-018]] auth OK ≠ autorizzato ·
+[[LL-019]] apply di un tfplan in CI: lock+provider e stato coerenti col plan.
 
 ---
 
