@@ -7,9 +7,10 @@
 > **Aggiornamento 2026-08-27 — deploy GitLab eseguito.** I 3 repo di codice sono su GitLab con **CI in DEV via
 > Managed Identity** (nessun secret): `logistico-lib` (wheel `v1.0.4` nel Package Registry), `logistico-workflows`
 > (`deploy_dev` verde → 7 job in DEV), `logistico-infrastructure` (`terraform plan` verde, 15 add/0 destroy).
-> **Grant sbloccato (2026-09-01):** il team infrastructure ha assegnato `USE CATALOG` + `CREATE SCHEMA` alla MI
-> `id-dev-dataplatform-workload-00` sui 5 catalog DEV (**OP-INF-1 chiuso**). **Prossimo passo:** ri-lanciare la
-> pipeline `infrastructure` + clic sul job `apply`. Dettaglio: [[ACT_0.1.6]], `16_runbook_multirepo_github_gitlab.md`.
+> **Apply DEV parziale (2026-09-01):** grant MI ottenuto (**OP-INF-1 chiuso**); l'`apply` v0.1.5 ha **creato 8
+> schemi + Volume `landing.files`**, ma è fallito sui **grants**: *"Could not find principal with name
+> Engineering-dev"* → il gruppo writer non è risolvibile nel workspace → nuovo item **OP-INF-2** (piattaforma).
+> Dettaglio: [[ACT_0.1.6]], `16_runbook_multirepo_github_gitlab.md`.
 
 > Dettaglio tecnico sprint → `04_piano_sviluppo.md` | Decisioni architetturali → `10_piano_migrazione_databricks.md` | **Rilascio a fasi post-accesso → `14_release_kit.md`**
 
@@ -33,7 +34,7 @@
 | A1 | Backend TF state | ✅ | RG: `rg-dev-dataplatform-00` / SA: `stdevdataplatformweu00` / container: `statefile` | Blocco `backend "azurerm"` compilato in `brownfield/main.tf` |
 | A2 | URL workspace Databricks DEV | ✅ | `https://adb-3179436993731139.19.azuredatabricks.net` | `terraform.tfvars.example` aggiornato |
 | A3 | Tipo cluster compute | ✅ | **SERVERLESS** (confermato Ippazio). "Nasce quando ti serve, viene killato quando finisce." Nessun `node_type_id` necessario. | **Corretto 2026-08-04 (ACT_9007)**: serverless = **nessun compute dichiarato** nei job (`workflows/*.yml`) + `environments`/`environment_key` per il wheel. **Nessuna cluster policy**: non si applicano al serverless (`runtime_engine=SERVERLESS` non è valido) → policy rimossa dal Terraform. Vedi ADR-0009. |
-| A4 | Gruppo UC engineer | ✅ | `Engineering-dev` (NON `data-science-dev` che ha meno permessi) | `group_engineers = "Engineering-dev"` in `variables.tf` e `terraform.tfvars.example` |
+| A4 | Gruppo UC engineer | 🟡 | `Engineering-dev` (NON `data-science-dev`) — confermato da Ippazio, ma **all'apply il principal non è stato trovato nel workspace** → **OP-INF-2** (verificare nome esatto + assegnazione al workspace) | `group_engineers = "Engineering-dev"` (default `variables.tf`); override via `TF_VAR_group_engineers` se il nome differisce |
 | A5 | Gruppo UC reader (analisti/MicroStrategy) | 🟡 | **Non esiste ancora** (Ippazio: "per gli analisti ancora non c'è"). Serve per dare accesso in lettura al Gold a MicroStrategy. | Grant reader reso **condizionale** (`enable_reader_grants = false`). Quando il gruppo sarà creato: impostare `enable_reader_grants=true` + `group_readers=<nome>` in `terraform.tfvars` → `terraform apply` |
 | A6 | Naming cataloghi PROD/stage (D4) | ✅ | PROD = `_prod`, stage = `_stage`. Cataloghi senza suffisso saranno **eliminati**. Stage non da configurare per ora. | `_CATALOG_MAP["prod"]` aggiornato in `utils.py`. D4 chiuso. |
 | A7 | Utenza Azure per navigazione | 🟡 | **Mail inviata a Francesco Giambona (§F.3) — in attesa risposta.** Necessaria per navigare il portale Azure e lanciare `terraform init/plan`. | Sollecito se non arriva risposta |
@@ -50,7 +51,7 @@
 | B3 | Auth CI/CD | ✅ | **Risolto via Managed Identity** ([[ADR-0022]], 2026-08-27): la CI si autentica verso Azure/Databricks con la **MI del group runner** — **nessun secret di deploy** (no `ARM_CLIENT_SECRET`, no `DATABRICKS_TOKEN`). Terraform: `ARM_USE_MSI=true`; Databricks CLI: stessa MI. Le uniche variabili CI sono **identificativi non sensibili** impostati come **protected** (solo `main`+tag `v*`, [[LL-016]]): `ARM_CLIENT_ID`/`ARM_TENANT_ID`/`ARM_SUBSCRIPTION_ID`, `DATABRICKS_HOST`. I job runtime non usano `dbutils.secrets`/`SecretHelper`; le credenziali Oracle restano solo in `.env` locale (tool dev). | — (fatto). NB: authN ≠ authZ → serve comunque il grant UC alla MI (B6/OP-INF-1) |
 | B4 | Branch strategy | ✅ | Seguire `DOCS/linee_guida/CNO_DataPlatform_linee-guida_v1.1.0` (feature branch → main, MR obbligatoria) | Da leggere prima della prima MR |
 | B5 | Pipeline Terraform su GitLab | ✅ | **`terraform plan` verde via MSI** (2026-08-27): 15 add, 0 destroy, 0 risorse create (stato invariato). CI `validate`→`plan` operativa. | ✅ plan fatto → resta `apply` (B6) |
-| B6 | Deploy CI in DEV (3 repo) | 🟡 | `logistico-lib` wheel `v1.0.4` pubblicato; `logistico-workflows` `deploy_dev` verde (7 job in DEV, sandbox mode:development); `logistico-infrastructure` `plan` verde. **Grant `CREATE SCHEMA` alla MI OTTENUTO** (2026-09-01, OP-INF-1 chiuso) → `apply` ora eseguibile. | **Ri-lanciare pipeline `infrastructure` + clic `apply`** (15 add attesi) |
+| B6 | Deploy CI in DEV (3 repo) | 🟡 | lib `v1.0.4`; workflows `deploy_dev` verde (7 job); infra `v0.1.5` `apply` **parziale** (2026-09-01): 8 schemi + Volume creati, **grants falliti** su principal `Engineering-dev` → **OP-INF-2**. | Piattaforma: confermare nome/assegnazione gruppo al workspace → ri-run pipeline (grants) |
 
 ---
 
@@ -62,8 +63,8 @@
 | C2 | Formato file | ✅ | Logistico usa **CSV** oggi. Il codice è **già pronto anche per Parquet**: i Bronze notebook rilevano il formato automaticamente (`detect_format()`) e il widget `file_format` accetta `csv`/`parquet`/`auto`. Nessuna azione richiesta ora. Il passaggio a Parquet è un'opzione futura lato push — zero modifiche al nostro codice quando avverrà. | Nessuna — completato per la scope attuale (CSV). |
 | C3 | Struttura cartelle | ✅ | **`YYYY/MM/DD`** (3 livelli separati). Confermato dalla call — il YYYYMMDD era riferito a un altro progetto. | Già corretto nel codice (`storage.py`, notebook Bronze) |
 | C4 | SLA completamento push | ✅ | **04:00**. Potrà essere rivisto al go-live. Schedule Databricks Workflows da spostare: landing check → 04:30, primo processing → 05:00. | Aggiornare YAML schedule quando i Workflows saranno creati (DBR-06) |
-| C5 | Alimentazione landing (SFTP vs Blob) | ✅ | **DECISO: AzCopy** (2026-08-31, dai sistemi → [[ADR-0023]]), non SFTP. Chiude l'analisi [[ACT_9012]]. Per **noi trasparente** (stesso container ADLS). A tendere via **processi ODI**; per ora si tiene lo script e si sviluppa il backend AzCopy su **branch dedicato**. | Resta: definire **chi estrae i file** (a monte, on-prem) e confermare accesso container (§F.2). |
-| C7 | Trasporto ≠ estrazione | 🟡 | **AzCopy = trasporto** (sposta file già esistenti, via processi ODI a tendere); l'**estrazione** Oracle→file sta a monte e per D5 **non gira su Databricks** (host on-prem). Nostri script `send_to_sftp` (→ backend AzCopy in `send_to_landing`, branch dedicato), `cdtdw_lookup_extractor` (ponte OP-02), `quadratura` (export CDT_DW). | Definire ownership estrazione dati operativi + CDT_DW (Conad / host on-prem) → [[ACT_9012]] |
+| C5 | Alimentazione landing (SFTP vs Blob) | ✅ | **DECISO: AzCopy** (2026-08-31, dai sistemi → [[ADR-0023]]), non SFTP. Chiude l'analisi [[ACT_9012]]. Per **noi trasparente** (stesso container ADLS). A tendere via **processi ODI**; backend AzCopy **in main** (`send_to_landing.py`, dry-run validato). | Resta: **accesso container** (§F.2 inviata 2026-08-31, in attesa) per la validazione `--send` reale; ownership estrazione a monte. |
+| C7 | Trasporto ≠ estrazione | 🟡 | **AzCopy = trasporto** (sposta file già esistenti, via processi ODI a tendere); l'**estrazione** Oracle→file sta a monte e per D5 **non gira su Databricks** (host on-prem). Nostri script `send_to_landing` (backend AzCopy in main; `send_to_sftp` legacy), `cdtdw_lookup_extractor` (ponte OP-02), `quadratura` (export CDT_DW). | Definire ownership estrazione dati operativi + CDT_DW (Conad / host on-prem) → [[ACT_9012]] |
 | C6 | Riconciliazione `landing_mode` (managed vs external) | 🟡 **APERTO** | Il Terraform modella la landing come **Volume MANAGED in `landing_dev`** (`landing_mode="volume"`), ma **AzCopy** (C5, [[ADR-0023]]) scrive su un **container dedicato** popolato esternamente. Un managed volume **non vede** file scritti da fuori UC → direzione probabile **`landing_mode="external"`** (External Location + Storage Credential/MI). **Da confermare con la piattaforma** (non deciso in ADR-0023). Impatta [[ADR-0003]]/D3. | Confermare container + storage credential; poi flip `landing_mode` → external + compilare path. Nessun apply in corso: non urgente. |
 
 ---
@@ -88,7 +89,8 @@
 ✅ B2 subgruppo GitLab  → CNO/cno-data-platform/logistico, Maintainer (2026-08-03)
 ✅ B3 auth CI/CD        → Managed Identity (no secret) — 2026-08-27
 ✅ B5 pipeline → plan   → terraform plan verde via MSI (15 add, 0 destroy)
-🟢 B6 grant MI ottenuto → OP-INF-1 chiuso (2026-09-01); apply infra da ESEGUIRE (ri-lanciare pipeline)
+🟢 B6 grant MI ottenuto → OP-INF-1 chiuso; apply v0.1.5 PARZIALE (schemi+Volume creati)
+🔴 B7 grants apply       → gruppo Engineering-dev non risolto nel workspace → OP-INF-2 (piattaforma)
 ✅ C5 protocollo landing → deciso AzCopy (ADR-0023, 2026-08-31), non SFTP
 🟡 C6 landing_mode      → external (probabile) da confermare con la piattaforma
 🟡 A5 reader group      → da fare quando il gruppo sarà creato (non bloccante per apply)
@@ -99,9 +101,9 @@
 2. **Extrared** (Ippazio CC) → subgruppo GitLab (§F.1) — ✅ **risolto**: subgroup + Maintainer
 3. **team DevOps/Azure** → ~~credenziali SFTP~~ → **accesso container per AzCopy** (§F.2, dopo [[ADR-0023]]) — ✅ **inviata 2026-08-31**, in attesa risposta
 
-**Prossimo passo attivo:** **grant OTTENUTO (2026-09-01, OP-INF-1 chiuso)** → **ri-lanciare la pipeline
-`infrastructure`** (rigenera `plan`/`tfplan`) e **cliccare il job `apply`** (gate manuale). Atteso: 15 add
-(8 schemi + Volume `landing.files` + 6 grants), 0 destroy. Lo split multi-repo e il deploy CI in DEV sono **fatti**.
+**Prossimo passo attivo:** **OP-INF-2** — chiedere alla piattaforma il **nome esatto** del gruppo data-engineer
+e l'**assegnazione al workspace DEV** (`adb-3179436993731139`); poi ri-lanciare la pipeline `infrastructure` per
+applicare i 6 grants (idempotente, 0 destroy). Schemi + Volume di landing sono **già creati** (apply v0.1.5 parziale).
 
 ---
 
@@ -225,7 +227,8 @@ Grazie,
 | A5 Reader UC group | Cliente (quando creato) | Nome gruppo analisti/MicroStrategy → `enable_reader_grants=true` + `terraform apply` | 🟡 non urgente |
 | B3 Auth CI/CD | Team Logistico | **Risolto**: Managed Identity del runner, nessun secret (2026-08-27) | ✅ |
 | **OP-INF-1 Grant UC alla MI** | Team infrastructure | `USE CATALOG` + `CREATE SCHEMA` alla MI `id-dev-dataplatform-workload-00` sui 5 catalog DEV — **assegnati 2026-09-01** | ✅ |
-| **Apply infra DEV** | Team Logistico | Ri-lanciare pipeline `infrastructure` + clic `apply` (gate) | 🟡 da eseguire |
+| **Apply infra DEV** | Team Logistico | apply v0.1.5 **parziale**: 8 schemi + Volume creati; grants falliti | 🟡 parziale |
+| **OP-INF-2 Gruppo `Engineering-dev`** | Team infrastructure | Confermare nome esatto + **assegnare il gruppo al workspace DEV** → sblocca i 6 grants | 🔴 |
 | D1 Service Principal | Ippazio / Technology | SP condiviso data platform → comunicare ID | ⏸️ ping mensile |
 | B5 Review plan | Ippazio | `terraform plan` verde via MSI; review + `apply` dopo il grant (OP-INF-1) | 🟡 |
 | H1 Tagging costi Databricks | Data Reply (Ippazio) | Standard naming tag (min. `business_unit=logistica`) + **serverless budget policy a livello di account** per applicare i tag ai job. Il tagging trasversale per applicazione Azure è governance di piattaforma (non nostro). | 🟡 (call 2026-07-03, tema costi sollevato da Silvio/Marcello) |

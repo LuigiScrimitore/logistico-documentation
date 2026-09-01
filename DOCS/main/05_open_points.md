@@ -72,7 +72,7 @@ per-nome e la migrazione MSTR → **rinviato**. Il tracking rename per MSTR è i
 ### OP-07 — Struttura path landing zone 🟡
 **Descrizione:** pattern `<nome_sorgente>-landing` con struttura concordata per i flussi ODI.  
 **Stato (agg. 2026-08-31):** trasporto via **AzCopy** ([[ADR-0023]]), **non** più SFTP — a tendere eseguito da **processi ODI** (owner: team). File sullo stesso storage ADLS. Cartelle **`YYYY/MM/DD`** (3 livelli, confermato). Formato **CSV** (Parquet da abilitare in futuro). Convenzione `<source>-landing/{tabella}/YYYY/MM/DD/` già nei Bronze. **`landing_mode` external vs managed (C6) ancora da confermare** con la piattaforma (probabile external, dato il write esterno di AzCopy) → impatta D3/[[ADR-0003]].  
-**Azione residua:** richiesta accesso landing (container unico + auth AzCopy + lettura UC + conferma `landing_mode` external) **inviata al team piattaforma il 2026-08-31** (§F.2 di `12_checklist_infra_setup.md`) — **in attesa risposta**; confermare con Foconi i nomi sorgente esatti (`logistix-landing`, `cdtdw-landing`, `stat-landing`); sviluppare backend AzCopy in `send_to_landing.py` (branch dedicato).
+**Azione residua:** richiesta accesso landing (container unico + auth AzCopy + lettura UC + conferma `landing_mode` external) **inviata al team piattaforma il 2026-08-31** (§F.2 di `12_checklist_infra_setup.md`) — **in attesa risposta**; confermare con Foconi i nomi sorgente esatti (`logistix-landing`, `cdtdw-landing`, `stat-landing`). Backend AzCopy **in main** (`send_to_landing.py --transport azcopy|sftp`, 15 test, dry-run validato); resta la validazione `--send` reale col container.
 
 ### OP-08 — FULL vs DELTA e naming file 🟠
 **Stato implementativo:** modalità Bronze definite per ciascuna tabella secondo l'analisi AS-IS verificata (DELTA_MERGE / FULL_OVERWRITE / SNAPSHOT). Il separatore CSV è hardcoded `;` (template).  
@@ -336,7 +336,7 @@ cdt_dw) arrivano in **push** dai sorgenti. Elimina secret scope Oracle, VNet pee
 |-------|-------------|
 | 🔴 Aperto / Bloccante | **OP-21** (DQ framework — senza risposta Reply), **OP-QDR-1** (quadratura non significativa senza backfill storico) |
 | 🟠 Da confermare (sorgente) | OP-08, OP-09, OP-10, OP-11, OP-31, **OP-CAR-7** (CORRIERE_COD → 'ND') |
-| 🟡 Da confermare (Reply/DWH/piattaforma) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25, **OP-GIA-1** (170k righe giacenze — decisione) |
+| 🟡 Da confermare (Reply/DWH/piattaforma) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25, **OP-INF-2** (gruppo `Engineering-dev` non risolto → grants apply bloccati), **OP-GIA-1** (170k righe giacenze — decisione) |
 | 🔵 Stand-by / Fisiologico / Bassa priorità | OP-03, **OP-29** (ordering fisiologico locale), OP-33, OP-34, OP-36, **OP-CAR-1**, **OP-MOV-1** (grana per-movimento — futuro) |
 | ⏸️ On hold (Technology) | **OP-18** (Service Principal unico data platform) |
 | 🟢 Risolto | **OP-19** (serverless), **OP-28** (orphan 0.0%), **OP-30** (incrementalità), **OP-32** (LAD framework completo+validato; residuo ART/FORN gated OP-02), **OP-35** (watermark), **OP-CAR-4/A** (tombstone quadratura), **OP-CAR-6** (fallback anagrafiche non più silenzioso), **OP-PSP-1** (scartate), **OP-PSP-2** (DATA_PREL_INIZ), **OP-TST-1/2** (fixture/FQN test), **OP-INF-1** (grant UC alla MI — apply DEV sbloccato), **D1-D5** (migrazione Databricks) |
@@ -443,8 +443,24 @@ L'`apply` Terraform DEV (via MSI — auth: [[ADR-0022]]) era autenticato ma bloc
 
 **Risolto**: il team infrastructure ha assegnato **`USE CATALOG` + `CREATE SCHEMA`** alla MI
 **`id-dev-dataplatform-workload-00`** (= SP applicationId `54d17490-…`) su `bronze_dev`/`silver_dev`/`gold_dev`/
-`config_dev`/`landing_dev` (2026-09-01). **Prossimo passo operativo**: ri-lanciare la pipeline `infrastructure`
-+ clic sul job `apply` (gate manuale). L'esito dell'`apply` è tracciato in [[ACT_0.1.6]].
+`config_dev`/`landing_dev` (2026-09-01). L'`apply` (2026-09-01) ha creato **8 schemi + Volume `landing.files`**;
+si è fermato sui grants → nuovo punto **OP-INF-2**. Esito in [[ACT_0.1.6]].
+
+### OP-INF-2 — Gruppo UC `Engineering-dev` non risolto come principal (grants apply falliti) 🟡 (piattaforma)
+**Aperto**: 2026-09-01 ([[ACT_0.1.6]])   **Da confermare (Reply/piattaforma)**
+
+L'`apply` DEV ha creato schemi + Volume, poi è fallito sui 6 `databricks_grants` con
+**`cannot create grants: Could not find principal with name Engineering-dev`**. Non è un problema di permessi
+della MI (sarebbe "does not have privilege") né del codice: il gruppo **`Engineering-dev`** (`var.group_engineers`,
+default confermato da Ippazio 2026-07-03) **non è risolvibile** nel workspace DEV — o non esiste con quel nome
+esatto, o è un gruppo **account-level non assegnato al workspace** (identity federation). Analogo a [[OP-INF-1]]
+(item di piattaforma). Gli schemi/Volume restano creati (stato consistente); mancano solo i grant di scrittura.
+
+**Azione**: chiedere al team infrastructure di (a) confermare il **nome esatto** del gruppo data-engineer e
+(b) **assegnarlo al workspace DEV** (`adb-3179436993731139`). Poi: se il nome differisce → aggiornare
+`TF_VAR_group_engineers`; in ogni caso ri-lanciare la pipeline → i 6 grant si applicano (idempotente, 0 destroy).
+Opz. per sbloccare intanto una pipeline verde: gate `enable_engineer_grants` (come i reader) da tenere `false`
+finché il gruppo non è pronto.
 
 ## Riferimenti
 - `docs/Archive/Open Points - Logistico 2.0.md` — versione originale 2026-06-10

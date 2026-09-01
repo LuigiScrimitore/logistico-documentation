@@ -10,9 +10,9 @@
 
 > **Aggiornamento 2026-08-31 — deciso AzCopy (dai sistemi).** Il protocollo di trasporto è **AzCopy**, non SFTP
 > ([[ADR-0023]]). **A tendere** eseguito da **processi ODI** (che invocano AzCopy), **owner: team** (ODI
-> trasversale). **Per ora** si tiene lo script `send_to_sftp.py`; il backend AzCopy (`send_to_landing.py
-> --transport azcopy`) si sviluppa su **branch dedicato**. Resta aperto **C6** (`landing_mode` external vs
-> managed, da confermare con la piattaforma).
+> trasversale). Backend AzCopy **in main**: `send_to_landing.py --transport azcopy|sftp` (15 test, dry-run
+> validato; `send_to_sftp.py` = legacy). Richiesta accesso container **inviata 2026-08-31** (§F.2) → validazione
+> `--send` reale pendente. Resta aperto **C6** (`landing_mode` external vs managed, da confermare con la piattaforma).
 
 ## Contesto e motivazione
 Thread mail (`DOCS/altro/logistico azure sftp.pdf`, 7 messaggi 6 lug→3 ago 2026). **Reply** (Eddy Boscolo,
@@ -73,7 +73,7 @@ concordato; un Bronze legge la landing via UC senza modifiche di logica; `landin
 punti di **ownership estrazione** (#3/#4) e **C6** (`landing_mode`).
 
 ## Follow-up
-1. ✅ **Backend AzCopy implementato** su branch `feature/azcopy-send`: `scripts/sftp/send_to_landing.py`
+1. ✅ **Backend AzCopy in main**: `scripts/sftp/send_to_landing.py`
    (`--transport azcopy|sftp`) riusa `build_upload_plan`; comando `azcopy copy ... --overwrite=ifSourceNewer`;
    auth SAS/AAD(MSI/SPN) da env; **dry-run** (default) stampa i comandi con **SAS mascherato**, senza azcopy/credenziali.
    `send_to_sftp.py` mantenuto come backend legacy. Test `tests/test_send_to_landing.py` (**15 pass**). **Resta la
