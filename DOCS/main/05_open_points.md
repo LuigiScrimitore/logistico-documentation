@@ -336,10 +336,10 @@ cdt_dw) arrivano in **push** dai sorgenti. Elimina secret scope Oracle, VNet pee
 |-------|-------------|
 | 🔴 Aperto / Bloccante | **OP-21** (DQ framework — senza risposta Reply), **OP-QDR-1** (quadratura non significativa senza backfill storico) |
 | 🟠 Da confermare (sorgente) | OP-08, OP-09, OP-10, OP-11, OP-31, **OP-CAR-7** (CORRIERE_COD → 'ND') |
-| 🟡 Da confermare (Reply/DWH/piattaforma) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25, **OP-INF-1** (grant CREATE SCHEMA alla MI → blocca `apply` infra DEV), **OP-GIA-1** (170k righe giacenze — decisione) |
+| 🟡 Da confermare (Reply/DWH/piattaforma) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25, **OP-GIA-1** (170k righe giacenze — decisione) |
 | 🔵 Stand-by / Fisiologico / Bassa priorità | OP-03, **OP-29** (ordering fisiologico locale), OP-33, OP-34, OP-36, **OP-CAR-1**, **OP-MOV-1** (grana per-movimento — futuro) |
 | ⏸️ On hold (Technology) | **OP-18** (Service Principal unico data platform) |
-| 🟢 Risolto | **OP-19** (serverless), **OP-28** (orphan 0.0%), **OP-30** (incrementalità), **OP-32** (LAD framework completo+validato; residuo ART/FORN gated OP-02), **OP-35** (watermark), **OP-CAR-4/A** (tombstone quadratura), **OP-CAR-6** (fallback anagrafiche non più silenzioso), **OP-PSP-1** (scartate), **OP-PSP-2** (DATA_PREL_INIZ), **OP-TST-1/2** (fixture/FQN test), **D1-D5** (migrazione Databricks) |
+| 🟢 Risolto | **OP-19** (serverless), **OP-28** (orphan 0.0%), **OP-30** (incrementalità), **OP-32** (LAD framework completo+validato; residuo ART/FORN gated OP-02), **OP-35** (watermark), **OP-CAR-4/A** (tombstone quadratura), **OP-CAR-6** (fallback anagrafiche non più silenzioso), **OP-PSP-1** (scartate), **OP-PSP-2** (DATA_PREL_INIZ), **OP-TST-1/2** (fixture/FQN test), **OP-INF-1** (grant UC alla MI — apply DEV sbloccato), **D1-D5** (migrazione Databricks) |
 
 ---
 
@@ -435,15 +435,16 @@ Databricks (UC, 3 livelli) era già corretto: era l'ambiente locale l'anomalia.
 `schema.table`. Usato da `DeltaHelper._fqn` e da `get_watermark` (stesso bug latente). Suite completa **111/111
 verde**, sia coi 5 file nominati sia con `pytest` bare (aggiunto `--ignore=tests/local_bronze` in `pytest.ini`).
 
-### OP-INF-1 — Grant `CREATE SCHEMA` alla Managed Identity sui catalog DEV 🟡 (attesa Reply)
-**Aperto**: 2026-08-27 ([[ACT_0.1.6]])   **Da confermare (Reply/piattaforma)**
+### OP-INF-1 — Grant `CREATE SCHEMA` alla Managed Identity sui catalog DEV 🟢 RISOLTO (2026-09-01)
+**Aperto**: 2026-08-27 · **Chiuso**: 2026-09-01 ([[ACT_0.1.6]])   **Interno/piattaforma**
 
-L'`apply` Terraform DEV (via MSI — auth: [[ADR-0022]]) è autenticato ma bloccato: la MI (SP applicationId `54d17490-…`) non ha
-`CREATE SCHEMA` su `bronze_dev`/`silver_dev`/`gold_dev`/`config_dev`/`landing_dev`. Il `plan` è verde
-(15 add, 0 destroy); 0 risorse create (stato invariato) → [[LL-018]] (authN ≠ authZ).
+L'`apply` Terraform DEV (via MSI — auth: [[ADR-0022]]) era autenticato ma bloccato: la MI non aveva
+`CREATE SCHEMA` sui 5 catalog DEV → 0 risorse create ([[LL-018]] authN ≠ authZ).
 
-**Azione**: richiesti a Francesco Giambona (Reply, fr.giambona@reply.it) i grant `USE CATALOG` + `CREATE SCHEMA`
-sui 5 catalog DEV per la MI (mail 2026-08-27). Ottenuti → ri-run pipeline `infrastructure` + clic `apply`.
+**Risolto**: il team infrastructure ha assegnato **`USE CATALOG` + `CREATE SCHEMA`** alla MI
+**`id-dev-dataplatform-workload-00`** (= SP applicationId `54d17490-…`) su `bronze_dev`/`silver_dev`/`gold_dev`/
+`config_dev`/`landing_dev` (2026-09-01). **Prossimo passo operativo**: ri-lanciare la pipeline `infrastructure`
++ clic sul job `apply` (gate manuale). L'esito dell'`apply` è tracciato in [[ACT_0.1.6]].
 
 ## Riferimenti
 - `docs/Archive/Open Points - Logistico 2.0.md` — versione originale 2026-06-10

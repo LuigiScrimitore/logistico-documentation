@@ -1,9 +1,9 @@
 # ACT_0.1.6 · Consegna Terraform `brownfield/` in multi-repo GitLab
 
-**Status**: on-hold (⏸️ `apply` DEV in attesa dei grant `CREATE SCHEMA` alla MI — mail a Giambona/Reply 2026-08-27; `plan` verde, 0 destroy)
+**Status**: ready-to-apply (✅ grant `USE CATALOG`+`CREATE SCHEMA` alla MI ottenuti 2026-09-01 — OP-INF-1 chiuso; `apply` DEV da eseguire ri-lanciando la pipeline)
 **Type**: infra
 **Origin**: sprint 0.1   **Sprint**: 0.1   **Fase / Wave**: FASE 0 — Fondamenta
-**Gg (stima)**: 1   **Blocco**: 🟢 `plan` DEV verde; restano review MR (Reply) e `apply` (gate [[ACT_8.1.2]])
+**Gg (stima)**: 1   **Blocco**: 🟢 sbloccato — resta solo l'esecuzione dell'`apply` (gate manuale in CI, [[ACT_8.1.2]])
 **Created**: 2026-07-05   **Closed**: —
 **Dipende da**: ACT_0.1.1, ACT_0.1.2 (codice risorse), [[ACT_9011]] (split → repo `logistico-infrastructure`)   **Blocca**: apply infra (0.1.1/0.1.2/0.1.3/0.1.7)
 **ADR collegate**: ADR-0016 (multi-repo GitLab), ADR-0004 (naming ambienti)   **OP collegati**: —
@@ -89,5 +89,10 @@ MR approvata da Ippazio (Reply).
   invariato): `cannot create schema: User does not have CREATE SCHEMA on Catalog '<cat>'` su **tutti** i 5
   catalog. La MI legge i catalog ma non ha `CREATE SCHEMA`. → **richiesta a Francesco Giambona (Reply)**:
   concedere alla MI (SP applicationId `54d17490-…`) **`USE CATALOG` + `CREATE SCHEMA`** su `bronze_dev`,
-  `silver_dev`, `gold_dev`, `config_dev`, `landing_dev`. Ottenuti i grant → **ri-clic `apply`** (o ri-run
-  pipeline: il `tfplan` va rigenerato se scaduto). PROD → [[ACT_8.1.2]].
+  `silver_dev`, `gold_dev`, `config_dev`, `landing_dev`. PROD → [[ACT_8.1.2]].
+- **2026-09-01 — grant ASSEGNATI (team infrastructure)** ✅: `USE CATALOG` + `CREATE SCHEMA` concessi alla MI
+  **`id-dev-dataplatform-workload-00`** (= SP applicationId `54d17490-…`) sui 5 catalog DEV. **OP-INF-1 chiuso**
+  ([[LL-018]]: authN era già ok, mancava authZ → ora concessa). **Prossimo passo: ri-lanciare la pipeline
+  `infrastructure`** (rigenera `plan`/`tfplan`) e **cliccare il job `apply`** (gate manuale). Atteso: 15 add
+  (8 schemi + Volume `landing.files` + 6 grants), 0 destroy. A `apply` verde → ACT_0.1.6 close + sblocco
+  0.1.1/0.1.2/0.1.3/0.1.7.

@@ -21,7 +21,7 @@
 | **Ultimo aggiornamento** | 2026-08-27 |
 
 **Note di sprint:** sprint completato offline. Il deploy effettivo su cloud dipende dai prerequisiti dello Sprint 0.1 (subgroup GitLab, workspace). **Aggiornamento 2026-08-22**: lo split multi-repo è stato **eseguito** — 4 repo su GitHub (SoT) e pilot `logistico-lib` completato sul GitLab cliente (CI verde + wheel nel Package Registry). Vedi [[ACT_9011]] (split) e [[ACT_9017]] (tooling `split_to_multirepo.py` / `promote_to_gitlab.py`). La CI/CD di questo sprint è quindi confluita nei `.gitlab-ci.yml` per-repo generati.
-**Aggiornamento 2026-08-27**: **tutti e 3 i repo di codice sono su GitLab con CI in DEV** (auth Managed Identity, no segreti): `logistico-lib` (wheel nel Package Registry), `logistico-workflows` (`deploy_dev` verde → 7 job creati in DEV, [[ACT_9018]]), `logistico-infrastructure` (`plan` verde, `apply` in attesa grant — [[ACT_0.1.6]]). Gate PROD manuale sui tag (`deploy_prod`).
+**Aggiornamento 2026-08-27**: **tutti e 3 i repo di codice sono su GitLab con CI in DEV** (auth Managed Identity, no segreti): `logistico-lib` (wheel nel Package Registry), `logistico-workflows` (`deploy_dev` verde → 7 job creati in DEV, [[ACT_9018]]), `logistico-infrastructure` (`plan` verde; grant MI ottenuto 2026-09-01, OP-INF-1 chiuso → `apply` da eseguire — [[ACT_0.1.6]]). Gate PROD manuale sui tag (`deploy_prod`).
 
 ## Attività
 

@@ -4,7 +4,7 @@
 > Contiene il quadro tecnico e funzionale della Fase 0: perimetro, architettura, decisioni, stato, punti aperti/risolti, decisioni out-of-scope e sviluppi futuri.
 > Sostituisce il precedente `fasi/F0_infrastruttura.md` (archiviato). Stato di dettaglio degli sprint: [`../sprint_agile/`](../sprint_agile/) (0.1, 0.2, 0.3).
 
-**Ultimo aggiornamento:** 2026-08-27 · **Stato fase:** 🔵 IN CORSO (0.2/0.3 ✅; multi-repo eseguito — 3 repo su GitLab con CI in DEV via MSI: lib+workflows deployati, infra `plan` ✅/`apply` in attesa grant OP-INF-1)
+**Ultimo aggiornamento:** 2026-09-01 · **Stato fase:** 🔵 IN CORSO (0.2/0.3 ✅; multi-repo eseguito — 3 repo su GitLab con CI in DEV via MSI: lib+workflows deployati, infra `plan` ✅; **grant MI ottenuto 2026-09-01, OP-INF-1 chiuso → `apply` da eseguire**)
 
 ---
 
@@ -14,7 +14,7 @@ La Fase 0 predispone le **fondamenta infrastrutturali** su cui gira l'intera pip
 
 Il principio guida è **integrarsi nel Databricks/DWH aziendale esistente senza romperlo**: non creiamo un workspace nuovo, ma i nostri schemi accanto a quelli esistenti. L'ingestion avviene in **push via AzCopy** ([[ADR-0023]], deciso 2026-08-31 al posto di SFTP; a tendere via processi ODI) dai sistemi sorgente, eliminando ogni connettività Oracle diretta.
 
-Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **completi**; lo sprint 0.1 (Unity Catalog & Storage) ha il **codice pronto** e l'esecuzione è **avviata in DEV** — infra su GitLab, `terraform plan` verde via Managed Identity (15 add, 0 destroy). L'`apply` resta in attesa dei grant Unity Catalog alla MI ([[ACT_0.1.6]]/OP-INF-1); restano prerequisiti di piattaforma per l'ingestion (accesso container per **AzCopy** — [[ADR-0023]]) e per l'ambiente PROD.
+Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **completi**; lo sprint 0.1 (Unity Catalog & Storage) ha il **codice pronto** e l'esecuzione è **avviata in DEV** — infra su GitLab, `terraform plan` verde via Managed Identity (15 add, 0 destroy). I grant Unity Catalog alla MI sono stati **ottenuti** (2026-09-01, [[ACT_0.1.6]]/OP-INF-1 chiuso): l'`apply` è ora eseguibile ri-lanciando la pipeline. Restano prerequisiti di piattaforma per l'ingestion (accesso container per **AzCopy** — [[ADR-0023]]) e per l'ambiente PROD.
 
 ---
 
@@ -27,7 +27,7 @@ Alla data, gli sprint 0.2 (CI/CD & DAB) e 0.3 (template & connettività) sono **
 | Compute per i job | ✅ job cluster serverless |
 | Libreria condivisa `logistica_utils` | ✅ 6 moduli, 64 test |
 | CI/CD e Databricks Asset Bundles | ✅ pipeline + `databricks.yml` |
-| Split multi-repo (4 repo) + CI su GitLab (DEV) | ✅ 4 repo GitHub; 3 su GitLab con CI in DEV via MSI — lib (wheel `1.0.4`), workflows (`deploy_dev` ✅), infra (`plan` ✅, `apply` in attesa grant) — [[ACT_9011]]/[[ACT_9017]]/[[ACT_9018]] |
+| Split multi-repo (4 repo) + CI su GitLab (DEV) | ✅ 4 repo GitHub; 3 su GitLab con CI in DEV via MSI — lib (wheel `1.0.4`), workflows (`deploy_dev` ✅), infra (`plan` ✅; grant MI ottenuto 2026-09-01 → `apply` da eseguire) — [[ACT_9011]]/[[ACT_9017]]/[[ACT_9018]] |
 | Template notebook (Bronze/Silver/Gold) | ✅ 3 template + logging standard |
 
 ---

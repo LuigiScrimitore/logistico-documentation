@@ -34,7 +34,7 @@ del singolo tema. Questo file è la **mappa**; i file ACT/ADR sono il **territor
 | 0.1.3 | Landing storage — UC Volume | 0.1 | 🔵 in-progress | 🏗️☁️ | [acts/ACT_0.1.3](acts/ACT_0.1.3_landing-uc-volume.md) |
 | 0.1.4 | GitLab CI/CD (ex Key Vault) — no segreti Oracle | 0.1 | ✅ done | 🟢 | [acts/ACT_0.1.4](acts/ACT_0.1.4_gitlab-cicd-no-secret-oracle.md) |
 | 0.1.5 | Compute serverless (policy rimossa, ACT_9007) | 0.1 | ✅ done | 🟢 | [acts/ACT_0.1.5](acts/ACT_0.1.5_cluster-policy-serverless.md) |
-| 0.1.6 | Consegna `brownfield/` multi-repo | 0.1 | ⏸️ on-hold (apply DEV attende grant CREATE SCHEMA MI — Reply) | 🤝 | [acts/ACT_0.1.6](acts/ACT_0.1.6_consegna-brownfield-multi-repo.md) |
+| 0.1.6 | Consegna `brownfield/` multi-repo | 0.1 | 🔵 ready-to-apply (grant CREATE SCHEMA MI ottenuto 2026-09-01, OP-INF-1 chiuso → ri-lanciare pipeline + `apply`) | 🟢 | [acts/ACT_0.1.6](acts/ACT_0.1.6_consegna-brownfield-multi-repo.md) |
 | 0.1.7 | Grants least-privilege | 0.1 | 🔵 in-progress | 🏗️ | [acts/ACT_0.1.7](acts/ACT_0.1.7_grants-least-privilege.md) |
 | 0.2.1 | Struttura repository GitLab | 0.2 | ✅ done | 🟢 | [acts/ACT_0.2.1](acts/ACT_0.2.1_struttura-repo-gitlab.md) |
 | 0.2.2 | Databricks Asset Bundles (dev) | 0.2 | ✅ done | 🟢 | [acts/ACT_0.2.2](acts/ACT_0.2.2_databricks-asset-bundles.md) |

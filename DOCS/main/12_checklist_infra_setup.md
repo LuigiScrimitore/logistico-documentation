@@ -7,8 +7,9 @@
 > **Aggiornamento 2026-08-27 — deploy GitLab eseguito.** I 3 repo di codice sono su GitLab con **CI in DEV via
 > Managed Identity** (nessun secret): `logistico-lib` (wheel `v1.0.4` nel Package Registry), `logistico-workflows`
 > (`deploy_dev` verde → 7 job in DEV), `logistico-infrastructure` (`terraform plan` verde, 15 add/0 destroy).
-> **Unico blocco residuo:** l'`apply` infra attende il grant `CREATE SCHEMA` alla MI sui catalog DEV → **OP-INF-1**
-> ([[ACT_0.1.6]]). Dettaglio multi-repo: `16_runbook_multirepo_github_gitlab.md`.
+> **Grant sbloccato (2026-09-01):** il team infrastructure ha assegnato `USE CATALOG` + `CREATE SCHEMA` alla MI
+> `id-dev-dataplatform-workload-00` sui 5 catalog DEV (**OP-INF-1 chiuso**). **Prossimo passo:** ri-lanciare la
+> pipeline `infrastructure` + clic sul job `apply`. Dettaglio: [[ACT_0.1.6]], `16_runbook_multirepo_github_gitlab.md`.
 
 > Dettaglio tecnico sprint → `04_piano_sviluppo.md` | Decisioni architetturali → `10_piano_migrazione_databricks.md` | **Rilascio a fasi post-accesso → `14_release_kit.md`**
 
@@ -49,7 +50,7 @@
 | B3 | Auth CI/CD | ✅ | **Risolto via Managed Identity** ([[ADR-0022]], 2026-08-27): la CI si autentica verso Azure/Databricks con la **MI del group runner** — **nessun secret di deploy** (no `ARM_CLIENT_SECRET`, no `DATABRICKS_TOKEN`). Terraform: `ARM_USE_MSI=true`; Databricks CLI: stessa MI. Le uniche variabili CI sono **identificativi non sensibili** impostati come **protected** (solo `main`+tag `v*`, [[LL-016]]): `ARM_CLIENT_ID`/`ARM_TENANT_ID`/`ARM_SUBSCRIPTION_ID`, `DATABRICKS_HOST`. I job runtime non usano `dbutils.secrets`/`SecretHelper`; le credenziali Oracle restano solo in `.env` locale (tool dev). | — (fatto). NB: authN ≠ authZ → serve comunque il grant UC alla MI (B6/OP-INF-1) |
 | B4 | Branch strategy | ✅ | Seguire `DOCS/linee_guida/CNO_DataPlatform_linee-guida_v1.1.0` (feature branch → main, MR obbligatoria) | Da leggere prima della prima MR |
 | B5 | Pipeline Terraform su GitLab | ✅ | **`terraform plan` verde via MSI** (2026-08-27): 15 add, 0 destroy, 0 risorse create (stato invariato). CI `validate`→`plan` operativa. | ✅ plan fatto → resta `apply` (B6) |
-| B6 | Deploy CI in DEV (3 repo) | 🟡 | `logistico-lib` wheel `v1.0.4` pubblicato; `logistico-workflows` `deploy_dev` verde (7 job in DEV, sandbox mode:development); `logistico-infrastructure` `plan` verde. **`apply` bloccato** sul grant `CREATE SCHEMA` alla MI → **OP-INF-1** ([[ACT_0.1.6]], mail a Giambona 2026-08-27). | Ottenuto il grant → ri-run pipeline `infrastructure` + clic `apply` |
+| B6 | Deploy CI in DEV (3 repo) | 🟡 | `logistico-lib` wheel `v1.0.4` pubblicato; `logistico-workflows` `deploy_dev` verde (7 job in DEV, sandbox mode:development); `logistico-infrastructure` `plan` verde. **Grant `CREATE SCHEMA` alla MI OTTENUTO** (2026-09-01, OP-INF-1 chiuso) → `apply` ora eseguibile. | **Ri-lanciare pipeline `infrastructure` + clic `apply`** (15 add attesi) |
 
 ---
 
@@ -87,7 +88,7 @@
 ✅ B2 subgruppo GitLab  → CNO/cno-data-platform/logistico, Maintainer (2026-08-03)
 ✅ B3 auth CI/CD        → Managed Identity (no secret) — 2026-08-27
 ✅ B5 pipeline → plan   → terraform plan verde via MSI (15 add, 0 destroy)
-🔴 B6 apply infra       → BLOCCA: serve grant CREATE SCHEMA alla MI sui catalog DEV → OP-INF-1
+🟢 B6 grant MI ottenuto → OP-INF-1 chiuso (2026-09-01); apply infra da ESEGUIRE (ri-lanciare pipeline)
 ✅ C5 protocollo landing → deciso AzCopy (ADR-0023, 2026-08-31), non SFTP
 🟡 C6 landing_mode      → external (probabile) da confermare con la piattaforma
 🟡 A5 reader group      → da fare quando il gruppo sarà creato (non bloccante per apply)
@@ -98,9 +99,9 @@
 2. **Extrared** (Ippazio CC) → subgruppo GitLab (§F.1) — ✅ **risolto**: subgroup + Maintainer
 3. **team DevOps/Azure** → ~~credenziali SFTP~~ → **accesso container per AzCopy** (§F.2, dopo [[ADR-0023]]) — ✅ **inviata 2026-08-31**, in attesa risposta
 
-**Prossimo passo attivo:** ottenere il **grant `CREATE SCHEMA` alla Managed Identity** sui 5 catalog DEV
-(**OP-INF-1** — mail a Giambona del 2026-08-27) → ri-run pipeline `infrastructure` + `apply`. Lo split
-multi-repo e il deploy CI in DEV sono **fatti**.
+**Prossimo passo attivo:** **grant OTTENUTO (2026-09-01, OP-INF-1 chiuso)** → **ri-lanciare la pipeline
+`infrastructure`** (rigenera `plan`/`tfplan`) e **cliccare il job `apply`** (gate manuale). Atteso: 15 add
+(8 schemi + Volume `landing.files` + 6 grants), 0 destroy. Lo split multi-repo e il deploy CI in DEV sono **fatti**.
 
 ---
 
@@ -223,7 +224,8 @@ Grazie,
 | C6 Accesso landing (AzCopy) | Team DevOps/Azure | Container unico + auth AzCopy + lettura UC; conferma `landing_mode` external — **richiesta inviata 2026-08-31** (§F.2) | 🟡 in attesa risposta |
 | A5 Reader UC group | Cliente (quando creato) | Nome gruppo analisti/MicroStrategy → `enable_reader_grants=true` + `terraform apply` | 🟡 non urgente |
 | B3 Auth CI/CD | Team Logistico | **Risolto**: Managed Identity del runner, nessun secret (2026-08-27) | ✅ |
-| **OP-INF-1 Grant UC alla MI** | **Reply / F. Giambona** | **`USE CATALOG` + `CREATE SCHEMA` alla MI sui 5 catalog DEV** (mail 2026-08-27) → sblocca `apply` | 🔴 **bloccante** |
+| **OP-INF-1 Grant UC alla MI** | Team infrastructure | `USE CATALOG` + `CREATE SCHEMA` alla MI `id-dev-dataplatform-workload-00` sui 5 catalog DEV — **assegnati 2026-09-01** | ✅ |
+| **Apply infra DEV** | Team Logistico | Ri-lanciare pipeline `infrastructure` + clic `apply` (gate) | 🟡 da eseguire |
 | D1 Service Principal | Ippazio / Technology | SP condiviso data platform → comunicare ID | ⏸️ ping mensile |
 | B5 Review plan | Ippazio | `terraform plan` verde via MSI; review + `apply` dopo il grant (OP-INF-1) | 🟡 |
 | H1 Tagging costi Databricks | Data Reply (Ippazio) | Standard naming tag (min. `business_unit=logistica`) + **serverless budget policy a livello di account** per applicare i tag ai job. Il tagging trasversale per applicazione Azure è governance di piattaforma (non nostro). | 🟡 (call 2026-07-03, tema costi sollevato da Silvio/Marcello) |

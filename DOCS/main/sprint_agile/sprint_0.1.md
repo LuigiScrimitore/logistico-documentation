@@ -18,10 +18,10 @@
 | **Obiettivo** | Provisioning Unity Catalog (schemi logistici nei catalog DWH), landing UC Volume, compute serverless, grants least-privilege — tutto via Terraform brownfield |
 | **Gg stimati** | 7 |
 | **Gg completati** | codice pronto; **esecuzione avviata in DEV** (repo su GitLab, `plan` verde) |
-| **% avanzamento** | codice ~85% · esecuzione: `plan` DEV ✅ (15 add, 0 destroy); `apply` in attesa grant UC alla MI (OP-INF-1) |
+| **% avanzamento** | codice ~85% · esecuzione: `plan` DEV ✅ (15 add, 0 destroy); grant UC alla MI ottenuto (OP-INF-1 chiuso 2026-09-01) → `apply` da eseguire |
 | **Stato** | 🔵 IN CORSO |
 | **Data inizio** | _da definire_ |
-| **Data fine prevista** | _da definire_ (dipende dai grant `CREATE SCHEMA` alla MI — Reply) |
+| **Data fine prevista** | all'esito dell'`apply` (grant MI ottenuti 2026-09-01; resta ri-lanciare pipeline + `apply`) |
 | **Ultimo aggiornamento** | 2026-08-27 |
 
 ### Note di sprint
@@ -49,7 +49,7 @@
 | 0.1.3 | Landing storage — UC Volume | 1 | 🔵 IN CORSO | D3: Volume in `landing_dev` |
 | 0.1.4 | ~~Key Vault + Secret Scope~~ → GitLab CI/CD | 0 | ✅ CHIUSA | Ridisegnata: no segreti Oracle |
 | 0.1.5 | Cluster Policy — serverless | 1 | ✅ CHIUSA | Job cluster serverless |
-| 0.1.6 | ~~TF state & moduli~~ → consegna `brownfield/` multi-repo | 1 | 🔵 su GitLab; `plan` DEV ✅ | repo pushato, auth MSI, `apply` in attesa grant (OP-INF-1) |
+| 0.1.6 | ~~TF state & moduli~~ → consegna `brownfield/` multi-repo | 1 | 🔵 su GitLab; `plan` DEV ✅ | repo pushato, auth MSI; grant MI ottenuto (OP-INF-1 chiuso) → `apply` da eseguire |
 | 0.1.7 | Grants least-privilege | 2 | 🟡 IN ATTESA | Writer `Engineering-dev` ✅; reader condizionale |
 
 ---
@@ -81,7 +81,7 @@
 ### 0.1.6 — Consegna `brownfield/` multi-repo 🔵 su GitLab, `plan` DEV verde
 **Ridisegnata.** Root module greenfield `infra/terraform/` **deprecato**. Solo `brownfield/` va applicato. Backend `azurerm` DEV (`rg-dev-dataplatform-00` / `stdevdataplatformweu00` / `statefile`). Git: **multi-repo** in subgroup `logistico`. Dettaglio in [[ACT_0.1.6]].
 **Stato (2026-08-27):** `logistico-infrastructure` su GitLab; CI `validate`+`plan` **verdi** via **Managed Identity** (`ARM_USE_MSI`); `terraform plan` DEV = **15 add, 0 destroy** (8 schemi + Volume landing + 6 grants). Stage `apply` **manuale** (gate) predisposto.
-**Blocco:** `apply` fermo — la MI non ha `CREATE SCHEMA` sui catalog DEV → grant richiesti a Reply/Giambona (**OP-INF-1**). Ottenuti → ri-run pipeline + `apply`.
+**Sblocco (2026-09-01):** grant `USE CATALOG` + `CREATE SCHEMA` assegnati alla MI `id-dev-dataplatform-workload-00` sui 5 catalog DEV (**OP-INF-1 chiuso**). **Prossimo passo:** ri-lanciare la pipeline `infrastructure` + clic `apply`.
 
 ### 0.1.7 — Grants least-privilege 🟡 IN ATTESA
 **Cosa:** grant in `brownfield/main.tf`: `engineer_group` (full su schemi logistici), reader (SELECT su Gold).

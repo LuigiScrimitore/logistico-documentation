@@ -88,7 +88,7 @@
 | 8.3 | Preparazione Cut-Over | 2/5 | 40% | 🔵 PARZ. | [8.3](sprint_agile/sprint_8.3.md) |
 | 8.4 | Cut-Over & Stabilizzazione | 0/7 | 0% | ⏳ | [8.4](sprint_agile/sprint_8.4.md) |
 
-\* 0.1: infra su GitLab con CI in DEV via **Managed Identity** — `terraform plan` verde (15 add, 0 destroy). `apply` bloccato **solo** sul grant `CREATE SCHEMA` alla MI (**OP-INF-1**). Subgroup GitLab e auth CI: ✅ fatti. Trasporto landing deciso = **AzCopy** ([[ADR-0023]]); resta il gate **accesso container** per l'ingestion.
+\* 0.1: infra su GitLab con CI in DEV via **Managed Identity** — `terraform plan` verde (15 add, 0 destroy). **Grant `CREATE SCHEMA` alla MI OTTENUTO** (2026-09-01, **OP-INF-1 chiuso**) → `apply` da eseguire (ri-lanciare pipeline). Subgroup GitLab e auth CI: ✅ fatti. Trasporto landing deciso = **AzCopy** ([[ADR-0023]]); resta il gate **accesso container** per l'ingestion.
 
 ---
 
@@ -180,7 +180,7 @@
 | Watermark rollout (clean, carichi, spedizioni, ordini) | OP-35 | 🟡 Media | 3 gg DE | ✅ Completato | Rollout 2026-06-19 su tutti i _clean |
 | Supporto Parquet in Bronze (widget file_format, auto-detect) | Gap #2 | 🔴 Alta | 3 gg DE | ✅ Fatto | G-01, 2026-06-20 |
 | **Certifica F_CARICO — grain pesata INNER JOIN** | OP-CAR-5 | 🟠 Media | 2 gg DE | Design pendente | LEFT join pesata vs grain da catena WL; sessione dedicata |
-| **Migrazione brownfield Databricks** (schemi, Volume, DAB, multi-repo GitLab) | D1-D5 | 🟡 Media | 4-6 gg DevOps | **CI in DEV via MSI (fatto)** — resta `apply` (OP-INF-1) | 4 repo GitHub (SoT) / 3 GitLab cliente **tutti con CI in DEV via Managed Identity**: lib `v1.0.4`, workflows `deploy_dev` verde (7 job), infra `plan` verde. `apply` bloccato sul grant UC alla MI. Vedi `16_runbook_multirepo_github_gitlab.md` |
+| **Migrazione brownfield Databricks** (schemi, Volume, DAB, multi-repo GitLab) | D1-D5 | 🟡 Media | 4-6 gg DevOps | **CI in DEV via MSI (fatto); grant MI ottenuto → `apply` da eseguire** | 4 repo GitHub (SoT) / 3 GitLab cliente **tutti con CI in DEV via Managed Identity**: lib `v1.0.4`, workflows `deploy_dev` verde (7 job), infra `plan` verde. **OP-INF-1 chiuso (2026-09-01)** → ri-lanciare pipeline `infrastructure` + `apply`. Vedi `16_runbook_multirepo_github_gitlab.md` |
 | Schema definitivo lookup Retail (OP-02) | OP-02 | 🟡 Media | — | In attesa Reply | Sblocca join master articolo/fornitore; lega D2 migrazione |
 | Framework DQ condiviso (Great Expectations / Soda) | OP-21 | 🔴 Alta | — | Senza risposta Reply | Ri-sottoporre con priorità |
 
