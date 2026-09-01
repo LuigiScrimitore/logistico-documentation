@@ -78,3 +78,4 @@ approfondire altrove?"* Se restano zone grigie, aggiungere contesto. In particol
 | [0021](0021_modello_deploy_dab_pipeline_per_area.md) | Modello deploy DAB = pipeline per-area | accepted | 2026-08-22 |
 | [0022](0022_auth_ci_managed_identity.md) | Auth CI/CD via Managed Identity (no secret) | accepted | 2026-08-27 |
 | [0023](0023_trasporto_landing_azcopy.md) | Trasporto landing = AzCopy (processi ODI), non SFTP | accepted | 2026-08-31 |
+| [0024](0024_worklog_diario_push.md) | Worklog: diario di sviluppo per push su main | accepted | 2026-09-01 |

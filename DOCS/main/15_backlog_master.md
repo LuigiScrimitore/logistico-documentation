@@ -372,6 +372,7 @@ _(sezioni da popolare in Fase 2)_
 | 0021 | Modello di deploy DAB: pipeline per-area (non wave) | accepted | 2026-08-22 | [adr/0021](adr/0021_modello_deploy_dab_pipeline_per_area.md) |
 | 0022 | Auth CI/CD via Managed Identity (no secret) | accepted | 2026-08-27 | [adr/0022](adr/0022_auth_ci_managed_identity.md) |
 | 0023 | Trasporto landing = AzCopy (processi ODI), non SFTP | accepted | 2026-08-31 | [adr/0023](adr/0023_trasporto_landing_azcopy.md) |
+| 0024 | Worklog: diario di sviluppo per push su main | accepted | 2026-09-01 | [adr/0024](adr/0024_worklog_diario_push.md) |
 
 ---
 

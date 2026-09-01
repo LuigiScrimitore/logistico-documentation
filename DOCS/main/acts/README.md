@@ -141,6 +141,10 @@ resta "done offline" anche se tutte le sue attività di sviluppo lo sono.
    certificazione `07`, milestone `milestones/fase_N`, ecc.);
 5. eventuali **ADR** se è emersa una decisione architetturale; eventuali **ACT 9000+** se sono emerse
    nuove attività.
+6. al **push su `main`**, la **voce worklog** del push ([`../worklog/`](../worklog/), [[ADR-0024]]): scaffold con
+   `python scripts/worklog/new_entry.py --slug <slug> --title "<titolo>"`, si completa in 8-12 righe, poi
+   `python scripts/worklog/worklog_index.py`. È il layer di **comunicazione al team** ("cosa è cambiato con
+   questo push, dove siamo").
 
 > **Sprint vs ACT**: i file in `sprint_agile/` restano la **vista SAL** (avanzamento settimanale, stato di
 > fase); l'ACT è la **SSOT del dettaglio** della singola attività. Il dettaglio operativo si aggiorna

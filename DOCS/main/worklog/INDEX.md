@@ -1,0 +1,20 @@
+# Worklog — indice (per push su `main`)
+
+> ⚠️ **File generato.** Non modificare a mano: rigenerare con
+> `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
+> decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
+
+**Ultimo push:** [Introdotto il worklog (ADR-0024)](2026-09-01-02_worklog-introdotto.md) · 2026-09-01 · monorepo `435b27d`
+
+**7 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+
+| Data | Push | Cosa | ACT | ADR | LL | OP |
+|---|---|---|---|---|---|---|
+| 2026-09-01 | `435b27d` | [Introdotto il worklog (ADR-0024)](2026-09-01-02_worklog-introdotto.md) | — | ADR-0024 | — | — |
+| 2026-09-01 | `4d75de3` | [Apply infra DEV parziale — grant MI ottenuto, gruppo Engineering-dev non risolto](2026-09-01-01_apply-infra-parziale.md) | ACT_0.1.6 | — | LL-019 | OP-INF-1 OP-INF-2 |
+| 2026-08-31 | `9fac961` | [Backend AzCopy per il send verso landing](2026-08-31-03_backend-azcopy.md) | ACT_9012 | ADR-0023 | — | — |
+| 2026-08-31 | `a37424a` | [Inviata richiesta accesso container AzCopy (§F.2)](2026-08-31-02_richiesta-container-azcopy.md) | ACT_9012 | — | — | — |
+| 2026-08-31 | `3fc43a2` | [ADR-0023 — trasporto landing via AzCopy (non SFTP)](2026-08-31-01_adr-0023-azcopy.md) | ACT_9012 | ADR-0023 | — | — |
+| 2026-08-28 | `4894942` | [ADR-0022 — auth CI/CD via Managed Identity (no secret)](2026-08-28-02_adr-0022-auth-msi.md) | ACT_0.1.6 ACT_9018 | ADR-0022 | — | — |
+| 2026-08-28 | `cc2505d` | [Allineamento doc post multi-repo deploy (auth secret -> MSI)](2026-08-28-01_doc-sync-multirepo-deploy.md) | — | — | — | OP-INF-1 |
+
