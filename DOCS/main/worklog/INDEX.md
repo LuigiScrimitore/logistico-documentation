@@ -4,12 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Runbook 17: seed manuale landing DEV (workaround pre-AzCopy)](2026-09-01-06_runbook-seed-landing-manuale.md) · 2026-09-01 · monorepo `8ea19bf`
+**Ultimo push:** [Wrapper PowerShell seed_landing_dev (estrai->copia->archivia)](2026-09-01-07_wrapper-seed-landing.md) · 2026-09-01 · monorepo `3cbac76`
 
-**11 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**12 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-09-01 | `3cbac76` | [Wrapper PowerShell seed_landing_dev (estrai->copia->archivia)](2026-09-01-07_wrapper-seed-landing.md) | — | — | — | — |
 | 2026-09-01 | `8ea19bf` | [Runbook 17: seed manuale landing DEV (workaround pre-AzCopy)](2026-09-01-06_runbook-seed-landing-manuale.md) | — | — | — | OP-GIA-1 OP-QDR-1 |
 | 2026-09-01 | `432d32e` | [Infra DEV completa: apply v0.1.6 verde (6 grants), ACT_0.1.6 chiuso](2026-09-01-05_apply-infra-dev-completo.md) | ACT_0.1.6 | — | — | — |
 | 2026-09-01 | `6ba1223` | [Hook pre-push per gli INDEX generati (worklog, lessons)](2026-09-01-04_pre-push-hook.md) | — | ADR-0024 | — | — |

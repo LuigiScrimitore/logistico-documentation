@@ -16,9 +16,22 @@
 [3] lancia i job in DEV e valida
 [4] giorno dopo: ripeti [1]-[3] con run_date = nuovo giorno
 ```
-Il **Volume accumula** la storia (day1 `…/09/01/`, day2 `…/09/02/`…); `landing_data` locale è solo **staging del
-giorno** (lo svuoti prima di ogni estrazione → contiene solo oggi). Nessuna cartella da creare a mano sul Volume,
-nessuna delete lato Volume.
+Il **Volume accumula** la storia (day1 `…/09/01/`, day2 `…/09/02/`…); lo **stage** locale è solo del **giorno**
+(svuotato ad ogni run). Ogni giorno viene **archiviato in zip** (`landing_archive\snap_YYYYMMDD.zip`, ricaricabile
+se si ripulisce Azure). Nessuna cartella da creare a mano sul Volume, nessuna delete lato Volume.
+
+## Automazione — wrapper `seed_landing_dev.ps1`
+Il ciclo estrai→copia→archivia→pulisci è in un solo comando: `scripts/landing_simulator/seed_landing_dev.ps1`
+(fa i §1–§4 sotto + archivio zip). Prerequisiti: `py -3` con accesso Oracle + Databricks CLI configurata (§2-§3).
+```powershell
+# fotografia di oggi, fetta minima (un sito + poche tabelle):
+cd C:\PROGETTI\LOGISTICO\scripts\landing_simulator
+.\seed_landing_dev.ps1 -Sites lgcx -Tables sto_tes_carichi,sto_righe_carico,pesate,tabgen
+# anteprima senza eseguire:  -DryRun     |  giorno specifico:  -RunDate 2026-09-01
+# ri-seed su Azure da archivio (no estrazione):  -ReseedZip <...\snap_20260901.zip>
+```
+Default: `-Systems logistix,stat` (per l'export quadratura CDT_DW aggiungi `cdt_estr`); lo stage viene zippato
+in `landing_archive\` e svuotato. Le sezioni sotto restano il **dettaglio manuale** dei singoli passi.
 
 ---
 
