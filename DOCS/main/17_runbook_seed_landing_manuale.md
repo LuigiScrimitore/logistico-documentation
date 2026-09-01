@@ -60,7 +60,7 @@ Risultato: `landing_data/<source>-landing/[sito/]<tabella>/2026/09/01/<tabella>.
 Usare la **CLI nuova/unificata** (Go, v0.2xx). Metodo **raccomandato** dai doc Databricks (Windows): **winget**.
 ```powershell
 winget install Databricks.DatabricksCLI    # poi riapri il terminale
-databricks -v                              # atteso v0.2xx ; aggiornamento: winget upgrade Databricks.DatabricksCLI
+databricks -v                              # deve rispondere "Databricks CLI vX.Y.Z" (unificata; es. v1.14.1). La legacy direbbe 0.17.x. Aggiornamento: winget upgrade Databricks.DatabricksCLI
 ```
 Alternative ufficiali: **download diretto** dello `…_windows_amd64.zip` da github.com/databricks/cli/releases →
 estrai `databricks.exe` in una cartella su PATH; oppure **Chocolatey** (`choco install databricks-cli`, marcato

@@ -27,9 +27,9 @@
 param(
   [string]$RunDate    = (Get-Date).ToString('yyyy-MM-dd'),
   [string]$FromDate   = "",                 # default = RunDate (fotografia singolo giorno)
-  [string]$Systems    = "logistix,stat",    # operativi. Aggiungi 'cdt_estr' per l'export quadratura (pesante)
-  [string]$Sites      = "",                 # es. "lgcx" ; vuoto = tutti i siti da config
-  [string]$Tables     = "",                 # es. "sto_tes_carichi,pesate,tabgen" ; vuoto = tutte
+  [string[]]$Systems  = @('logistix','stat'),  # operativi. Aggiungi 'cdt_estr' per l'export quadratura (pesante)
+  [string[]]$Sites    = @(),                    # es. -Sites lgcx  (o lgcx,lgax) ; vuoto = tutti i siti da config
+  [string[]]$Tables   = @(),                    # es. -Tables sto_tes_carichi,pesate,tabgen ; vuoto = tutte
   [string]$RepoRoot   = "C:\PROGETTI\LOGISTICO",
   [string]$Stage      = "C:\PROGETTI\LOGISTICO_DATA\landing_stage",
   [string]$Archive    = "C:\PROGETTI\LOGISTICO_DATA\landing_archive",
@@ -92,9 +92,9 @@ if (-not $DryRun) {
 
 # ============ 2) ESTRAZIONE OPERATIVI (Logistix/STAT[/cdt_estr]) ============
 $oraArgs = @('-3','extract_oracle_to_landing.py','--run-date',$RunDate,'--from-date',$FromDate,'--to-date',$RunDate,'--output-dir',$Stage,'--query-timeout','3600')
-if ($Systems) { $oraArgs += @('--systems',$Systems) }
-if ($Sites)   { $oraArgs += @('--sites',$Sites) }
-if ($Tables)  { $oraArgs += @('--tables',$Tables) }
+if ($Systems) { $oraArgs += @('--systems',($Systems -join ',')) }
+if ($Sites)   { $oraArgs += @('--sites',  ($Sites   -join ',')) }
+if ($Tables)  { $oraArgs += @('--tables', ($Tables  -join ',')) }
 Push-Location $oraDir
 try {
   if ($DryRun) { Write-Host "DRYRUN> py $($oraArgs -join ' ')" -ForegroundColor DarkGray }
@@ -104,7 +104,7 @@ try {
 # ============ 3) ESTRAZIONE LOOKUP CDT_DW (bridge OP-02) ============
 if (-not $SkipCdtdw) {
   $cdtArgs = @('-3','extract_cdtdw_lookups.py','--run-date',$RunDate,'--output-dir',$Stage)
-  if ($Tables) { $cdtArgs += @('--tables',$Tables) }
+  if ($Tables) { $cdtArgs += @('--tables',($Tables -join ',')) }
   Push-Location $cdtDir
   try {
     if ($DryRun) { Write-Host "DRYRUN> py $($cdtArgs -join ' ')" -ForegroundColor DarkGray }

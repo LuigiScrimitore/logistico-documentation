@@ -4,12 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Runbook 17: chiarita install CLI (winget ok, pip legacy deprecato)](2026-09-01-08_fix-runbook-cli-install.md) · 2026-09-01 · monorepo `8541a4e`
+**Ultimo push:** [Fix wrapper seed: parametri lista (string[]) + nota versione CLI runbook](2026-09-01-09_fix-wrapper-param-liste.md) · 2026-09-01 · monorepo `1b685f6`
 
-**13 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**14 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-09-01 | `1b685f6` | [Fix wrapper seed: parametri lista (string[]) + nota versione CLI runbook](2026-09-01-09_fix-wrapper-param-liste.md) | — | — | — | — |
 | 2026-09-01 | `8541a4e` | [Runbook 17: chiarita install CLI (winget ok, pip legacy deprecato)](2026-09-01-08_fix-runbook-cli-install.md) | — | — | — | — |
 | 2026-09-01 | `3cbac76` | [Wrapper PowerShell seed_landing_dev (estrai->copia->archivia)](2026-09-01-07_wrapper-seed-landing.md) | — | — | — | — |
 | 2026-09-01 | `8ea19bf` | [Runbook 17: seed manuale landing DEV (workaround pre-AzCopy)](2026-09-01-06_runbook-seed-landing-manuale.md) | — | — | — | OP-GIA-1 OP-QDR-1 |
