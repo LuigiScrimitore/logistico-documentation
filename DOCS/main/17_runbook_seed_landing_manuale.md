@@ -57,12 +57,17 @@ py -3 extract_cdtdw_lookups.py --run-date 2026-09-01 `
 Risultato: `landing_data/<source>-landing/[sito/]<tabella>/2026/09/01/<tabella>.csv` (separatore `;`).
 
 ## 2. Databricks CLI — installazione (una tantum, Windows)
+Usare la **CLI nuova/unificata** (Go, v0.2xx). Metodo **raccomandato** dai doc Databricks (Windows): **winget**.
 ```powershell
 winget install Databricks.DatabricksCLI    # poi riapri il terminale
-databricks -v                              # atteso v0.2xx
+databricks -v                              # atteso v0.2xx ; aggiornamento: winget upgrade Databricks.DatabricksCLI
 ```
-Alternativa: scarica `…_windows_amd64.zip` da github.com/databricks/cli/releases → estrai `databricks.exe` in
-una cartella su PATH. (Fallback rapido, CLI legacy deprecata ma `fs cp` funziona: `py -3 -m pip install databricks-cli`.)
+Alternative ufficiali: **download diretto** dello `…_windows_amd64.zip` da github.com/databricks/cli/releases →
+estrai `databricks.exe` in una cartella su PATH; oppure **Chocolatey** (`choco install databricks-cli`, marcato
+*experimental*); oppure **WSL** (metodo curl).
+
+> ⚠️ **Non usare** `pip install databricks-cli`: è la **CLI legacy** (Python, v0.17.x) — **deprecata**. È una cosa
+> diversa dalla CLI nuova; i comandi qui (`databricks fs cp --recursive`, auth) sono per la **nuova** CLI.
 
 ## 3. Autenticazione (una tantum)
 Genera un **Personal Access Token**: Databricks → avatar in alto a dx → **Settings → Developer → Access tokens → Generate**.
