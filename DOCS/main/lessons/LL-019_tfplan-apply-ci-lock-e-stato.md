@@ -26,8 +26,9 @@ separati) servono **due** condizioni:
 1. **Stesso set di provider/lock.** Il job `apply` rifà `terraform init`: se `.terraform.lock.hcl` non è né
    committato né veicolato, ri-risolve i provider in modo indipendente → *inconsistent lock*. **Fix:** passare
    dal `plan` all'`apply` come artifact **`tfplan` + `.terraform.lock.hcl` + `.terraform/`** (`needs:[plan]`) e
-   fare `init -lockfile=readonly`. (Il lock è gitignorato → va come artifact, non da git. In alternativa:
-   committarlo generandolo per `-platform=linux_amd64`.)
+   fare `init -lockfile=readonly` (riscarica gli stessi provider pinnati dal lock). Basta il **solo lock**:
+   NON passare `.terraform/` (provider ~100+ MB → rischio limite artifact). Il lock è gitignorato → va come
+   artifact, non da git (in alternativa committarlo per `-platform=linux_amd64`).
 2. **Stato invariato tra plan e apply.** Se lo stato cambia dopo il plan (un'altra sessione/operazione sullo
    stesso backend, o un plan successivo) il piano è **stale** *by design*. **Fix:** ri-lanciare l'**intera
    pipeline** (plan+apply nello stesso run) contro lo stato corrente; non applicare piani vecchi; nessuna

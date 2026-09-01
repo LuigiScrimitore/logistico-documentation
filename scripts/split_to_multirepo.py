@@ -326,13 +326,14 @@ plan:
     # -out=tfplan: salva il piano rivisto; l'apply userà ESATTAMENTE questo (no re-plan).
     - terraform -chdir=$TF_DIR plan -out=tfplan
   artifacts:
-    # Passiamo all'apply ANCHE il lock e la provider dir del plan: senza, l'`init` dell'apply
-    # ri-risolve i provider in modo indipendente -> "Inconsistent dependency lock file"
-    # (il .terraform.lock.hcl è gitignorato, quindi va veicolato come artifact, non da git).
+    # Passiamo all'apply ANCHE il lock del plan: senza, l'`init` dell'apply ri-risolve i provider
+    # in modo indipendente -> "Inconsistent dependency lock file" (il .terraform.lock.hcl è
+    # gitignorato, quindi va veicolato come artifact, non da git). NON passiamo .terraform/ (provider
+    # ~100+ MB, rischio limite artifact): con -lockfile=readonly l'apply riscarica gli stessi provider
+    # pinnati (versioni+hash) dal lock -> deterministico.
     paths:
       - terraform/brownfield/tfplan
       - terraform/brownfield/.terraform.lock.hcl
-      - terraform/brownfield/.terraform
     expire_in: 1 week
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -343,7 +344,7 @@ apply:
   # se lo stato e' cambiato dal plan, apply fallisce (protezione: "Saved plan is stale").
   # -> in tal caso NON ri-cliccare un apply vecchio: ri-lancia l'INTERA pipeline (plan+apply
   #    nello stesso run) così il piano è coerente con lo stato corrente. apply DEV; PROD -> ACT_8.1.2.
-  needs: [plan]                 # eredita gli artifact del plan (tfplan + lock + .terraform)
+  needs: [plan]                 # eredita gli artifact del plan (tfplan + .terraform.lock.hcl)
   script:
     - terraform -chdir=$TF_DIR init -lockfile=readonly   # usa il lock veicolato dal plan
     - terraform -chdir=$TF_DIR apply -input=false tfplan
