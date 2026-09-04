@@ -397,8 +397,12 @@ incoerente.
 **Azioni**: decidere se allineare il corriere al pattern `'ND'`, oppure colmare la sorgente a monte
 (`STCAR_COD_CORRIERE`). Fino ad allora l'allarme al 100% è rumore noto.
 
-### OP-CND-1 — Bronze che leggono ancora `cnd` (dismesso in SCELTA B) 🟠
-**Aperto**: 2026-09-02 ([[ACT_CND-01]])   **Design (intento SCELTA-B + interno)**
+### OP-CND-1 — Bronze che leggono ancora `cnd` (dismesso in SCELTA B) ✅ CHIUSO
+**Aperto**: 2026-09-02 ([[ACT_CND-01]])   **Chiuso**: 2026-09-04 ([[ACT_CND-01]] mergiato in main via PR #7)
+**Chiusura**: i 7 notebook morti (`bronze_vettori/trasporti/giacenze_snapshot`, `silver_t_vettori/t_trasp_mtv/
+vettori_clean/trasporti`) **rimossi** + task workflow. Confermato che NON servivano: `silver_prep_giacenze` legge
+`silver.t_stock` (da `catena`), trasporti/vettori da TRACK. Run E2E DEV 7/7 verde (giacenze/trasporti inclusi).
+**Design (intento SCELTA-B + interno)**
 
 `bronze_vettori` (`cnd/t_vettori`), `bronze_trasporti` (`cnd/t_trasp_mtv`) e `bronze_giacenze_snapshot`
 (`cnd/t_stock`) puntano ancora alla sorgente **`cnd` dismessa** → `PATH_NOT_FOUND` al run (il seed non produce

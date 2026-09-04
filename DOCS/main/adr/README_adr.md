@@ -79,3 +79,5 @@ approfondire altrove?"* Se restano zone grigie, aggiungere contesto. In particol
 | [0022](0022_auth_ci_managed_identity.md) | Auth CI/CD via Managed Identity (no secret) | accepted | 2026-08-27 |
 | [0023](0023_trasporto_landing_azcopy.md) | Trasporto landing = AzCopy (processi ODI), non SFTP | accepted | 2026-08-31 |
 | [0024](0024_worklog_diario_push.md) | Worklog: diario di sviluppo per push su main | accepted | 2026-09-01 |
+| [0025](0025_provisioning_wheel_serverless.md) | Provisioning wheel `logistica_utils` su serverless (%pip da Volume, interim) | accepted-interim | 2026-09-01 |
+| [0026](0026_canonico_sito_numerico.md) | Canonico sito: chiave numerica unica + attributi alfabetici sul gold | accepted | 2026-09-04 |

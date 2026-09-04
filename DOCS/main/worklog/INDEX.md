@@ -4,12 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Run E2E 7 job DEV: da 1/7 a 7/7 verde (fix serverless/ANSI + CND + canonico sito)](2026-09-04-01_run7job-7su7-verde.md) · 2026-09-04 · monorepo `(PR #7 feat/act-9026-dim-sito-slogistix)`
+**Ultimo push:** [Release multi-repo: GitHub (4) + GitLab (lib v1.0.5, workflows v0.1.6) + doc pass (ADR-0026)](2026-09-04-02_release-multirepo-v105-v016.md) · 2026-09-04 · monorepo `(main @6420869 → doc pass su branch docs/release-7su7-multirepo)`
 
-**26 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**27 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-09-04 | `(main @6420869 → doc pass su branch docs/release-7su7-multirepo)` | [Release multi-repo: GitHub (4) + GitLab (lib v1.0.5, workflows v0.1.6) + doc pass (ADR-0026)](2026-09-04-02_release-multirepo-v105-v016.md) | ACT_9026 ACT_9027 ACT_CND-01 | ADR-0026 | LL-013 LL-025 LL-026 LL-027 LL-028 | OP-TRA-1 OP-CND-1 |
 | 2026-09-04 | `(PR #7 feat/act-9026-dim-sito-slogistix)` | [Run E2E 7 job DEV: da 1/7 a 7/7 verde (fix serverless/ANSI + CND + canonico sito)](2026-09-04-01_run7job-7su7-verde.md) | ACT_9027 ACT_9026 ACT_CND-01 | — | LL-027 LL-028 LL-021 LL-022 LL-026 | OP-TRA-1 |
 | 2026-09-03 | `8377bfb (PR #7)` | [dim_sito da S_LOGISTIX+WL1: orphan sito trasporti = 0 (ACT_9026) + fix wheel LL-025/LL-026](2026-09-03-03_dim-sito-slogistix-orphan-trasporti-zero.md) | ACT_9026 | — | LL-025 LL-026 | OP-TRA-1 |
 | 2026-09-03 | `bae018f` | [Fix sito canonico alfabetico: giacenze verde, trasporti parziale (OP-TRA-1) + LL-025](2026-09-03-02_fix-sito-canonico.md) | ACT_9025 | — | LL-025 | OP-TRA-1 |

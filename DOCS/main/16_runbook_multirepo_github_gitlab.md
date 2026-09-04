@@ -1,6 +1,6 @@
 # 16 · Runbook multi-repo — locale → GitHub → GitLab cliente
 
-**Owner**: Team Logistico 2.0   **Ultimo aggiornamento**: 2026-08-27
+**Owner**: Team Logistico 2.0   **Ultimo aggiornamento**: 2026-09-04
 **Collegati**: [[ACT_9011]] (split), [[ACT_9017]] (script), [[ACT_9018]] (DAB), [[ACT_0.1.6]] (infra multi-repo), ADR-0016 (multi-repo), ADR-0005 (auth CI)
 
 ## Governance dei due host (modello di lavoro)
@@ -19,16 +19,17 @@ e `DATABRICKS_HOST`. Decisione formalizzata in [[ADR-0022]]. Vedi [[ACT_0.1.6]] 
 **Credenziali**: `push` e login (`gh`/GitLab PAT/SSH) verso gli host remoti restano **azione dell'utente**;
 questo runbook fornisce i comandi esatti.
 
-## Stato pubblicazione (aggiornato 2026-08-27)
-**Sintesi:** tutti e 3 i repo di codice sono su GitLab con **CI in DEV via Managed Identity** (no secret). **Infra DEV
-completa** (`apply` v0.1.6 verde 2026-09-01): 8 schemi + Volume landing + 6 grants `Group-Engineering-dev` (0 destroy).
-OP-INF-1/2 chiusi, **ACT_0.1.6 chiuso** ([[ACT_0.1.6]]). Prossimo gate: ingestion (container AzCopy §F.2).
+## Stato pubblicazione (aggiornato 2026-09-04)
+**Sintesi:** **release 2026-09-04** dopo il run E2E DEV **7/7 job verdi** (ACT_9026/9027, canonico sito numerico
+[[ADR-0026]], rimozione CND [[ACT_CND-01]]). Pubblicati GitHub (4 repo) + GitLab (lib `v1.0.5`, workflows `v0.1.6`;
+CI cliente verdi). **Infra invariata** in questo giro (`v0.1.6`, non ripubblicata). Ciclo eseguito con
+`split_to_multirepo.py` (GitHub) + `promote_to_gitlab.py` (GitLab, push ff, history cliente preservata).
 
 | Repo | GitHub (SoT) | GitLab cliente | Note |
 |------|:---:|:---:|------|
-| `logistico-lib` | ✅ | ✅ `v1.0.4` | wheel `logistica_utils 1.0.4` nel Package Registry (CI verde) |
-| `logistico-infrastructure` | ✅ | ✅ `v0.1.6` | **`apply` v0.1.6 verde**: 8 schemi + Volume + 6 grants `Group-Engineering-dev` in DEV (0 destroy). ACT_0.1.6 chiuso; fix apply lock ([[LL-019]]), nome gruppo (OP-INF-2) |
-| `logistico-workflows` | ✅ | ✅ `v0.1.5` | DAB consolidato ([[ACT_9018]]/[[ADR-0021]]); CI `main` verde → **`deploy_dev` in DEV via MSI** (7 job, sandbox mode:development). Wheel dal registry a run-time (DBR-05) |
+| `logistico-lib` | ✅ | ✅ `v1.0.5` | wheel `logistica_utils` nel Package Registry (CI verde). v1.0.5: `julian_to_date` ANSI-safe + `get_sito_alias_map` completa ([[ACT_9027]]/[[LL-025]]/[[LL-027]]). NB pacchetto a runtime resta 1.0.0 via %pip Volume ([[LL-013]]) |
+| `logistico-infrastructure` | ✅ | ✅ `v0.1.6` | **invariato** in questo giro (0 file diff) → non ripubblicato. `apply` v0.1.6 verde (8 schemi + Volume + 6 grants, ACT_0.1.6 chiuso) |
+| `logistico-workflows` | ✅ | ✅ `v0.1.6` | v0.1.6: canonico sito numerico ([[ADR-0026]]), fix ANSI serverless ([[ACT_9027]]), rimozione 7 notebook CND ([[ACT_CND-01]]). CI `main` verde → `bundle validate`; `deploy_prod` gate manuale |
 | `logistico-documentation` | ✅ | ❌ (mai) | solo GitHub, per scelta |
 
 Lezioni operative emerse durante la migrazione (per il team): [[LL-009]] una direzione sola · [[LL-010]] split
