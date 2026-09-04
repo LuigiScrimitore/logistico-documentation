@@ -4,12 +4,24 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Fix wrapper seed: parametri lista (string[]) + nota versione CLI runbook](2026-09-01-09_fix-wrapper-param-liste.md) · 2026-09-01 · monorepo `1b685f6`
+**Ultimo push:** [Run E2E 7 job DEV: da 1/7 a 7/7 verde (fix serverless/ANSI + CND + canonico sito)](2026-09-04-01_run7job-7su7-verde.md) · 2026-09-04 · monorepo `(PR #7 feat/act-9026-dim-sito-slogistix)`
 
-**14 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**26 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-09-04 | `(PR #7 feat/act-9026-dim-sito-slogistix)` | [Run E2E 7 job DEV: da 1/7 a 7/7 verde (fix serverless/ANSI + CND + canonico sito)](2026-09-04-01_run7job-7su7-verde.md) | ACT_9027 ACT_9026 ACT_CND-01 | — | LL-027 LL-028 LL-021 LL-022 LL-026 | OP-TRA-1 |
+| 2026-09-03 | `8377bfb (PR #7)` | [dim_sito da S_LOGISTIX+WL1: orphan sito trasporti = 0 (ACT_9026) + fix wheel LL-025/LL-026](2026-09-03-03_dim-sito-slogistix-orphan-trasporti-zero.md) | ACT_9026 | — | LL-025 LL-026 | OP-TRA-1 |
+| 2026-09-03 | `bae018f` | [Fix sito canonico alfabetico: giacenze verde, trasporti parziale (OP-TRA-1) + LL-025](2026-09-03-02_fix-sito-canonico.md) | ACT_9025 | — | LL-025 | OP-TRA-1 |
+| 2026-09-03 | `e5edcdc` | [E2E giacenze/trasporti: ACT_9024 validato; blocco sito sistemico (OP-TRA-1)](2026-09-03-01_e2e-giacenze-trasporti-sito.md) | ACT_9024 ACT_ST-01 | — | LL-021 | OP-TRA-1 |
+| 2026-09-02 | `eef96a9` | [Formalizza follow-up: ACT_9023 cleanup pesata + OP-INF-3 modello dev/qa/prod](2026-09-02-05_formalizza-followup.md) | ACT_9023 | — | — | OP-INF-3 |
+| 2026-09-02 | `2d28898` | [Capitalizzazione: LL-022/023/024 + ACT_9019/9021/9022 (doc-sync dei fix mergiati)](2026-09-02-04_capitalizzazione-lezioni.md) | ACT_9019 ACT_9020 ACT_9021 ACT_9022 | — | LL-022 LL-023 LL-024 | OP-08 |
+| 2026-09-02 | `27590e7` | [Sandbox self-deploy (root_path home) + fix JDN + extractor ignore-odi-flag; carichi E2E verde](2026-09-02-03_sandbox-selfdeploy-e2e-carichi.md) | ACT_9020 | — | — | — |
+| 2026-09-02 | `45f8224` | [Carichi E2E verde su dato reale; dim_refresh 17/17; aperta ACT_CND-01 (bronze cnd)](2026-09-02-02_carichi-e2e-verde.md) | ACT_CND-01 | ADR-0025 | LL-020 LL-021 | OP-CND-1 |
+| 2026-09-02 | `11e1b11` | [DQ finding carichi = watermark; fix partitionOverwriteMode (serverless) + prep massa critica](2026-09-02-01_massa-critica-prep.md) | — | ADR-0025 | LL-020 LL-021 | — |
+| 2026-09-01 | `efa616b` | [Catena carichi VERDE end-to-end (bronze->silver->gold) su serverless con dati reali](2026-09-01-12_catena-carichi-verde-e2e.md) | — | ADR-0025 | LL-020 LL-021 | — |
+| 2026-09-01 | `0794b57` | [Fix serverless carichi committati + base catena gold (landing_ingestion/dim_refresh preparati)](2026-09-01-11_fix-serverless-carichi.md) | — | ADR-0025 | LL-020 LL-021 | — |
+| 2026-09-01 | `n/d (docs)` | [Smoke test carichi DEV: bronze+silver verdi E2E su dati reali](2026-09-01-10_smoke-test-carichi.md) | — | ADR-0025 | LL-020 LL-021 | — |
 | 2026-09-01 | `1b685f6` | [Fix wrapper seed: parametri lista (string[]) + nota versione CLI runbook](2026-09-01-09_fix-wrapper-param-liste.md) | — | — | — | — |
 | 2026-09-01 | `8541a4e` | [Runbook 17: chiarita install CLI (winget ok, pip legacy deprecato)](2026-09-01-08_fix-runbook-cli-install.md) | — | — | — | — |
 | 2026-09-01 | `3cbac76` | [Wrapper PowerShell seed_landing_dev (estrai->copia->archivia)](2026-09-01-07_wrapper-seed-landing.md) | — | — | — | — |

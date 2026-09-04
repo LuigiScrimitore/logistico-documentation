@@ -57,11 +57,19 @@ py -3 extract_cdtdw_lookups.py --run-date 2026-09-01 `
 Risultato: `landing_data/<source>-landing/[sito/]<tabella>/2026/09/01/<tabella>.csv` (separatore `;`).
 
 ## 2. Databricks CLI — installazione (una tantum, Windows)
-Usare la **CLI nuova/unificata** (Go, v0.2xx). Metodo **raccomandato** dai doc Databricks (Windows): **winget**.
+Usare la **CLI nuova/unificata** (Go, v1.x). Metodo **raccomandato** dai doc Databricks (Windows): **winget**.
 ```powershell
-winget install Databricks.DatabricksCLI    # poi riapri il terminale
+# install non-interattiva (accetta licenza pacchetto + sorgente senza prompt):
+winget install Databricks.DatabricksCLI --accept-package-agreements --accept-source-agreements
+# winget aggiorna il PATH: RIAVVIA il terminale (o ricarica il PATH nella sessione corrente, vedi nota).
 databricks -v                              # deve rispondere "Databricks CLI vX.Y.Z" (unificata; es. v1.14.1). La legacy direbbe 0.17.x. Aggiornamento: winget upgrade Databricks.DatabricksCLI
 ```
+Verificato il **2026-09-02**: `winget install` scarica `databricks_cli_1.14.1_windows_amd64.zip` da github.com/databricks/cli
+e installa in `%LOCALAPPDATA%\Microsoft\WinGet\Packages\Databricks.DatabricksCLI_*\databricks.exe`, aggiungendolo al PATH.
+
+> 💡 **PATH nella sessione corrente** (per non riaprire il terminale): in PowerShell
+> `$env:Path = [Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [Environment]::GetEnvironmentVariable("Path","User")`
+
 Alternative ufficiali: **download diretto** dello `…_windows_amd64.zip` da github.com/databricks/cli/releases →
 estrai `databricks.exe` in una cartella su PATH; oppure **Chocolatey** (`choco install databricks-cli`, marcato
 *experimental*); oppure **WSL** (metodo curl).

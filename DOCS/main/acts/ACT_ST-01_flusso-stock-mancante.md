@@ -23,6 +23,11 @@ Identificare la sorgente reale dello stock a valore nell'as-is (CND? Logistix?) 
 
 ## Sviluppo (diario)
 - 2026-07-05 · gap documentato; sorgente non identificata.
+- 2026-09-03 · **Precisazione dal run E2E giacenze in DEV**: `F_GIACENZE_DAILY` vuota **non** è (solo) il valore
+  stock di questo ACT. `silver_t_stock` esce a **0 righe** perché il join INNER con `struttura_mag` fallisce per
+  **case mismatch** del sito (`catena` = `lgax` minuscolo vs `struttura_mag` = `LGAX` maiuscolo) → è il problema
+  sito sistemico [[OP-TRA-1]], non la valorizzazione. ST-01 (valore `VAL_STOCK_*`) resta distinto: si potrà
+  valutare solo dopo che `silver_t_stock` produce righe (fix sito).
 
 ## Verifica
 Sorgente stock identificata e documentata; (se implementato) `VAL_STOCK_*` valorizzati e quadrati.

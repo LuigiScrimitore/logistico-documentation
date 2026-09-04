@@ -19,9 +19,14 @@
   # ri-seed su Azure da un archivio (nessuna estrazione):
   .\seed_landing_dev.ps1 -ReseedZip C:\PROGETTI\LOGISTICO_DATA\landing_archive\snap_20260901.zip
 
+.EXAMPLE
+  # seed STORICO ignorando il flag CDC dell'ODI (transazionali non svuotate dal flag di prod, ACT_9020):
+  .\seed_landing_dev.ps1 -IgnoreOdiFlag -Sites lgcx -Tables sto_tes_carichi,sto_righe_carico,pesate
+
 .NOTES
-  Prerequisiti: py -3 con accesso Oracle (.env degli extractor); Databricks CLI configurata
+  Prerequisiti: Python con oracledb + accesso Oracle (.env degli extractor); Databricks CLI configurata
   (databricks configure --token). Da lanciare sulla macchina dell'utente (auth personale, PAT).
+  L'interprete Python e' auto-rilevato (preferisce py -3.12 se py -3 e' una versione senza oracledb).
 #>
 [CmdletBinding()]
 param(
@@ -29,7 +34,8 @@ param(
   [string]$FromDate   = "",                 # default = RunDate (fotografia singolo giorno)
   [string[]]$Systems  = @('logistix','stat'),  # operativi. Aggiungi 'cdt_estr' per l'export quadratura (pesante)
   [string[]]$Sites    = @(),                    # es. -Sites lgcx  (o lgcx,lgax) ; vuoto = tutti i siti da config
-  [string[]]$Tables   = @(),                    # es. -Tables sto_tes_carichi,pesate,tabgen ; vuoto = tutte
+  [string[]]$Tables   = @(),                    # tabelle OPERATIVE (Logistix/STAT). es. -Tables sto_tes_carichi,pesate ; vuoto = tutte
+  [string[]]$CdtdwTables = @(),                 # lookup CDT_DW (L_*). es. -CdtdwTables L_ART_RADICE,L_FORN ; vuoto = tutti i lookup
   [string]$RepoRoot   = "C:\PROGETTI\LOGISTICO",
   [string]$Stage      = "C:\PROGETTI\LOGISTICO_DATA\landing_stage",
   [string]$Archive    = "C:\PROGETTI\LOGISTICO_DATA\landing_archive",
@@ -39,12 +45,25 @@ param(
   [switch]$KeepStage,                        # non svuotare lo stage a fine run
   [switch]$NoArchive,                        # non creare lo zip di archivio
   [string]$ReseedZip  = "",                  # ri-seed sul Volume da questo zip (salta l'estrazione)
+  [switch]$IgnoreOdiFlag,                    # NON applica il filtro CDC ODI (*_DATA_ESTRAZIONE_DWH) alle transazionali (ACT_9020)
   [switch]$DryRun
 )
 
 $ErrorActionPreference = 'Stop'
 function Info($m){ Write-Host "[seed] $m" -ForegroundColor Cyan }
 function Warn($m){ Write-Host "[seed] $m" -ForegroundColor Yellow }
+
+# Interprete Python: gli extractor richiedono oracledb (no wheel per Python 3.13+/beta).
+# Preferisci la prima versione con oracledb importabile (es. -3.12 dove py -3 = 3.15 beta),
+# fallback a -3. Portabile: su una macchina dove py -3 ha gia' oracledb usa quella. (ACT_9020)
+function Resolve-PySelector {
+  foreach ($v in @('-3.12','-3')) {
+    try { & py $v -c "import oracledb" 2>$null } catch {}
+    if ($LASTEXITCODE -eq 0) { return $v }
+  }
+  throw "Nessun interprete Python con oracledb trovato (provati: py -3.12, py -3). Installa oracledb o Python 3.12."
+}
+
 if (-not $FromDate) { $FromDate = $RunDate }
 $dateCompact = $RunDate -replace '-',''
 $oraDir = Join-Path $RepoRoot 'scripts\landing_simulator'
@@ -91,10 +110,13 @@ if (-not $DryRun) {
 }
 
 # ============ 2) ESTRAZIONE OPERATIVI (Logistix/STAT[/cdt_estr]) ============
-$oraArgs = @('-3','extract_oracle_to_landing.py','--run-date',$RunDate,'--from-date',$FromDate,'--to-date',$RunDate,'--output-dir',$Stage,'--query-timeout','3600')
+$pySel = Resolve-PySelector
+Info "interprete Python: py $pySel"
+$oraArgs = @($pySel,'extract_oracle_to_landing.py','--run-date',$RunDate,'--from-date',$FromDate,'--to-date',$RunDate,'--output-dir',$Stage,'--query-timeout','3600')
 if ($Systems) { $oraArgs += @('--systems',($Systems -join ',')) }
 if ($Sites)   { $oraArgs += @('--sites',  ($Sites   -join ',')) }
 if ($Tables)  { $oraArgs += @('--tables', ($Tables  -join ',')) }
+if ($IgnoreOdiFlag) { $oraArgs += '--ignore-odi-flag'; Warn "flag ODI IGNORATO sulle transazionali (seed storico, ACT_9020)" }
 Push-Location $oraDir
 try {
   if ($DryRun) { Write-Host "DRYRUN> py $($oraArgs -join ' ')" -ForegroundColor DarkGray }
@@ -103,8 +125,8 @@ try {
 
 # ============ 3) ESTRAZIONE LOOKUP CDT_DW (bridge OP-02) ============
 if (-not $SkipCdtdw) {
-  $cdtArgs = @('-3','extract_cdtdw_lookups.py','--run-date',$RunDate,'--output-dir',$Stage)
-  if ($Tables) { $cdtArgs += @('--tables',($Tables -join ',')) }
+  $cdtArgs = @($pySel,'extract_cdtdw_lookups.py','--run-date',$RunDate,'--output-dir',$Stage)
+  if ($CdtdwTables) { $cdtArgs += @('--tables',($CdtdwTables -join ',')) }
   Push-Location $cdtDir
   try {
     if ($DryRun) { Write-Host "DRYRUN> py $($cdtArgs -join ' ')" -ForegroundColor DarkGray }

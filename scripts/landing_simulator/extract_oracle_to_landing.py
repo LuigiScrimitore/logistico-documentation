@@ -234,8 +234,15 @@ def _validate_columns(cols: list[str]) -> list[str]:
 
 def build_query(sys_spec: SystemSpec, table: TableSpec,
                 from_date: date | None, to_date: date | None,
-                lookback_days: int = 7, run_date: date | None = None) -> tuple[str, dict[str, Any]]:
-    """Costruisce SELECT validata. Usa bind variables per le date."""
+                lookback_days: int = 7, run_date: date | None = None,
+                ignore_odi_flag: bool = False) -> tuple[str, dict[str, Any]]:
+    """Costruisce SELECT validata. Usa bind variables per le date.
+
+    ignore_odi_flag: se True, NON applica il filtro CDC dell'ODI legacy
+    (NVL(<flag>,0)=0). Serve per il seed storico della landing DEV, dove il flag
+    *_DATA_ESTRAZIONE_DWH marcherebbe come 'gia' estratti' i record di produzione,
+    svuotando la fotografia. La finestra data resta il filtro primario (ACT_9020).
+    """
     src = _validate_ident(table.src_obj(), "tabella")
     cols = _validate_columns(table.columns) if table.columns else []
     select_list = ", ".join(cols) if cols else "*"
@@ -294,13 +301,23 @@ def build_query(sys_spec: SystemSpec, table: TableSpec,
         # Flag come filtro aggiuntivo (non sostitutivo) — utile in prod (riduce ai non estratti)
         # In test/dev, se il flag non e' popolato, NVL(flag,0)=0 lascia passare tutto: ma il filtro
         # data sopra ha gia' limitato la finestra. Niente piu' "lettura piena dello storico".
+        # Con ignore_odi_flag (ACT_9020) il filtro CDC NON viene applicato: serve al seed storico,
+        # dove il flag marcherebbe come 'gia' estratti' i record di produzione.
+        flag_applied = False
         if table.flag_column:
-            fc = _validate_ident(table.flag_column, "flag_column")
-            where_parts.append(f"NVL({fc}, 0) = 0")
+            if ignore_odi_flag:
+                logger.info("    %s: flag ODI %s IGNORATO (--ignore-odi-flag) -> filtro solo per data.",
+                            table.name, table.flag_column)
+            else:
+                fc = _validate_ident(table.flag_column, "flag_column")
+                where_parts.append(f"NVL({fc}, 0) = 0")
+                flag_applied = True
 
-        # Caso patologico: ne' data ne' flag -> warning (lettura potenzialmente totale)
-        if not date_applied and not table.flag_column:
-            logger.warning("Tabella %s in modalita' delta senza date_column ne flag_column -> "
+        # Caso patologico: ne' data ne' flag effettivo -> warning (lettura potenzialmente totale).
+        # Scatta anche quando il flag esiste ma e' stato ignorato e non c'e' finestra data
+        # (es. imbfmovim: nessun date_column).
+        if not date_applied and not flag_applied:
+            logger.warning("Tabella %s in modalita' delta senza filtro data ne flag attivo -> "
                            "lettura totale (potenzialmente lenta).", table.name)
     elif table.mode == "snapshot":
         # snapshot: full read, una volta al giorno (no filtro)
@@ -488,7 +505,8 @@ def run(args: argparse.Namespace) -> int:
                         continue
                     try:
                         sql, binds = build_query(sys_spec, table, from_dt, to_dt,
-                                                  lookback_days=args.lookback_days, run_date=run_date)
+                                                  lookback_days=args.lookback_days, run_date=run_date,
+                                                  ignore_odi_flag=args.ignore_odi_flag)
                         sql = apply_max_rows(sql, args.max_rows)
                         if dblink:
                             sql = sql.replace("{DBLINK}", dblink)
@@ -572,6 +590,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
                         "0 = nessun limite. Se una query raggiunge il cap viene loggato un WARNING.")
     p.add_argument("--query-timeout", type=int, default=0,
                    help="Timeout per ogni query in secondi (0 = nessun timeout). Kill della query dopo N secondi.")
+    p.add_argument("--ignore-odi-flag", action="store_true", default=False,
+                   help="Non applica il filtro CDC dell'ODI legacy (NVL(*_DATA_ESTRAZIONE_DWH,0)=0) sulle "
+                        "transazionali. Serve al seed storico della landing DEV: in prod il flag marcherebbe come "
+                        "'gia' estratti' i record, svuotando la fotografia. La finestra data resta il filtro. "
+                        "ATTENZIONE: per tabelle senza date_column (es. imbfmovim) toglie l'unico filtro (ACT_9020).")
     return p.parse_args(argv)
 
 

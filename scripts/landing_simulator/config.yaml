@@ -220,6 +220,12 @@ systems:
       apvpunto_vendita:     { mode: full, source_object: "APVPUNTO_VENDITA", columns: [] }
       # Coda di estrazione spedizioni (flag CDC legacy) — la leggiamo come anagrafica di stato
       estrai_spedizioni:    { mode: full, source_object: "ESTRAI_SPEDIZIONI", columns: [] }
+      # Anagrafica siti logistici: 22 siti attivi con DBLINK_NAME (alfa) + DBLINK_DESC (nome sito).
+      # Autorita' per dim_sito (SITO_DESC) — sostituisce struttura_mag (solo 5 siti, desc null). ACT_9026.
+      s_logistix:           { mode: full, source_object: "S_LOGISTIX", columns: [] }
+      # Storico mapping magazzino: MAG_SITO_COD_ORIG (num spedizioni) <-> MAG_SITO_COD (canonico alfa).
+      # Fornisce il codice numerico per ogni sito S_LOGISTIX (join su MAG_SITO_COD). ACT_9026.
+      wl1_mag_sito_storico: { mode: full, source_object: "WL1_MAG_SITO_STORICO", columns: [] }
       # NB: 'spedizioni' SPOSTATA nel blocco 'track' (2026-06-10): CDT_ESTR.SPEDIZIONI e' solo un
       # SYNONYM per SPEDIZIONI@TRACK. La leggiamo direttamente dalla sorgente TRACK.
 

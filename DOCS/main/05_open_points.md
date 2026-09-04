@@ -81,6 +81,11 @@ per-nome e la migrazione MSTR → **rinviato**. Il tracking rename per MSTR è i
 - naming/partizionamento: un file/giorno (YYYY/MM/DD) o più file intra-day con timestamp?
 - separatore CSV per sorgente: l'AS-IS CND usava `,`, oggi Bronze usa `;` — valutare widget.
 
+**Nota seed storico locale (2026-09-02):** il filtro CDC dell'ODI (`*_DATA_ESTRAZIONE_DWH`) sulle transazionali
+svuota la fotografia storica (record già consumati dall'ODI di prod). Per il seed manuale della landing DEV si usa
+l'extractor con `--ignore-odi-flag` ([[ACT_9020]] / [[LL-024]]), che legge per finestra data ignorando il flag.
+Non impatta la modalità Bronze; è una scelta di ingestion per il seed storico.
+
 ### OP-09 — SLA di completamento push e ri-schedulazione workflow 🟡
 **SLA confermato (call 2026-07-03):** file disponibili sulla landing entro le **04:00** (rivedibile al go-live).  
 **Azione:** ri-fasare lo scheduling Databricks Workflows dopo le 04:00 (es. landing check 04:30, primo processing 05:00) quando i Workflows saranno creati (DBR-06). Schedule attuale (bozza locale) da spostare.
@@ -104,6 +109,10 @@ per-nome e la migrazione MSTR → **rinviato**. Il tracking rename per MSTR è i
 ### OP-19 — Cluster: job cluster serverless 🟢 RISOLTO
 **Decisione (call 2026-07-03):** **job cluster SERVERLESS** dedicati ("nasce quando serve il job, killato al completamento"). Niente shared cluster, niente `node_type_id`/VM da gestire.  
 **Stato implementativo (corretto 2026-08-04, ACT_9007):** i job girano su serverless **non dichiarando alcun compute** nei `workflows/*.yml` (dipendenze via blocco `environments` + `environment_key`). La precedente cluster policy `logistico-serverless-job-policy` (`runtime_engine=SERVERLESS`) è stata **rimossa**: `SERVERLESS` non è un valore valido per `runtime_engine` (solo `PHOTON`/`STANDARD`) e **le compute policy non si applicano al serverless**. Rimosse anche le variabili dead `spark_version`/`node_type_id`. Dettaglio e riferimenti doc in ADR-0009 (sezione "Aggiornamento 2026-08-04"). Attribuzione costi ex-`custom_tags` → OP H1 / ACT_9013.
+
+### OP-INF-3 — Modello ambienti dev/qa/prod (deploy DAB) 🟡
+**Descrizione:** il target `dev` del bundle deploya ora le **sandbox personali in home utente** ([[ACT_9022]] / [[LL-023]]); la cartella condivisa resta a CI/Managed Identity. Va formalizzato il modello a tre ambienti: **dev** = sandbox personali in home, **qa** = ambiente condiviso promosso via CI/MI, **prod** = produzione. Oggi il bundle ha solo target `dev`/`prod`.
+**Azione:** scrivere un **ADR dedicato** (dev/qa/prod), coerente con ADR-0016 (multi-repo) e ADR-0022 (auth MSI). Anticipato da ACT_9022. Owner: team (chiunque può bozzarlo).
 
 ---
 
@@ -330,12 +339,12 @@ cdt_dw) arrivano in **push** dai sorgenti. Elimina secret scope Oracle, VNet pee
 
 ---
 
-## Riepilogo per stato (aggiornato 2026-08-27)
+## Riepilogo per stato (aggiornato 2026-09-02)
 
 | Stato | Open points |
 |-------|-------------|
 | 🔴 Aperto / Bloccante | **OP-21** (DQ framework — senza risposta Reply), **OP-QDR-1** (quadratura non significativa senza backfill storico) |
-| 🟠 Da confermare (sorgente) | OP-08, OP-09, OP-10, OP-11, OP-31, **OP-CAR-7** (CORRIERE_COD → 'ND') |
+| 🟠 Da confermare (sorgente) | OP-08, OP-09, OP-10, OP-11, OP-31, **OP-CAR-7** (CORRIERE_COD → 'ND'), **OP-CND-1** (bronze su `cnd` dismesso → [[ACT_CND-01]]) |
 | 🟡 Da confermare (Reply/DWH/piattaforma) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25, **OP-GIA-1** (170k righe giacenze — decisione) |
 | 🔵 Stand-by / Fisiologico / Bassa priorità | OP-03, **OP-29** (ordering fisiologico locale), OP-33, OP-34, OP-36, **OP-CAR-1**, **OP-MOV-1** (grana per-movimento — futuro) |
 | ⏸️ On hold (Technology) | **OP-18** (Service Principal unico data platform) |
@@ -387,6 +396,54 @@ incoerente.
 
 **Azioni**: decidere se allineare il corriere al pattern `'ND'`, oppure colmare la sorgente a monte
 (`STCAR_COD_CORRIERE`). Fino ad allora l'allarme al 100% è rumore noto.
+
+### OP-CND-1 — Bronze che leggono ancora `cnd` (dismesso in SCELTA B) 🟠
+**Aperto**: 2026-09-02 ([[ACT_CND-01]])   **Design (intento SCELTA-B + interno)**
+
+`bronze_vettori` (`cnd/t_vettori`), `bronze_trasporti` (`cnd/t_trasp_mtv`) e `bronze_giacenze_snapshot`
+(`cnd/t_stock`) puntano ancora alla sorgente **`cnd` dismessa** → `PATH_NOT_FOUND` al run (il seed non produce
+`cnd`, per design). Bloccano il gold di trasporti/giacenze/prep_sped. Non è un cambio di path: cambia sorgente e
+semantica (`t_vettori`→`vettori@track`, già come `bronze_vettori_track`; `t_trasp_mtv`→**rebuild** da
+`spedizioni@track`; `t_stock`→dismesso, stock da logistix `catena` con degrado).
+
+**Azioni**: rework di design → [[ACT_CND-01]] (piano + follow-up). Richiede decisione di dominio sul rebuild MTV. Vedi anche [[ACT_ST-01]].
+
+### OP-TRA-1 — `MAG_SITO_COD` incoerente tra le sorgenti (sito non canonico) — SISTEMICO ✅ CHIUSO
+**Aperto**: 2026-09-03 (emerso dai run E2E trasporti+giacenze in DEV, [[ACT_CND-01]])   **Interno**
+**Chiuso**: 2026-09-03 — giacenze via [[ACT_9025]] (canonico alfabetico MAIUSCOLO, `silver_t_stock` verde),
+trasporti via [[ACT_9026]] (canonico numerico: `dim_sito` completa da `S_LOGISTIX`+`WL1` + alias-map corretta
+[[LL-025]] + full_refresh overwrite [[LL-026]] → **orphan sito = 0** su `ordine`/`spedizioni_clean`).
+**Esito sul canonico**: NON un unico formato globale — ogni fact usa il proprio (giacenze=alfabetico MAIUSCOLO,
+trasporti=numerico 2 cifre). La riconciliazione avviene per-area con la stessa anagrafica autoritativa `S_LOGISTIX`
+(+`WL1` per il numerico). La "proposta canonico MAIUSCOLO" qui sotto è **superata** da questa evidenza.
+
+**Problema sistemico**: il `MAG_SITO_COD` esiste in **tre formati diversi** tra le sorgenti, e i join/aggancio
+dim falliscono. Diagnosi su dati reali DEV (run_date 2026-09-02):
+
+| Sorgente | Formato `MAG_SITO_COD` | Esempio |
+|---|---|---|
+| `silver.catena_unificata` | alfabetico **minuscolo** | `lgax`, `lslx` |
+| `bronze/silver.struttura_mag`, `gold.lu_sito` (dim) | alfabetico **MAIUSCOLO** | `LGAX`, `LSLX` |
+| `silver.spedizioni_clean` (da `spedizioni@track`) | **numerico** | `20`, `09`, `35` |
+
+Due failure, **stessa radice**:
+- **Trasporti**: `dq_gate` → `orphan_MAG_SITO_COD` BLOCKING **100%** (10.152 orphan) su `gold_f_trasporto`:
+  il sito numerico (`20`) non aggancia `LU_SITO` (`LGAX`).
+- **Giacenze**: `silver_t_stock` = **0 righe** (→ `F_GIACENZE_DAILY` vuota, dq_gate `row_count` BLOCKING): il join
+  INNER `catena.MAG_SITO_COD (lgax) == struttura_mag.MAG_SITO_COD (LGAX)` è **case-sensitive** → 0 match. ⚠️ Il
+  commento "FIX OP-29" in `silver_t_stock.py` (~righe 91-95) è **datato/errato**: afferma che la catena ha il sito
+  canonico *numerico* (`20`) e applica `normalize_sito` a struttura_mag per allinearla, ma oggi la catena ha `lgax`
+  (alfabetico minuscolo) → la riconciliazione non avviene.
+
+**Proposta (da confermare col team)**: eleggere il **canonico = MAIUSCOLO** (formato della dim `LU_SITO`) e
+normalizzare a monte tutte le sorgenti: `catena` (upper), `spedizioni` (mappatura numerico→alfabetico — serve la
+lookup di corrispondenza: `TABGEN` nro_tab? anagrafica sito track? da individuare). Impatta la chiave sito su più
+fact (giacenze, trasporti) → fix da fare in modo coerente, non per-notebook. Diagnosi girata al team 2026-09-03.
+
+**Azioni**: (1) confermare canonico sito MAIUSCOLO; (2) individuare lookup numerico→alfabetico per spedizioni;
+(3) applicare la normalizzazione a `catena`/`spedizioni` a monte + correggere il commento OP-29 in `silver_t_stock`;
+(4) ri-run giacenze+trasporti → orphan 0 / F_GIACENZE_DAILY popolata. Collegato a [[ACT_ST-01]] (che è invece il
+*valore* stock, distinto da questo blocco di *righe*).
 
 ### OP-QDR-1 — Quadratura non significativa senza backfill dello storico 🔴
 **Aperto**: 2026-08-21 ([[ACT_9015]])   **Interno**

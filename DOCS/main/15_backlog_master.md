@@ -283,6 +283,7 @@ _(sezioni da popolare in Fase 2)_
 | G-02 | Framework DQ condiviso | backlog G-02 / OP-21 | ⏸️ on-hold | 🤝 | [acts/ACT_G-02](acts/ACT_G-02_dq-framework-condiviso.md) |
 | DBR-01 | Databricks-readiness (DBR-01..07) | backlog DBR-01..07 | 🔵 in-progress | ☁️🏗️ | [acts/ACT_DBR-01](acts/ACT_DBR-01_databricks-readiness.md) |
 | ST-01 | Flusso stock mancante | backlog ST-01/02 | ⏸️ on-hold | 🟠 | [acts/ACT_ST-01](acts/ACT_ST-01_flusso-stock-mancante.md) |
+| CND-01 | Repoint Bronze da sorgente `cnd` dismessa (SCELTA B) → track/logistix | OP-CND-1 | 🟠 open (design) | 🟠 | [acts/ACT_CND-01](acts/ACT_CND-01_repoint-bronze-cnd-dismesso.md) |
 | DQ-01 | Analisi chiave bolle uniche (DQ S7) | backlog DQ-01..03 | ✅ done | 🟢 | [acts/ACT_DQ-01](acts/ACT_DQ-01_chiave-bolle-uniche.md) |
 | RS-01 | Rimozione rami secchi (8 notebook) | backlog RS-01..08 | ✅ done | 🟢 | [acts/ACT_RS-01](acts/ACT_RS-01_rimozione-rami-secchi.md) |
 | MNT-01 | Manutenzione disco Docker/warehouse | backlog MNT-01/02 | 🔵 ricorrente | 🟢 | [acts/ACT_MNT-01](acts/ACT_MNT-01_manutenzione-disco-docker.md) |
@@ -341,6 +342,12 @@ _(sezioni da popolare in Fase 2)_
 | 9016 | Guardrail pytest eseguibili in locale (classpath Delta + fixture Decimal + FQN) | follow-up ACT_9015 | ✅ done | [acts/ACT_9016](acts/ACT_9016_guardrail-pytest-eseguibili-locale.md) |
 | 9017 | Script split monorepo → multi-repo (tooling di transizione, mono-direzionale) | domanda utente in ACT_9011 | 🔵 in-progress | [acts/ACT_9017](acts/ACT_9017_script-split-monorepo-transizione.md) |
 | 9018 | Consolidamento dei due databricks.yml in logistico-workflows (ADR-0021) | split multi-repo | 🔵 in-progress (consolidato + deploy_dev DEV verde; resta wheel da registry a run-time, DBR-05) | [acts/ACT_9018](acts/ACT_9018_consolidamento-databricks-yml.md) |
+| 9019 | Quadrature offline finestra agosto 2026 (warehouse locale 09-14/08) | prep quadrature offline | ✅ done (parziale — 2 fix ACT_9009) | [acts/ACT_9019](acts/ACT_9019_quadrature-offline-agosto-2026.md) |
+| 9020 | Extractor: opzione `--ignore-odi-flag` per il seed storico (transazionali) | seed landing DEV svuotato dal flag ODI | ✅ done (validato su dati reali: 0 → 1065 righe; wrapper esteso) | [acts/ACT_9020](acts/ACT_9020_extractor-ignore-flag-odi.md) |
+| 9021 | Fix silver_pesate DATA_SCADENZA (JDN, non DATE) | LAD crash su seed storico | ✅ done (PR #2; [[LL-022]]) | [acts/ACT_9021](acts/ACT_9021_fix-silver-pesate-data-scadenza-jdn.md) |
+| 9022 | DAB dev root_path in home utente (self-deploy sandbox) | 403 su cartella condivisa | ✅ done (PR #1; [[LL-023]]) | [acts/ACT_9022](acts/ACT_9022_dab-dev-root-path-home-sandbox.md) |
+| 9023 | Cleanup righe pesata DATA_SCADENZA pre-fix (full_refresh) | follow-up ACT_9021 (93 righe pre-fix) | ⬜ proposed | [acts/ACT_9023](acts/ACT_9023_cleanup-pesata-data-scadenza-pre-fix.md) |
+| 9024 | Fix bronze_movimenti_magazzino: skip sito senza file (LL-021) | run E2E giacenze FAILED su lccx/imbfmovim | ✅ done (PR #4; validato E2E) | [acts/ACT_9024](acts/ACT_9024_fix-bronze-movimenti-magazzino-skip-path.md) |
 
 ---
 
