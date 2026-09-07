@@ -17,7 +17,7 @@
 
 | Fase | Descrizione | Sprint | Gg totali | Gg completati | Stato | Note |
 |------|-------------|--------|-----------|---------------|-------|------|
-| **FASE 0** | Fondamenta Infrastrutturali | 0.1–0.3 | 18 | 13 | 🔵 IN CORSO | Sprint 0.1 IN CORSO (Terraform scritto, apply pendente provisioning workspace); D1/D2/D3/D5 ✅ decisi; 0.1.4 ridisegnata (AKV → GitLab CI/CD); 0.2/0.3 ✅; **multi-repo eseguito**: 4 repo GitHub + 3 su GitLab con CI in DEV via Managed Identity — lib (wheel nel Package Registry ✅), workflows (deploy_dev DEV ✅, 7 job), infrastructure (plan DEV ✅, apply in attesa grant UC alla MI — OP-INF-1). ACT_9011/9017/9018 |
+| **FASE 0** | Fondamenta Infrastrutturali | 0.1–0.3 | 18 | 18 | 🟢 INFRA DEV COMPLETA | Sprint 0.1/0.2/0.3 ✅ (tutte le ACT chiuse; 0.3.1/0.3.2 JDBC cancellate per scelta → AzCopy, ADR-0023); **`apply` v0.1.6 verde 2026-09-01** (8 schemi + Volume landing + 6 grants `Group-Engineering-dev`, 0 destroy; OP-INF-1/2 chiusi, ACT_0.1.6). Multi-repo: 4 GitHub + 3 GitLab, CI DEV via Managed Identity — lib (wheel ✅), workflows (deploy_dev ✅), infrastructure (apply ✅). **Residui di piattaforma** (fuori scope build): ingestion reale via **AzCopy** (accesso container ADLS, ADR-0023) e ambiente **PROD**. ACT_9011/9017/9018 · [milestone fase_0](milestones/fase_0.md) |
 | **FASE 1** | Master Data & Dimensioni | 1.1–1.3 | 19 | 17 | 🔵 PARZ. | DIM offline ✅; first-run landing + workflow yml da eseguire su cloud |
 | **FASE 2** | Wave A — Carichi (Inbound) | 2.1–2.4 | 26 | 21 | 🔵 PARZ. | F_CARICO 0.0% orphan locale; backfill/quadratura/BA-validation pendenti |
 | **FASE 3** | Wave B — Giacenze (Stock) | 3.1–3.4 | 26 | 22 | 🔵 PARZ. | T_STOCK OK locale; backfill/quadratura/BA-validation pendenti |
