@@ -1,6 +1,6 @@
 # Open Points — Logistico 2.0
 
-**Ultimo aggiornamento:** 2026-08-27  
+**Ultimo aggiornamento:** 2026-09-21  
 **Owner documento:** Cloud Data Architect — Team Logistico 2.0  
 **Scopo:** registro dei punti **ancora aperti** che richiedono conferme esterne (Reply o sistemi sorgente) o che sono stati messi in stand-by per fase successiva.
 
@@ -110,9 +110,10 @@ Non impatta la modalità Bronze; è una scelta di ingestion per il seed storico.
 **Decisione (call 2026-07-03):** **job cluster SERVERLESS** dedicati ("nasce quando serve il job, killato al completamento"). Niente shared cluster, niente `node_type_id`/VM da gestire.  
 **Stato implementativo (corretto 2026-08-04, ACT_9007):** i job girano su serverless **non dichiarando alcun compute** nei `workflows/*.yml` (dipendenze via blocco `environments` + `environment_key`). La precedente cluster policy `logistico-serverless-job-policy` (`runtime_engine=SERVERLESS`) è stata **rimossa**: `SERVERLESS` non è un valore valido per `runtime_engine` (solo `PHOTON`/`STANDARD`) e **le compute policy non si applicano al serverless**. Rimosse anche le variabili dead `spark_version`/`node_type_id`. Dettaglio e riferimenti doc in ADR-0009 (sezione "Aggiornamento 2026-08-04"). Attribuzione costi ex-`custom_tags` → OP H1 / ACT_9013.
 
-### OP-INF-3 — Modello ambienti dev/qa/prod (deploy DAB) 🟡
-**Descrizione:** il target `dev` del bundle deploya ora le **sandbox personali in home utente** ([[ACT_9022]] / [[LL-023]]); la cartella condivisa resta a CI/Managed Identity. Va formalizzato il modello a tre ambienti: **dev** = sandbox personali in home, **qa** = ambiente condiviso promosso via CI/MI, **prod** = produzione. Oggi il bundle ha solo target `dev`/`prod`.
-**Azione:** scrivere un **ADR dedicato** (dev/qa/prod), coerente con ADR-0016 (multi-repo) e ADR-0022 (auth MSI). Anticipato da ACT_9022. Owner: team (chiunque può bozzarlo).
+### OP-INF-3 — Modello ambienti dev/stage/prod (deploy DAB) 🟡
+**Descrizione:** il target `dev` del bundle deploya ora le **sandbox personali in home utente** ([[ACT_9022]] / [[LL-023]]); la cartella condivisa resta a CI/Managed Identity. Va formalizzato il modello a tre ambienti: **dev** = sandbox personali in home, **stage** = ambiente condiviso promosso via CI/MI, **prod** = produzione. Oggi il bundle ha solo target `dev`/`prod`.
+**Azione:** scrivere un **ADR dedicato** (dev/stage/prod), coerente con ADR-0016 (multi-repo) e ADR-0022 (auth MSI). Anticipato da ACT_9022. Owner: team (chiunque può bozzarlo).
+**Aggiornamento 2026-09-21 (incidente duplicati CI → [[LL-030]]):** il target `dev` è `mode:development` (job per-identità `[dev …]`); usato dalla **CI** produce job prefissati per la service principal. Un cambio storico di `root_path` aveva orfanizzato lo stato del bundle → **7 job duplicati** `[dev id_dev_dataplatform_workload_00] logistica_*` che bloccavano il `data "databricks_jobs" "all"` dell'infra. **Pulizia fatta** dall'infra (una istanza per nome); root_path già stabile (dal 2026-09-02) → nessuna ricorrenza attesa. **Naming:** il prefisso `[dev <identità>]` è lo **standard dei nomi job della data platform** e va **mantenuto** — i nomi canonici senza prefisso (`mode:production`) sono **scartati**. **Prevenzione:** non ri-cambiare il `root_path` (già stabile) + **redeploy pulito** dei job → aggiornano in-place, niente duplicati; **nessun cambio di naming**. **Freeze push GitLab** attivo finché il flusso CI non è stabilito. Da chiarire con Luigi se la CI si autentica con **SP unica** (un solo set) o **per-utente**.
 
 ---
 

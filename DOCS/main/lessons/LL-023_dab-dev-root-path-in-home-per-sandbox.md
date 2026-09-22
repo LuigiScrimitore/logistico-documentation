@@ -39,7 +39,7 @@ Le sandbox deployano nella propria home (permessi garantiti); la cartella condiv
 ## Perché
 In `mode: development` il DAB isola già per utente e la home è lo spazio dove l'utente ha sempre CAN_MANAGE.
 Un root_path condiviso ha senso solo per un'identità con permessi sulla cartella (la CI/MI), non per N sandbox
-personali. È la direzione dev=home / qa=condiviso-CI / prod (ADR dev/qa/prod in definizione dal team).
+personali. È la direzione dev=home / stage=condiviso-CI / prod (ADR dev/stage/prod in definizione dal team).
 
 ## Conferme e contraddizioni
 - 2026-09-02 · Francesco Foconi · con root_path condiviso: 403 su `mkdirs`. Con root_path in home: `Validation OK!`,

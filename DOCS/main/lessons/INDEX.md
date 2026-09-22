@@ -4,7 +4,7 @@
 > `python scripts/lessons/lessons_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0020](../adr/0020_lezioni_operative.md).
 
-**28 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
+**30 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
 
 ## Cerca per sintomo
 
@@ -14,6 +14,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 |---|---|
 | `0 righe estratte per una tabella delta ma in Oracle i dati ci sono` | [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md) |
 | `403 PERMISSION_DENIED ... does not have View permissions on <id>` | [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md) |
+| `[NOT_SUPPORTED_WITH_SERVERLESS] PERSIST TABLE is not supported on serverless compute. SQLSTATE: 0A000` | [LL-029](LL-029_serverless-cache-persist-non-supportato.md) |
 | `[PATH_NOT_FOUND] Path does not exist: .../<tabella>/YYYY/MM/DD/*.csv nonostante il try/except AnalysisException sulla lettura` | [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) |
 | `[UC_COMMAND_NOT_SUPPORTED.WITH_RECOMMENDATION] The command(s): input_file_name are not supported in Unity Catalog. Please use _metadata.file_path instead` | [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) |
 | `AttributeError: module 'pyspark.sql.functions' has no attribute 'try_cast` | [LL-027](LL-027_serverless-ansi-trycast-parse.md) |
@@ -30,7 +31,9 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `databricks bundle validate non vede il job / dopo il deploy il job non c'è` | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) |
 | `databricks bundle validate/deploy -t dev fallisce su POST /api/2.0/workspace/mkdirs` | [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md) |
 | `docker system df: RECLAIMABLE 0B ma il disco C: è pieno` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
+| `dopo un cambio di root_path nel databricks.yml compaiono 2 copie per ogni job della CI` | [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md) |
 | `dopo un full_refresh la tabella ha righe duplicate: stessa entità con la vecchia e la nuova chiave` | [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md) |
+| `Error: cannot read jobs: cannot read data jobs: duplicate job name detected: [dev <sp>] logistica_*` | [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md) |
 | `Error: Inconsistent dependency lock file — The given plan file was created with a different set of external dependency selections` | [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) |
 | `Error: No value for required variable (ma la variabile CI esiste)` | [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) |
 | `Error: Saved plan is stale — the state was changed by another operation after the plan was created` | [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) |
@@ -83,6 +86,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `silver ha una sola data mentre il fact gold ne ha diverse` | [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) |
 | `stessi conteggi su due valori diversi della colonna chiave (es. SITO_COD '18'=559 e 'LCAX'=559)` | [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md) |
 | `terraform chiede interattivamente una var che hai impostato come variabile CI` | [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) |
+| `terraform data \"databricks_jobs\" \"all\" va in errore: due job con lo stesso nome esatto` | [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md) |
 | `Terraform has no command named \"sh\". Did you mean \"push\"?` | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) |
 | `terraform init/plan passano ma apply fallisce con 'User does not have CREATE SCHEMA` | [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) |
 | `un .env o un dato reale è finito in un repo condiviso/consegnato` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
@@ -132,6 +136,8 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md) | full_refresh deve fare OVERWRITE, non MERGE — se cambia la derivazione di una chiave restano righe stale duplicate | 🔵 regola | `silver`, `delta`, `merge`, `full-refresh`, `idempotenza`, `sito` | ACT_9026 | 2026-09-03 |
 | [LL-027](LL-027_serverless-ansi-trycast-parse.md) | Serverless ha ANSI ON — cast/parse su dati legacy sporchi vanno con try_cast/try_to_timestamp (e F.try_cast non esiste) | 🔵 regola | `serverless`, `ansi`, `cast`, `try_cast`, `silver`, `dati-sporchi`, `stat` | ACT_9027 | 2026-09-04 |
 | [LL-028](LL-028_serverless-schema-evolution-merge.md) | Serverless — schema-evolution nel MERGE con .withSchemaEvolution(), non con spark.conf autoMerge | 🔵 regola | `serverless`, `delta`, `merge`, `schema-evolution`, `spark-conf` | ACT_9027 | 2026-09-04 |
+| [LL-029](LL-029_serverless-cache-persist-non-supportato.md) | Serverless — .cache()/.persist() su DataFrame non supportati (PERSIST TABLE), rimuovere l'hint | 🔵 regola ⚠️ da automatizzare | `serverless`, `cache`, `persist`, `performance`, `incrementale` | run-09-settembre, ACT_9027 | 2026-09-10 |
+| [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md) | DAB dev-mode + CI — cambiare il root_path orfanizza i job della CI e crea duplicati che rompono Terraform | 🔵 regola | `databricks`, `dab`, `ci`, `terraform`, `duplicati`, `root_path`, `deploy` | incidente-duplicati-ci, OP-INF-3 | 2026-09-21 |
 
 ## Debito di automazione
 
@@ -148,6 +154,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md) — Wheel privato su compute serverless — installalo con %pip in-notebook, non come env-dependency; e non dichiarare pyspark/delta-spark
 - [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) — Bronze su UC serverless — input_file_name() non è supportato (usa _metadata.file_path) e il path mancante letto lazy sfugge al try/except
 - [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md) — Le date Logistix sono Julian Day Number — mai .cast("date") diretto, usa julian_to_date
+- [LL-029](LL-029_serverless-cache-persist-non-supportato.md) — Serverless — .cache()/.persist() su DataFrame non supportati (PERSIST TABLE), rimuovere l'hint
 
 ## Per tag
 
@@ -157,24 +164,28 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`azure`**: [LL-018](LL-018_auth-ok-non-significa-autorizzato.md)
 - **`backfill`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`bronze`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md) · [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) · [LL-025](LL-025_alias-map-sito-cast-e-completezza.md)
+- **`cache`**: [LL-029](LL-029_serverless-cache-persist-non-supportato.md)
 - **`cast`**: [LL-027](LL-027_serverless-ansi-trycast-parse.md)
 - **`cdc`**: [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md)
 - **`certificati`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
+- **`ci`**: [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md)
 - **`ci-cd`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) · [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) · [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) · [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md)
 - **`container`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`csv`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
-- **`dab`**: [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) · [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md) · [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md)
-- **`databricks`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) · [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) · [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md) · [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) · [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md)
+- **`dab`**: [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) · [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md) · [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md) · [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md)
+- **`databricks`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md) · [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) · [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md) · [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) · [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md) · [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md)
 - **`date`**: [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md)
 - **`dati`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) · [LL-008](LL-008_csv-bronze-schema-per-nome.md) · [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md)
 - **`dati-sporchi`**: [LL-027](LL-027_serverless-ansi-trycast-parse.md)
 - **`dbr-05`**: [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md)
 - **`delta`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md) · [LL-028](LL-028_serverless-schema-evolution-merge.md)
+- **`deploy`**: [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md)
 - **`derby`**: [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
 - **`diagnostica`**: [LL-005](LL-005_delta-costante-accusa-colonna.md)
 - **`disco`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md)
 - **`docker`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) · [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md)
 - **`dq`**: [LL-005](LL-005_delta-costante-accusa-colonna.md)
+- **`duplicati`**: [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md)
 - **`extractor`**: [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md)
 - **`full-refresh`**: [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md)
 - **`git`**: [LL-009](LL-009_due-host-git-una-direzione.md) · [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
@@ -183,6 +194,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`governance`**: [LL-009](LL-009_due-host-git-una-direzione.md)
 - **`guardrail`**: [LL-007](LL-007_dag-derivato-dal-codice.md)
 - **`idempotenza`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md)
+- **`incrementale`**: [LL-029](LL-029_serverless-cache-persist-non-supportato.md)
 - **`julian`**: [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md)
 - **`landing`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md) · [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md)
 - **`lockfile`**: [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
@@ -201,18 +213,21 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`orchestrazione`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) · [LL-017](LL-017_dab-job-parameters-referenziati-non-dichiarati.md)
 - **`packaging`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
 - **`partizionamento`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
+- **`performance`**: [LL-029](LL-029_serverless-cache-persist-non-supportato.md)
 - **`permessi`**: [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) · [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md)
+- **`persist`**: [LL-029](LL-029_serverless-cache-persist-non-supportato.md)
 - **`pip`**: [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md)
 - **`python`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
 - **`quadratura`**: [LL-005](LL-005_delta-costante-accusa-colonna.md)
 - **`release`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
 - **`rilascio`**: [LL-009](LL-009_due-host-git-una-direzione.md)
+- **`root_path`**: [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md)
 - **`runner`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md)
 - **`sandbox`**: [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md)
 - **`schema`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md)
 - **`schema-evolution`**: [LL-028](LL-028_serverless-schema-evolution-merge.md)
 - **`seed`**: [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md)
-- **`serverless`**: [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md) · [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) · [LL-027](LL-027_serverless-ansi-trycast-parse.md) · [LL-028](LL-028_serverless-schema-evolution-merge.md)
+- **`serverless`**: [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md) · [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) · [LL-027](LL-027_serverless-ansi-trycast-parse.md) · [LL-028](LL-028_serverless-schema-evolution-merge.md) · [LL-029](LL-029_serverless-cache-persist-non-supportato.md)
 - **`sicurezza`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`silver`**: [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md) · [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md) · [LL-027](LL-027_serverless-ansi-trycast-parse.md)
 - **`sito`**: [LL-025](LL-025_alias-map-sito-cast-e-completezza.md) · [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md)
@@ -221,7 +236,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`spark-conf`**: [LL-028](LL-028_serverless-schema-evolution-merge.md)
 - **`stat`**: [LL-027](LL-027_serverless-ansi-trycast-parse.md)
 - **`state`**: [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
-- **`terraform`**: [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) · [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
+- **`terraform`**: [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) · [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) · [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md)
 - **`tfplan`**: [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
 - **`tls`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
 - **`tooling`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
