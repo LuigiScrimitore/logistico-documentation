@@ -19,17 +19,19 @@ e `DATABRICKS_HOST`. Decisione formalizzata in [[ADR-0022]]. Vedi [[ACT_0.1.6]] 
 **Credenziali**: `push` e login (`gh`/GitLab PAT/SSH) verso gli host remoti restano **azione dell'utente**;
 questo runbook fornisce i comandi esatti.
 
-## Stato pubblicazione (aggiornato 2026-09-04)
+## Stato pubblicazione (aggiornato 2026-09-21)
 **Sintesi:** **release 2026-09-04** dopo il run E2E DEV **7/7 job verdi** (ACT_9026/9027, canonico sito numerico
 [[ADR-0026]], rimozione CND [[ACT_CND-01]]). Pubblicati GitHub (4 repo) + GitLab (lib `v1.0.5`, workflows `v0.1.6`;
 CI cliente verdi). **Infra invariata** in questo giro (`v0.1.6`, non ripubblicata). Ciclo eseguito con
 `split_to_multirepo.py` (GitHub) + `promote_to_gitlab.py` (GitLab, push ff, history cliente preservata).
 
+**Aggiornamento 2026-09-21:** release **workflows `v0.1.7`** (fix `.cache()` serverless [[LL-029]], github @d419072) promossa su GitLab per **verificare la CI dev** (push su `main` → `validate` + `deploy_dev -t dev`, MI unica). `lib`/`infrastructure` invariati (non ripubblicati); `documentation` non va su GitLab. Baseline Databricks confermato pulito dall'infra (0 job) prima del push.
+
 | Repo | GitHub (SoT) | GitLab cliente | Note |
 |------|:---:|:---:|------|
 | `logistico-lib` | ✅ | ✅ `v1.0.5` | wheel `logistica_utils` nel Package Registry (CI verde). v1.0.5: `julian_to_date` ANSI-safe + `get_sito_alias_map` completa ([[ACT_9027]]/[[LL-025]]/[[LL-027]]). NB pacchetto a runtime resta 1.0.0 via %pip Volume ([[LL-013]]) |
 | `logistico-infrastructure` | ✅ | ✅ `v0.1.6` | **invariato** in questo giro (0 file diff) → non ripubblicato. `apply` v0.1.6 verde (8 schemi + Volume + 6 grants, ACT_0.1.6 chiuso) |
-| `logistico-workflows` | ✅ | ✅ `v0.1.6` | v0.1.6: canonico sito numerico ([[ADR-0026]]), fix ANSI serverless ([[ACT_9027]]), rimozione 7 notebook CND ([[ACT_CND-01]]). CI `main` verde → `bundle validate`; `deploy_prod` gate manuale |
+| `logistico-workflows` | ✅ | 🔄 `v0.1.7` | **v0.1.7 (2026-09-21)**: fix `.cache()` serverless nel prep_sped incrementale ([[LL-029]]), github @d419072 — **in pubblicazione su GitLab, verifica CI dev in corso**. v0.1.6: canonico sito numerico ([[ADR-0026]]), fix ANSI serverless ([[ACT_9027]]), rimozione CND ([[ACT_CND-01]]). CI `main` → `bundle validate` + `deploy_dev -t dev`; `deploy_prod` gate manuale su tag |
 | `logistico-documentation` | ✅ | ❌ (mai) | solo GitHub, per scelta |
 
 Lezioni operative emerse durante la migrazione (per il team): [[LL-009]] una direzione sola · [[LL-010]] split
