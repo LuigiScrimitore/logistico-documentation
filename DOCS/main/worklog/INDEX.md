@@ -4,13 +4,16 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Release GitLab workflows v0.1.7 (fix .cache LL-029) — verifica CI dev cliente](2026-09-21-02_release-gitlab-workflows-v017-verifica-ci.md) · 2026-09-21 · monorepo `doc-pass runbook16 + worklog (PR dedicata)`
+**Ultimo push:** [Permessi job DAB: CAN_MANAGE Group-Engineering-dev nel databricks.yml (target dev) — LL-032](2026-09-23-03_permessi-dab-can-manage-group-engineering-dev.md) · 2026-09-23 · monorepo `PR dedicata (databricks.yml + LL-032 + worklog)`
 
-**30 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**33 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
-| 2026-09-21 | `doc-pass runbook16 + worklog (PR dedicata)` | [Release GitLab workflows v0.1.7 (fix .cache LL-029) — verifica CI dev cliente](2026-09-21-02_release-gitlab-workflows-v017-verifica-ci.md) | — | — | LL-030 LL-029 | OP-INF-3 |
+| 2026-09-23 | `PR dedicata (databricks.yml + LL-032 + worklog)` | [Permessi job DAB: CAN_MANAGE Group-Engineering-dev nel databricks.yml (target dev) — LL-032](2026-09-23-03_permessi-dab-can-manage-group-engineering-dev.md) | — | — | LL-032 | — |
+| 2026-09-23 | `c743f99` | [AzCopy: thread piattaforma concluso, decisioni (SAS + container)](2026-09-23-02_azcopy-thread-esito.md) | ACT_9012 | ADR-0023 | — | OP-07 |
+| 2026-09-23 | `n/d (doc-pass, da pushare)` | [Decisioni ambienti: modello 4 livelli (ADR-0027) + auth CI = MI unica; naming stage; ACT_9028](2026-09-23-01_decisioni-4-ambienti-e-auth-ci.md) | ACT_9028 | ADR-0027 | LL-030 | OP-INF-3 |
+| 2026-09-21 | `doc-pass runbook16 + worklog (PR dedicata)` | [Release GitLab workflows v0.1.7 (fix .cache LL-029) — verifica CI dev cliente](2026-09-21-02_release-gitlab-workflows-v017-verifica-ci.md) | — | — | LL-031 LL-030 LL-029 | OP-INF-3 |
 | 2026-09-21 | `PR #10 (main @95651b2) + doc-pass (LL-030, OP-INF-3, worklog)` | [Incidente job duplicati CI (LL-030) + merge fix LL-029 su main (PR #10) + estrazioni locali 10→21](2026-09-21-01_incidente-duplicati-ci-e-estrazioni-locali.md) | — | — | LL-030 LL-029 | OP-INF-3 |
 | 2026-09-10 | `n/d (solo DEV, non ancora pushato)` | [Run completo 09 set (7/7) + allineamento anagrafiche e load storico 03→08 (42/42 verde) + fix LL-029 .cache() serverless](2026-09-10-01_run-completo-09-e-storico-0308.md) | — | — | LL-029 | — |
 | 2026-09-04 | `(main @6420869 → doc pass su branch docs/release-7su7-multirepo)` | [Release multi-repo: GitHub (4) + GitLab (lib v1.0.5, workflows v0.1.6) + doc pass (ADR-0026)](2026-09-04-02_release-multirepo-v105-v016.md) | ACT_9026 ACT_9027 ACT_CND-01 | ADR-0026 | LL-013 LL-025 LL-026 LL-027 LL-028 | OP-TRA-1 OP-CND-1 |

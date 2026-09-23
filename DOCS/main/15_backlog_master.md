@@ -348,6 +348,7 @@ _(sezioni da popolare in Fase 2)_
 | 9022 | DAB dev root_path in home utente (self-deploy sandbox) | 403 su cartella condivisa | ✅ done (PR #1; [[LL-023]]) | [acts/ACT_9022](acts/ACT_9022_dab-dev-root-path-home-sandbox.md) |
 | 9023 | Cleanup righe pesata DATA_SCADENZA pre-fix (full_refresh) | follow-up ACT_9021 (93 righe pre-fix) | ⬜ proposed | [acts/ACT_9023](acts/ACT_9023_cleanup-pesata-data-scadenza-pre-fix.md) |
 | 9024 | Fix bronze_movimenti_magazzino: skip sito senza file (LL-021) | run E2E giacenze FAILED su lccx/imbfmovim | ✅ done (PR #4; validato E2E) | [acts/ACT_9024](acts/ACT_9024_fix-bronze-movimenti-magazzino-skip-path.md) |
+| 9028 | Configurare ambiente `stage` (catalog `_stage` + target DAB `[stage]` + promozione dev→stage) | ADR-0027 modello 4 ambienti | ⬜ proposed | [acts/ACT_9028](acts/ACT_9028_config-ambiente-stage.md) |
 
 ---
 
@@ -380,6 +381,7 @@ _(sezioni da popolare in Fase 2)_
 | 0022 | Auth CI/CD via Managed Identity (no secret) | accepted | 2026-08-27 | [adr/0022](adr/0022_auth_ci_managed_identity.md) |
 | 0023 | Trasporto landing = AzCopy (processi ODI), non SFTP | accepted | 2026-08-31 | [adr/0023](adr/0023_trasporto_landing_azcopy.md) |
 | 0024 | Worklog: diario di sviluppo per push su main | accepted | 2026-09-01 | [adr/0024](adr/0024_worklog_diario_push.md) |
+| 0027 | Modello 4 ambienti (sandbox→dev→stage→prod) con promozione a gate | proposta | 2026-09-23 | [adr/0027](adr/0027_modello_4_ambienti_promozione.md) |
 
 ---
 

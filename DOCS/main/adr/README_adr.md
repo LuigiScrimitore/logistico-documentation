@@ -81,3 +81,4 @@ approfondire altrove?"* Se restano zone grigie, aggiungere contesto. In particol
 | [0024](0024_worklog_diario_push.md) | Worklog: diario di sviluppo per push su main | accepted | 2026-09-01 |
 | [0025](0025_provisioning_wheel_serverless.md) | Provisioning wheel `logistica_utils` su serverless (%pip da Volume, interim) | accepted-interim | 2026-09-01 |
 | [0026](0026_canonico_sito_numerico.md) | Canonico sito: chiave numerica unica + attributi alfabetici sul gold | accepted | 2026-09-04 |
+| [0027](0027_modello_4_ambienti_promozione.md) | Modello 4 ambienti (sandbox→dev→stage→prod) con promozione a gate | proposta | 2026-09-23 |

@@ -72,6 +72,20 @@ concordato; un Bronze legge la landing via UC senza modifiche di logica; `landin
 (owner: team). Punto #1 (SFTP vs Blob) chiuso; punto #2 (nessun SFTP da riusare) confermato. Restano aperti i
 punti di **ownership estrazione** (#3/#4) e **C6** (`landing_mode`).
 
+**Aggiornamento 2026-09-23 — thread piattaforma concluso.** Architettura **confermata** (Silvio Torracchi, 21/9:
+AzCopy nativo su blob, **niente SFTP** per il perimetro logistico; SFTP resta solo dove vincolante, es. Conad
+Nazionale, come stream separato). Risposta inviata a Reply/Eddy con le decisioni operative:
+- **Container nuovo `logisticolanding`** sullo SA esistente `stdevdataplatformweudata` (**solo template Blob,
+  nessun nuovo RG/SA** — recepisce l'obiezione di Edoardo Ulivi).
+- **Scrittura via SAS token** per iniziare (permessi **Read/Write/Create/Add/List** — `Read` serve per
+  `--overwrite=ifSourceNewer`; macchine ODI on-prem/Linux datate → SAS più semplice; **SP** come evoluzione se
+  fattibile da quelle macchine, cioè se hanno egress verso AAD).
+- **Lettura da Databricks** via **Access Connector + Storage Credential + External Location**; **`landing_mode=external`**.
+- Costi stimati **trascurabili** (~€0,6–7/mese anche nel caso pessimo ~1 GB/giorno).
+
+In attesa del **provisioning** (container + SAS + Access Connector) da Reply → poi validazione `--send` reale e
+flip Terraform `landing_mode=external`.
+
 ## Follow-up
 1. ✅ **Backend AzCopy in main**: `scripts/sftp/send_to_landing.py`
    (`--transport azcopy|sftp`) riusa `build_upload_plan`; comando `azcopy copy ... --overwrite=ifSourceNewer`;

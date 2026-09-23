@@ -7,7 +7,7 @@ push_documentation: "da ri-split dopo merge"
 push_gitlab: "workflows v0.1.7 (github @d419072) — push su main per verifica CI dev"
 act: []
 adr: []
-lesson: [LL-030, LL-029]
+lesson: [LL-031, LL-030, LL-029]
 op: [OP-INF-3]
 ---
 
@@ -36,7 +36,22 @@ su GitLab per **verificare che la CI cliente giri correttamente** e **confermare
    7→7 = nessuna duplicazione; 7→14 = problema.
 4. Terraform infra: apply passa senza `duplicate job name detected`.
 
+## Esito
+- **CI dev VERDE**: pipeline `main` #6151 → `validate` + `deploy_dev -t dev` **Passed**. Verifica ok.
+- **Documentazione** riallineata su GitHub (PR #12 mergiato + `documentation` ripushato).
+
+## ⚠️ Incidente: `deploy_prod` involontario ([[LL-031]])
+Il push includeva `--tags` → il tag `v0.1.7` ha creato la pipeline #6152 con `validate` + `deploy_prod`
+(gate **manuale**). Su quella pipeline l'unica azione manuale era `deploy_prod`: **cliccata per errore**
+→ `bundle deploy -t prod` ha creato **7 job canonici** `logistica_*` sotto `/Workspace/.../prod/`
+(`logistica_giacenze/_dim_refresh/_landing_ingestion/_trasporti/_aggregati/_carichi/_prep_sped`).
+- Naming OK (in PROD i nomi sono canonici per `mode:production`, non e' la violazione dello standard dev).
+- Ma non voluti: `mode:production` **non mette in pausa gli schedule** → possono partire e fallire.
+- **Cleanup**: `bundle destroy -t prod` tentato da `flabffoconi` → **permission denied** sul path prod
+  (ACL della MI). **Deve farlo la MI/CI o un admin.**
+
 ## Prossimi passi
-- Dopo push: eseguire la verifica sopra con l'infra.
-- Se OK: chiudere la parte "flusso CI stabilito" ([[OP-INF-3]]).
-- Ri-split + push `documentation` su GitHub per allineare i doc (questo worklog + runbook16).
+1. **MI/admin**: `databricks bundle destroy -t prod --auto-approve` (o cancellare i 7 job canonici) per rimuovere il deploy prod involontario.
+2. Verifica anti-duplicazione DEV: confermare **7** `[dev <mi>] logistica_*` (uno per nome) — via log `deploy_dev` o admin.
+3. **Per le prossime verifiche dev**: push **solo `main`** (senza `--tags`) → niente pipeline col gate prod ([[LL-031]]).
+4. A esito ok: chiudere "flusso CI dev stabilito" ([[OP-INF-3]]).
