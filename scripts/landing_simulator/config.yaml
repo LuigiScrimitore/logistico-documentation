@@ -27,24 +27,26 @@ systems:
   logistix:
     landing_subdir: "logistix-landing"
     # Db-link dei siti attivi — allineati a CDT_ESTR.S_LOGISTIX WHERE FLAG_ATTIVO = 1 (2026-06-10).
+    # NB (2026-09-29): laix/lfsx/lgsx DISABILITATI (siti spenti, ORA-12514) -> commentati / esclusi
+    #   dalle estrazioni. Ri-abilitare de-commentando se tornano FLAG_ATTIVO=1. (worklog 2026-09-29-02)
     # La chiave (sito) e' il db-link senza prefisso LOG_, minuscolo; finisce nel path landing
     # (logistix-landing/<sito>/) ed e' la base di _sito_estrazione -> normalize_sito (TABGEN).
     dblinks:
-      laix: "LOG_LAIX"
+      # laix: "LOG_LAIX"   # DISABILITATO 2026-09-29 (sito spento, ORA-12514)
       lbvx: "LOG_LBVX"
       lcax: "LOG_LCAX"
       leax: "LOG_LEAX"
       lfax: "LOG_LFAX"
       lfmx: "LOG_LFMX"
       lfqx: "LOG_LFQX"
-      lfsx: "LOG_LFSX"
+      # lfsx: "LOG_LFSX"   # DISABILITATO 2026-09-29 (sito spento, ORA-12514)
       lfvx: "LOG_LFVX"
       lgax: "LOG_LGAX"
       lgcx: "LOG_LGCX"
       lgnx: "LOG_LGNX"
       lgqx: "LOG_LGQX"
       lgrx: "LOG_LGRX"
-      lgsx: "LOG_LGSX"
+      # lgsx: "LOG_LGSX"   # DISABILITATO 2026-09-29 (sito spento, ORA-12514)
       lgvx: "LOG_LGVX"
       lgzx: "LOG_LGZX"
       lonx: "LOG_LONX"

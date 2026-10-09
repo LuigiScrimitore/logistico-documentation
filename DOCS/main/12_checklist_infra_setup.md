@@ -9,7 +9,7 @@
 > (`deploy_dev` verde → 7 job in DEV), `logistico-infrastructure` (`terraform plan` verde, 15 add/0 destroy).
 > **✅ Infra DEV completa (2026-09-01):** `apply` v0.1.6 verde (`6 added, 0 changed, 0 destroyed`). Provisionati in
 > DEV: **8 schemi + Volume `landing.files` + 6 grants** a `Group-Engineering-dev`. OP-INF-1 e OP-INF-2 chiusi;
-> **ACT_0.1.6 chiuso**. Restano prereq di piattaforma: **container AzCopy** (§F.2, ingestion) e **PROD**. Dettaglio: [[ACT_0.1.6]].
+> **ACT_0.1.6 chiuso**. **Container AzCopy `logisticolanding` consegnato + collaudo relay OK (2026-10-02, [[ACT_OP-INF-4]])**; resta prereq **PROD**. Dettaglio: [[ACT_0.1.6]].
 
 > Dettaglio tecnico sprint → `04_piano_sviluppo.md` | Decisioni architetturali → `10_piano_migrazione_databricks.md` | **Rilascio a fasi post-accesso → `14_release_kit.md`**
 
@@ -62,9 +62,9 @@
 | C2 | Formato file | ✅ | Logistico usa **CSV** oggi. Il codice è **già pronto anche per Parquet**: i Bronze notebook rilevano il formato automaticamente (`detect_format()`) e il widget `file_format` accetta `csv`/`parquet`/`auto`. Nessuna azione richiesta ora. Il passaggio a Parquet è un'opzione futura lato push — zero modifiche al nostro codice quando avverrà. | Nessuna — completato per la scope attuale (CSV). |
 | C3 | Struttura cartelle | ✅ | **`YYYY/MM/DD`** (3 livelli separati). Confermato dalla call — il YYYYMMDD era riferito a un altro progetto. | Già corretto nel codice (`storage.py`, notebook Bronze) |
 | C4 | SLA completamento push | ✅ | **04:00**. Potrà essere rivisto al go-live. Schedule Databricks Workflows da spostare: landing check → 04:30, primo processing → 05:00. | Aggiornare YAML schedule quando i Workflows saranno creati (DBR-06) |
-| C5 | Alimentazione landing (SFTP vs Blob) | ✅ | **DECISO: AzCopy** (2026-08-31, dai sistemi → [[ADR-0023]]), non SFTP. Chiude l'analisi [[ACT_9012]]. Per **noi trasparente** (stesso container ADLS). A tendere via **processi ODI**; backend AzCopy **in main** (`send_to_landing.py`, dry-run validato). | ✅ thread piattaforma **concluso (2026-09-23)**: architettura confermata + decisioni (container `logisticolanding`, **scrittura SAS**, lettura Access Connector). Resta il **provisioning** (container+SAS) per il `--send` reale + ownership estrazione. |
+| C5 | Alimentazione landing (SFTP vs Blob) | ✅ | **DECISO: AzCopy** (2026-08-31, dai sistemi → [[ADR-0023]]), non SFTP. Chiude l'analisi [[ACT_9012]]. Per **noi trasparente** (stesso container ADLS). Trasporto via **relay `odisrvcno3`** innescato da ODI (Opzione A), vedi [[ACT_OP-INF-4]]. | ✅ **provisioning consegnato (2026-10-01)** + **collaudo relay OK (2026-10-02)**: upload reale su `logisticolanding` `Completed`. Resta ownership/industrializzazione estrazione ODI. |
 | C7 | Trasporto ≠ estrazione | 🟡 | **AzCopy = trasporto** (sposta file già esistenti, via processi ODI a tendere); l'**estrazione** Oracle→file sta a monte e per D5 **non gira su Databricks** (host on-prem). Nostri script `send_to_landing` (backend AzCopy in main; `send_to_sftp` legacy), `cdtdw_lookup_extractor` (ponte OP-02), `quadratura` (export CDT_DW). | Definire ownership estrazione dati operativi + CDT_DW (Conad / host on-prem) → [[ACT_9012]] |
-| C6 | Riconciliazione `landing_mode` (managed vs external) | 🟡 **in provisioning** | **Deciso: `landing_mode="external"`** (2026-09-23) — un Volume managed non vede i file scritti da AzCopy (fuori UC). Comunicato a Reply: lettura via **Access Connector + Storage Credential + External Location** sul container `logisticolanding`. Impatta [[ADR-0003]]/D3. | Attendere creazione **container + Access Connector** da Reply; poi flip `landing_mode` → external + compilare path nel Terraform brownfield. |
+| C6 | Riconciliazione `landing_mode` (managed vs external) | 🟢 **oggetti UC pronti** | **Deciso: `landing_mode="external"`** (2026-09-23) — un Volume managed non vede i file scritti da AzCopy (fuori UC). **Consegnati (2026-10-01)**: Storage Credential `logisticolanding_dev_ro` + External Location `logisticolanding_dev` (Access Connector `ac-dev-logistico-00`, read-only). Impatta [[ADR-0003]]/D3. | Fare il flip `landing_mode` → external **dopo la migrazione storico** (Volume→logisticolanding + external Volume stesso nome) + compilare path nel Terraform brownfield. |
 
 ---
 
@@ -91,20 +91,20 @@
 🟢 B6 grant MI ottenuto → OP-INF-1 chiuso; apply v0.1.5 (schemi+Volume creati)
 🟢 B7 nome gruppo        → OP-INF-2 chiuso: reale `Group-Engineering-dev` (fix in variables.tf)
 ✅ B8 apply v0.1.6 VERDE → 6 grants applicati (0 destroy) → infra DEV COMPLETA
-✅ C5 protocollo landing → deciso AzCopy (ADR-0023, 2026-08-31), non SFTP
-🟡 C6 landing_mode      → external DECISO; attende provisioning container + Access Connector (Reply)
+✅ C5 protocollo landing → deciso AzCopy (ADR-0023, 2026-08-31), non SFTP · **collaudo relay OK 2026-10-02**
+🟢 C6 landing_mode      → external DECISO; **provisioning CONSEGNATO** (container+SAS+Access Connector, 2026-10-01); resta solo il flip Terraform dopo la migrazione storico
 🟡 A5 reader group      → da fare quando il gruppo sarà creato (non bloccante per apply)
 ```
 
 **Stato mail (tutte inviate):**
 1. **Francesco Giambona** → utenza Azure (§F.3) — 🟡 in attesa; + **grant `CREATE SCHEMA` alla MI** (mail 2026-08-27, OP-INF-1)
 2. **Extrared** (Ippazio CC) → subgruppo GitLab (§F.1) — ✅ **risolto**: subgroup + Maintainer
-3. **team DevOps/Azure (Reply/Eddy)** → **accesso container per AzCopy** (§F.2) — ✅ inviata 2026-08-31; **thread concluso 2026-09-23** (architettura confermata; decisi container `logisticolanding` + SAS + Access Connector) → **provisioning in corso** lato Reply
+3. **team DevOps/Azure (Reply/Eddy)** → **accesso container per AzCopy** (§F.2) — ✅ inviata 2026-08-31; thread concluso 2026-09-23; richiesta provisioning 2026-09-25; Reply ha confermato (2026-09-29); risposta finale 2026-09-30; **provisioning CONSEGNATO 2026-10-01** (container `logisticolanding` + SAS R/W/C/A/List scad. 31-03-2027 + Access Connector `ac-dev-logistico-00` / External Location `logisticolanding_dev`); **collaudo dal relay OK 2026-10-02** (upload reale `Completed`) → **thread CHIUSO**
 
-**Prossimo passo attivo:** infra DEV **completa** (`apply` v0.1.6 verde). Il gate attivo ora è l'**ingestion**:
-il **provisioning del container `logisticolanding`** (+ SAS scrittura + Access Connector lettura) da Reply
-(thread concluso 2026-09-23, decisioni comunicate) → poi `--send` reale, flip `landing_mode=external`, primi
-file in landing. Poi provisioning **PROD**.
+**Prossimo passo attivo:** infra DEV **completa** (`apply` v0.1.6 verde) e **trasporto landing validato end-to-end dal
+relay** (collaudo OK 2026-10-02, [[ACT_OP-INF-4]]). Restano lato nostro: **trigger E2E da ODI**, **migrazione storico
+Volume→logisticolanding** + ricreazione external Volume stesso nome → **flip `landing_mode=external`**, poi
+industrializzazione estrazione ODI. Poi provisioning **PROD**.
 
 ---
 
@@ -173,6 +173,22 @@ Grazie,
 > **scrittura via SAS token** per iniziare (Read/Write/Create/Add/List; SP come evoluzione se fattibile da on-prem);
 > **lettura via Access Connector + External Location**; **`landing_mode=external`**. In attesa del **provisioning**
 > (container + SAS + Access Connector). Costi stimati trascurabili (~€0,6–7/mese anche a 1 GB/giorno).
+>
+> 📨 **Richiesta provisioning inviata a Reply (2026-09-25).** On-prem **pronto** (relay Linux `odisrvcno3`:
+> AzCopy + staging + NFS dagli agenti ODI). Chiesti: **container `logisticolanding` + SAS** (R/W/C/A/List) e
+> **Access Connector + External Location** per la lettura Databricks. In attesa.
+>
+> ✅ **Reply ha confermato (2026-09-29) e procede.** Concordato: container `logisticolanding` (no nuovo RG/SA); **SAS**
+> limitato al container (R/W/C/A/List), scadenza **31/03/2027**, canale sicuro; **Access Connector + identità dedicati**
+> read-only sul container; **READ FILES** a `Group-Engineering-dev` + SP `id-dev-dataplatform-workload-00`; **lifecycle
+> 220 gg** (poi 30 dopo PROD); **2 utenze Azure AD** (L. Scrimitore, F. Foconi) `Storage Blob Data Contributor` sul container.
+>
+> ✅ **CONSEGNATO (2026-10-01) + collaudo OK (2026-10-02).** Reply ha creato: container `logisticolanding` (lifecycle
+> 220gg), **SAS** R/W/C/A/List (no Delete) scad. 31/03/2027 via policy `logistico-azcopy-20270331`, Access Connector
+> **`ac-dev-logistico-00`** + Storage Credential `logisticolanding_dev_ro` + External Location `logisticolanding_dev`
+> (READ FILES a `Group-Engineering-dev` + SP `id-dev-dataplatform-workload-00`), Contributor a Erika/Luigi/Francesco.
+> **Collaudo dal relay superato**: `upload_landing.sh dev logistico` → AzCopy `Completed`, path nel container OK
+> (OP-07). **Thread §F.2 chiuso.** Dettaglio: [[ACT_OP-INF-4]]. SAS = segreto, fuori dal repo (gitignored).
 
 **Oggetto:** Richiesta accesso container ADLS (AzCopy) — Progetto Logistico 2.0
 
@@ -231,7 +247,7 @@ Grazie,
 | A7 Utenza Azure | Francesco Giambona (PM) | Account Azure per navigazione e terraform init/plan | 🟡 mail inviata, in attesa |
 | B2 Subgruppo GitLab | Extrared + Ippazio | ✅ **Fatto** — `CNO/cno-data-platform/logistico`, Maintainer (2026-08-03) | ✅ |
 | C5 Trasporto landing | — (deciso) | **AzCopy** (ADR-0023), non SFTP — a tendere via processi ODI (team) | ✅ |
-| C6 Accesso landing (AzCopy) | Reply/piattaforma | Creare container `logisticolanding` + SAS (Read/Write/Create/Add/List) + Access Connector/External Location. Decisioni comunicate 2026-09-23 (§F.2) | 🟡 provisioning in corso |
+| C6 Accesso landing (AzCopy) | Reply/piattaforma | Container `logisticolanding` + SAS (R/W/C/A/List) + Access Connector `ac-dev-logistico-00` / External Location `logisticolanding_dev` | ✅ **consegnato 2026-10-01 + collaudo OK 2026-10-02** |
 | A5 Reader UC group | Cliente (quando creato) | Nome gruppo analisti/MicroStrategy → `enable_reader_grants=true` + `terraform apply` | 🟡 non urgente |
 | B3 Auth CI/CD | Team Logistico | **Risolto**: Managed Identity del runner, nessun secret (2026-08-27) | ✅ |
 | **OP-INF-1 Grant UC alla MI** | Team infrastructure | `USE CATALOG` + `CREATE SCHEMA` alla MI `id-dev-dataplatform-workload-00` sui 5 catalog DEV — **assegnati 2026-09-01** | ✅ |

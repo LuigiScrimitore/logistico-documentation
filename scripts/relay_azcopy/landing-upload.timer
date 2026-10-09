@@ -1,0 +1,12 @@
+# /etc/systemd/system/landing-upload.timer
+# Schedula l'upload dopo la finestra di estrazione (SLA disponibilità file 04:00).
+# Tunabile: OnCalendar, o passare a trigger su marker "batch completo" scritto da ODI.
+[Unit]
+Description=Schedule landing upload
+
+[Timer]
+OnCalendar=*-*-* 05:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

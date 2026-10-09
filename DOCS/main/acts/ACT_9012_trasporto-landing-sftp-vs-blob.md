@@ -86,6 +86,40 @@ Nazionale, come stream separato). Risposta inviata a Reply/Eddy con le decisioni
 In attesa del **provisioning** (container + SAS + Access Connector) da Reply → poi validazione `--send` reale e
 flip Terraform `landing_mode=external`.
 
+**Aggiornamento 2026-09-25** — **relay Linux pronto** (`odisrvcno3`: AzCopy 10.32.7 + staging 500G + NFS dagli
+agenti ODI, giro validato; artefatti in `scripts/relay_azcopy/`, dettaglio in OP-INF-4). Inviata a Reply la
+**richiesta formale di provisioning**: container `logisticolanding` + **SAS** (R/W/C/A/List) + **Access
+Connector + External Location** per la lettura Databricks. In attesa risposta.
+
+**Aggiornamento 2026-09-29** — **Reply ha confermato e procede** col provisioning: container `logisticolanding`
+(no nuovo RG/SA), **SAS** limitato al container (scad. 31/03/2027, canale sicuro), **Access Connector + identità
+dedicati** read-only, **READ FILES** a `Group-Engineering-dev` + SP `id-dev-dataplatform-workload-00`, **lifecycle
+220 gg** (poi 30 dopo PROD), **2 utenze operatore** (Contributor sul container). **Trigger invio deciso = Opzione A**
+(OSCommand ODI → `ssh` → AzCopy su `odisrvcno3`); **verifica ssh RHEL6→Ubuntu 26.04 lasciata come OPEN POINT**
+(fallback: marker+watcher). Dettaglio in OP-INF-4.
+
+**Aggiornamento 2026-09-30** — risposta finale inviata a Reply (retention 220gg + 3 utenze operatore). **Chiarita
+la landing interim**: NON è SFTP, è il **Volume UC managed `landing_dev.logistica.files`** (backing
+`dbstoragecr5644pksnxyw`/`unity-catalog-storage`) alimentato via `databricks fs cp`; i job leggono via
+`landing_base_path`. **Migrazione storico = interna Volume → logisticolanding** (nessun grant extra Reply; richiesta
+"read sorgente SFTP" decaduta). **Cutover**: ricreare `landing_dev.logistica.files` come **Volume external** stesso
+nome → `landing_base_path` invariato, zero change ai job.
+
+> **Nota**: il **setup operativo del relay** (provisioning `odisrvcno3`, installazioni, chiavi/forced command,
+> convenzione path, trigger ODI) è tracciato nella sua SSOT dedicata [[ACT_OP-INF-4]]. Questa ACT resta l'**analisi**
+> del protocollo (SFTP vs Blob) e la decisione AzCopy.
+
+**Aggiornamento 2026-10-01 — Trigger A (Opzione A) validato su entrambi gli agenti ODI.** La catena
+`OdiOSCommand → ssh odisrvcno3 → upload_landing.sh → AzCopy → Blob` funziona da **odisrvcno1** (10.8.1.211) e
+**odisrvcno2** (10.8.1.212): test chiuso con `exit=1` solo per SAS non ancora consegnato (AzCopy prova i file di
+staging → `Please authenticate … SAS`). Realizzato: **sshd legacy globale** su `odisrvcno3` (KEX
+`group-exchange-sha256`/`group14-sha1` + `ssh-rsa` host-key/pubkey, per il client OpenSSH 5.3 di RHEL6; `Match` non
+ammette queste direttive su OpenSSH 10 → globali, host solo interno); **chiave RSA dedicata** per agente +
+**`forced command`** `command="/opt/landing/bin/upload_landing.sh",restrict,from="10.8.1.211,10.8.1.212"` in
+`svc_landing`; **fix** di un `HostKey` (direttiva server) erroneamente presente nel `ssh_config` **client** di
+odisrvcno1. **Fallback Opzione B non più necessario.** Residuo gated dal SAS: **ri-deploy di `upload_landing.sh`
+dal repo** (il deployato è una versione vecchia senza la guardia `[ -r SAS ]`) + rotazione SAS. Dettaglio in OP-INF-4.
+
 ## Follow-up
 1. ✅ **Backend AzCopy in main**: `scripts/sftp/send_to_landing.py`
    (`--transport azcopy|sftp`) riusa `build_upload_plan`; comando `azcopy copy ... --overwrite=ifSourceNewer`;

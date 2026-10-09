@@ -1,0 +1,4 @@
+# /etc/exports sul relay odisrvcno3 — share NFS della staging verso gli agenti ODI.
+# all_squash + anonuid/anongid = tutte le scritture NFS diventano di svc_landing (uid 999/gid 983),
+# così l'uploader (che gira come svc_landing) legge senza problemi di permessi.
+/data/landing/staging 10.8.1.211(rw,sync,no_subtree_check,all_squash,anonuid=999,anongid=983) 10.8.1.212(rw,sync,no_subtree_check,all_squash,anonuid=999,anongid=983)

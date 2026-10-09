@@ -4,13 +4,34 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Permessi job DAB: CAN_MANAGE Group-Engineering-dev nel databricks.yml (target dev) — LL-032](2026-09-23-03_permessi-dab-can-manage-group-engineering-dev.md) · 2026-09-23 · monorepo `PR dedicata (databricks.yml + LL-032 + worklog)`
+**Ultimo push:** [Pausa degli schedule dei 7 job dev del logistico + fix durevole negli YAML (LL-037)](2026-10-09-01_pausa-schedule-job-dev.md) · 2026-10-09 · monorepo `PR #22 (worklog + LL-037 + 7 YAML workflows)`
 
-**33 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**54 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-10-09 | `PR #22 (worklog + LL-037 + 7 YAML workflows)` | [Pausa degli schedule dei 7 job dev del logistico + fix durevole negli YAML (LL-037)](2026-10-09-01_pausa-schedule-job-dev.md) | — | — | LL-037 | — |
+| 2026-10-06 | `merge PR #18 #16 #14 #19 #20 + chiusura #6` | [Merge PR pendenti (#14 #16 #18 #19 #20), chiusura #6 superata, pulizia branch monorepo](2026-10-06-01_merge-pr-pendenti-pulizia-branch.md) | ACT_9029 ACT_9025 ACT_9026 | — | LL-033 LL-034 | OP-TRA-1 |
+| 2026-10-02 | `PR dedicata (extract_and_send.sh + ACT/OP/README/worklog)` | [Extract+send sul relay: primo carico reale in logisticolanding (307 file, ~2,23 GB)](2026-10-02-03_extract-send-sul-relay.md) | ACT_OP-INF-4 | — | — | OP-INF-4 OP-07 OP-08 |
+| 2026-10-02 | `aa6231b` | [Checklist infra 12 allineata a provisioning consegnato + collaudo relay OK](2026-10-02-02_allineamento-doc12-collaudo.md) | ACT_OP-INF-4 | — | — | OP-INF-4 |
+| 2026-10-02 | `235474c` | [Collaudo relay OK — upload reale verificato su logisticolanding](2026-10-02-01_collaudo-relay-ok.md) | ACT_OP-INF-4 | — | — | OP-INF-4 OP-07 |
+| 2026-10-01 | `fa2972a` | [Reply consegna il provisioning (container + SAS + UC); avvio collaudo](2026-10-01-05_reply-consegna-provisioning.md) | ACT_OP-INF-4 | — | — | OP-INF-4 |
+| 2026-10-01 | `09b4832` | [Lezioni LL-035/LL-036 (ssh RHEL6→OpenSSH10) estratte da ACT_OP-INF-4](2026-10-01-04_lessons-ssh-ll035-ll036.md) | ACT_OP-INF-4 | ADR-0020 | LL-035 LL-036 | OP-INF-4 |
+| 2026-10-01 | `a39e7a3` | [ACT dedicata relay odisrvcno3 + trigger ODI (recap attività)](2026-10-01-03_act-op-inf-4-relay.md) | ACT_OP-INF-4 ACT_9012 | — | — | OP-INF-4 |
+| 2026-10-01 | `6d13af3` | [Convenzione path <env>/<sistema> + sender e trigger ODI multi-ambiente](2026-10-01-02_path-env-sistema-sender-odi.md) | ACT_9012 | — | — | OP-07 OP-INF-4 |
+| 2026-10-01 | `9f727f7` | [Trigger A (ssh forced command) validato su odisrvcno1/2](2026-10-01-01_trigger-a-ssh-validato.md) | ACT_9012 | — | — | OP-INF-4 |
+| 2026-09-30 | `44f88bb` | [Risposta finale a Reply + chiarita landing interim (Volume managed, non SFTP)](2026-09-30-01_risposta-finale-reply-landing-volume.md) | ACT_9012 | — | — | OP-INF-4 |
+| 2026-09-29 | `config.yaml estrattore + worklog (PR dedicata)` | [Disabilitati 3 siti (laix, lfsx, lgsx) dalle estrazioni landing (ORA-12514, siti spenti)](2026-09-29-02_disabilitati-3-siti-estrazione.md) | — | — | — | — |
+| 2026-09-29 | `3d1a58a` | [Reply conferma provisioning AzCopy + trigger A (open point ssh)](2026-09-29-01_reply-conferma-provisioning-azcopy.md) | ACT_9012 | — | — | OP-INF-4 |
+| 2026-09-25 | `PR #14 (feat/act-9029) allineata a main + esito` | [Quadratura F_CARICO: estrattore validato + estrazione CDT_DW 22-23 Sett + confronto fase 1 (chiavi/colonne)](2026-09-25-04_quadratura-f-carico-estrazione-22-23.md) | ACT_9029 | — | — | Q-01 |
+| 2026-09-25 | `doc-pass worklog (PR dedicata)` | [Giro completo giorno 24: estrazione+landing cloud + run 7/7 via MI (grant UC ok)](2026-09-25-03_giro-completo-24-via-mi.md) | — | — | LL-033 LL-032 LL-034 | OP-INF-3 |
+| 2026-09-25 | `dcf4d24` | [Richiesta provisioning AzCopy inviata a Reply](2026-09-25-02_richiesta-provisioning-azcopy-reply.md) | ACT_9012 | — | — | OP-INF-4 |
+| 2026-09-25 | `d32acf3` | [Relay AzCopy odisrvcno3 pronto (staging+NFS+AzCopy)](2026-09-25-01_relay-odisrvcno3-pronto.md) | — | ADR-0023 | — | OP-INF-4 |
+| 2026-09-24 | `PR dedicata (silver_pesate.py + LL-034 + worklog + INDEX)` | [Fix duplicati F_CARICO: chiave naturale pesata senza DATA_BOLLA (silver_pesate) — LL-034](2026-09-24-01_fix-dup-fcarico-chiave-pesata.md) | — | — | LL-034 | OP-CAR-3 |
+| 2026-09-23 | `PR dedicata (feat/act-9029)` | [Estrattore row-level CDT_DW.F_CARICO per quadratura a gradi (ACT_9029, Q-01)](2026-09-23-05_estrattore-f-carico-rowlevel.md) | ACT_9029 | — | — | Q-01 |
+| 2026-09-23 | `PR doc (LL-033 + worklog)` | [Run 11→22 cloud DEV bloccato: la MI (run_as) non ha i grant UC sui dati (LL-033)](2026-09-23-04_run-1122-cloud-blocco-grant-mi.md) | — | — | LL-033 | — |
 | 2026-09-23 | `PR dedicata (databricks.yml + LL-032 + worklog)` | [Permessi job DAB: CAN_MANAGE Group-Engineering-dev nel databricks.yml (target dev) — LL-032](2026-09-23-03_permessi-dab-can-manage-group-engineering-dev.md) | — | — | LL-032 | — |
+| 2026-09-23 | `667bf00` | [OP-INF-4: host extract&send target su Windows](2026-09-23-03_op-inf-4-host-extract-send.md) | — | ADR-0023 | — | OP-INF-4 |
 | 2026-09-23 | `c743f99` | [AzCopy: thread piattaforma concluso, decisioni (SAS + container)](2026-09-23-02_azcopy-thread-esito.md) | ACT_9012 | ADR-0023 | — | OP-07 |
 | 2026-09-23 | `n/d (doc-pass, da pushare)` | [Decisioni ambienti: modello 4 livelli (ADR-0027) + auth CI = MI unica; naming stage; ACT_9028](2026-09-23-01_decisioni-4-ambienti-e-auth-ci.md) | ACT_9028 | ADR-0027 | LL-030 | OP-INF-3 |
 | 2026-09-21 | `doc-pass runbook16 + worklog (PR dedicata)` | [Release GitLab workflows v0.1.7 (fix .cache LL-029) — verifica CI dev cliente](2026-09-21-02_release-gitlab-workflows-v017-verifica-ci.md) | — | — | LL-031 LL-030 LL-029 | OP-INF-3 |

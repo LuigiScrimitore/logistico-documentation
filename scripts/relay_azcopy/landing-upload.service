@@ -1,0 +1,13 @@
+# /etc/systemd/system/landing-upload.service
+# Oneshot: esegue l'upload AzCopy della staging verso logisticolanding.
+[Unit]
+Description=Upload landing staging to Azure Blob (AzCopy)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=svc_landing
+# Fallback schedulato per l'ambiente di questo relay (dev). Per un altro env sullo stesso
+# relay, aggiungere una seconda unit con ExecStart=... prod logistico.
+ExecStart=/opt/landing/bin/upload_landing.sh dev logistico

@@ -1,6 +1,6 @@
 # Open Points — Logistico 2.0
 
-**Ultimo aggiornamento:** 2026-09-21  
+**Ultimo aggiornamento:** 2026-09-23  
 **Owner documento:** Cloud Data Architect — Team Logistico 2.0  
 **Scopo:** registro dei punti **ancora aperti** che richiedono conferme esterne (Reply o sistemi sorgente) o che sono stati messi in stand-by per fase successiva.
 
@@ -115,6 +115,107 @@ Non impatta la modalità Bronze; è una scelta di ingestion per il seed storico.
 **Azione:** scrivere un **ADR dedicato** (dev/stage/prod), coerente con ADR-0016 (multi-repo) e ADR-0022 (auth MSI). Anticipato da ACT_9022. Owner: team (chiunque può bozzarlo).
 **Aggiornamento 2026-09-23 (decisioni Luigi):** **[[ADR-0027]]** bozzato (status `proposta`) — modello a **4 ambienti** (sandbox → dev → stage → prod) con promozione solo-avanti a **gate** (verde→dev, funzionale+quadrato→stage, stabile N giorni+certifica→prod). **Auth CI = MI unica CONFERMATA** (non per-utente) → chiude la domanda aperta qui sotto. **Naming stage deciso**: target DAB `stage` `mode:production` + `name_prefix` → job **`[stage] logistica_*`** (distinto da dev `[dev <identità>]` e prod canonico). Configurazione stage → **[[ACT_9028]]** (catalog `_stage` Terraform + target DAB + promozione dev→stage). Restano aperti solo punti *implementativi*: topologia workspace (unico vs separati), sandbox vs dev sullo stesso catalog `_dev`.
 **Aggiornamento 2026-09-21 (incidente duplicati CI → [[LL-030]]):** il target `dev` è `mode:development` (job per-identità `[dev …]`); usato dalla **CI** produce job prefissati per la service principal. Un cambio storico di `root_path` aveva orfanizzato lo stato del bundle → **7 job duplicati** `[dev id_dev_dataplatform_workload_00] logistica_*` che bloccavano il `data "databricks_jobs" "all"` dell'infra. **Pulizia fatta** dall'infra (una istanza per nome); root_path già stabile (dal 2026-09-02) → nessuna ricorrenza attesa. **Naming:** il prefisso `[dev <identità>]` è lo **standard dei nomi job della data platform** e va **mantenuto** — i nomi canonici senza prefisso (`mode:production`) sono **scartati**. **Prevenzione:** non ri-cambiare il `root_path` (già stabile) + **redeploy pulito** dei job → aggiornano in-place, niente duplicati; **nessun cambio di naming**. **Freeze push GitLab** attivo finché il flusso CI non è stabilito. Da chiarire con Luigi se la CI si autentica con **SP unica** (un solo set) o **per-utente**.
+
+### OP-INF-4 — Host di extract & send verso landing: relay Linux `odisrvcno3` (non Windows, non RHEL6) 🟡
+**Aperto**: 2026-09-23   **Interno (architettura on-prem)** · **SSOT attività** → [[ACT_OP-INF-4]] (relay + trigger: inventario server, decisioni, verifica) · collegati [[ADR-0023]] (trasporto AzCopy), [[ACT_9012]] (analisi SFTP vs Blob / §F.2 provisioning)
+
+**Contesto.** L'ingestion della landing avviene via **AzCopy** su Blob ([[ADR-0023]]). Serve un host on-prem che (1) **estragga** da Oracle i file e (2) li **invii** al container `logisticolanding`. Sono stati valutati i due host disponibili.
+
+**Cosa c'è sulla macchina agente ODI (`odisrvcno2`):**
+- **RHEL 6.8** (EOL) · **glibc 2.12** · **Python 2.6.6** (niente `python3`, niente SCL) · **openssl 1.0.1e** (2013) · **trust CA rotto** verso host esterni ([[LL-012]]).
+- **AzCopy nativo NON gira** (richiede glibc ≥ 2.17); **SDK Python moderno impraticabile** (no py3 su OS EOL); `rclone` accantonato.
+- → **non idoneo** come host del trasporto verso Azure.
+
+**Cosa c'è sulla macchina Windows (`user5`, IP interno `10.8.1.50`):**
+- **AzCopy 10.32.7** funziona · **egress + TLS + trust CA verso Azure Blob OK** (risposta reale del servizio, nessun errore certificato) · **Python 3.13** · **ha già accesso ai DB**.
+- → **host idoneo** per extract + send.
+
+**L'estrazione è già in Python (non ODI):**
+- `scripts/landing_simulator/extract_oracle_to_landing.py` — Oracle Logistix/STAT/CND → CSV landing, **READ-ONLY**, CLI (`--run-date`/backfill/`--tables`/`--systems`/`--sites`/`--dry-run`), `config.yaml`, `.env`, `oracledb`; struttura `<source>-landing/[sito/]<tabella>/YYYY/MM/DD/`.
+- `scripts/cdtdw_lookup_extractor/extract_cdtdw_lookups.py` — anagrafiche CDT_DW → `cdtdw-landing/` (READ-ONLY, riusa connessione/writer del landing simulator; workaround OP-02).
+→ L'estrazione **non dipende da ODI**: è già uno strumento Python nostro.
+
+**Decisione (TARGET, non ponte).** Consolidare **extract & send in un'unica applicazione Python schedulata sulla macchina Windows**:
+1. **Extract** = i due script `oracledb` (produttivizzati) → file nella staging, struttura `<sorgente>-landing/<tabella>/YYYY/MM/DD/`;
+2. **Send** = **AzCopy** (riuso `send_to_landing.py` / `azcopy.exe`) → container `logisticolanding` (`landing_mode=external`).
+Orchestrazione: **Windows Task Scheduler**. La macchina ODI RHEL6 **non** è nel percorso di questo flusso. **Trasporto = AzCopy standard**; **extract = Python** (com'è già oggi). Da formalizzare con **ADR** dedicato + **ACT** operativa + runbook.
+
+**Aperti / azioni:**
+- **Provisioning Azure** (prerequisito): container `logisticolanding` + **SAS** scrittura + **Access Connector/External Location** lettura (§F.2 / [[ACT_9012]]); poi flip Terraform `landing_mode=external`.
+- **Industrializzazione app**: unica app schedulata (config, logging, gestione errori, retry, **idempotenza/watermark** full-vs-delta [[OP-08]]) + **cleanup** staging.
+- **Segreti sulla Windows**: credenziali Oracle read-only + SAS in store protetto (mai nel repo).
+- **Monitoraggio/alerting** (sostituisce i "gratis" di ODI): esiti run + notifica su failure.
+- **Buy-in/trasparenza** con Reply/Conad: ingestion logistico via app Python su host Windows come **target** (il thread parlava di "processi ODI" → va comunicata la scelta).
+- **Ownership a regime** dell'app + host Windows (sempre acceso, patch, backup config).
+
+**Aggiornamento 2026-09-25 — scelta finale: relay Linux dedicato (supera l'ipotesi Windows).**
+Reso disponibile un **server Linux dedicato `odisrvcno3`** (Ubuntu 26.04.1 LTS, glibc 2.43, 8 vCPU/30 GiB, IP `10.8.1.158`), nella **stessa rete degli agenti ODI**. Architettura **variante 2** confermata (estrazione sugli agenti ODI; il relay è **storage + sender**):
+- **ODI RHEL6** (`odisrvcno1` 10.8.1.211, `odisrvcno2` 10.8.1.212) estrae → scrive via **NFS** su `/data/landing/staging` del relay;
+- il **relay esegue AzCopy** (`--recursive --overwrite=ifSourceNewer`) → container `logisticolanding`;
+- **storage via endpoint pubblico** (DNS → IP pubblici `20.x`, TLS/CA ok): **nessun Private Endpoint** in gioco → cade la complessità PE/DNS.
+
+**Stato server (2026-09-25): PRONTO end-to-end tranne il SAS.** Fatto: LV 500G su `/data/landing`; utenza `svc_landing` (uid 999/gid 983); **AzCopy 10.32.7**; **NFS** export verso .211/.212 con giro ODI→NFS→staging **validato** (file owner `svc_landing`); artefatti sender depositati. Versionati in `scripts/relay_azcopy/` (uploader + unit systemd + `exports.example` + runbook `README.md`). La macchina **Windows** resta eventuale fallback, non è il target.
+
+**Richiesta provisioning inviata a Reply il 2026-09-25** (container `logisticolanding` + SAS R/W/C/A/List + Access Connector/External Location).
+
+**Aggiornamento 2026-09-29 — Reply conferma, provisioning concordato.**
+Eddy Boscolo (Reply) ha confermato: container **`logisticolanding`** da creare sullo SA esistente (nessun nuovo RG/SA); **SAS limitato al container** (R/W/C/A/List), **scadenza 31/03/2027**, consegna via canale sicuro; per Databricks **Storage Credential + External Location read-only** con **identità + Access Connector dedicati** (l'esistente `ac-dev-databricks` ha write sull'intero SA → ne creano uno nuovo limitato al container). Nostre risposte/decisioni:
+- **SAS**: usato **solo da `odisrvcno3`** (relay); `odisrvcno1`/`odisrvcno2` depositano via NFS, non usano il SAS.
+- **Lettura Databricks**: `READ FILES` sull'External Location a **`Group-Engineering-dev`** + SP **`id-dev-dataplatform-workload-00`** (run-as dei job).
+- **Retention**: lifecycle **220 gg** su DEV (copre i dati dal 1/9 fino alla migrazione PROD; poi **30 gg**). Semantica: relativa al `last-modified` di ogni blob.
+- **Accesso operativo manuale**: **2 utenze Azure AD personali** (Luigi Scrimitore, Francesco Foconi) con **Storage Blob Data Contributor** sul solo container (portale/Storage Explorer). RBAC senza costo per-utenza.
+- **Trigger invio**: **Opzione A** (OSCommand ODI → `ssh odisrvcno3` → AzCopy) per tenere il lineage in ODI. ⚠️ **OPEN POINT**: verifica `ssh` RHEL6 → Ubuntu 26.04 (algoritmi/host-key); fallback **Opzione B** (marker file + watcher systemd su `odisrvcno3`).
+
+**Aggiornamento 2026-09-30 — risposta finale inviata; chiarita la landing interim.**
+Inviata a Reply la risposta con le conferme + retention **220 gg** + **3 utenze operatore** (Erika Lo Iacono/CNO, Luigi Scrimitore, Francesco Foconi/Quanticx) `Storage Blob Data Contributor` su `logisticolanding`.
+**Chiarimento sulla landing attuale**: la landing che alimenta la pipeline **non è un SFTP** — è il **Volume UC managed `landing_dev.logistica.files`** (backing Databricks-managed `dbstoragecr5644pksnxyw`/`unity-catalog-storage`, path GUID opaco), alimentato via **`databricks fs cp`**; i job (`landing_ingestion`, `carichi`) leggono da lì tramite parametro **`landing_base_path=/Volumes/landing_dev/logistica/files`**.
+- **Migrazione storico** = interna **Volume → `logisticolanding`** (nostra, via Databricks); **nessun grant extra da Reply** → la richiesta "read sulla sorgente SFTP" è **decaduta** (non esiste una sorgente SFTP).
+- **Cutover pulito**: creata l'External Location e migrati i dati, si **droppa** il Volume managed e lo si **ricrea come Volume external** con lo **stesso nome UC** → `landing_base_path` **invariato**, **zero modifiche ai job**.
+
+**Aggiornamento 2026-10-01 — Trigger A (Opzione A) VALIDATO su entrambi gli agenti ODI.**
+La catena `OdiOSCommand → ssh odisrvcno3 → upload_landing.sh → AzCopy → Blob` è cablata e funzionante da **odisrvcno1 (10.8.1.211)** e **odisrvcno2 (10.8.1.212)**: il test chiude con `exit=1` solo perché il SAS non è ancora consegnato (AzCopy prova i file di staging e si ferma su `Please authenticate … SAS`). Componenti realizzati:
+- **sshd legacy su `odisrvcno3`** (`/etc/ssh/sshd_config.d/10-odi-legacy.conf`, **globale**: `KexAlgorithms`/`Ciphers`/`MACs`/`HostKeyAlgorithms` non sono ammessi in `Match` su OpenSSH 10): `KexAlgorithms +diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1`, `HostKeyAlgorithms +ssh-rsa`, `PubkeyAcceptedAlgorithms +ssh-rsa`. Riabilita gli algoritmi che il client **OpenSSH 5.3** (RHEL6) sa fare, lasciando intatti i default moderni per gli altri accessi; host **solo interno** (rete 10.8.x).
+- **Chiave RSA dedicata** su ciascun agente (`~oracle/.ssh/id_rsa_landing`) + **`forced command`** in `/home/svc_landing/.ssh/authorized_keys`: `command="/opt/landing/bin/upload_landing.sh",restrict,from="10.8.1.211,10.8.1.212"` → la pubkey ODI può eseguire **solo** lo script, da null'altro, e solo dai 2 IP.
+- **Fix collaterale `odisrvcno1`**: il `ssh_config` **client** conteneva per errore una direttiva server `HostKey /etc/ssh/ssh_host_ecdsa_key` dentro `Host *` → bloccava ogni `ssh` in uscita (`Bad configuration option`). Commentata (backup `ssh_config.bak`).
+- **Cleanup residuo**: lo script `/opt/landing/bin/upload_landing.sh` deployato è una **versione precedente** (manca la guardia `[ -r SAS ]`, perciò non esce `exit=2` ma lancia AzCopy con token vuoto) → **ri-deploy dalla versione del repo** contestualmente alla posa del SAS. Da definire anche la **rotazione SAS**.
+→ Il fallback **Opzione B** (marker + watcher systemd) **non serve più**: Opzione A confermata.
+
+**Convenzione path & sender multi-env/multi-sistema (2026-10-01).** La staging è organizzata per **ambiente** e
+**sistema**, così la stessa infrastruttura serve il logistico oggi e altri sistemi/ambienti domani:
+`/data/landing/staging/<env>/<sistema>/<sorgente>-landing/<tabella>/YYYY/MM/DD/<file>` (`<env>`=`dev`→`prod`;
+`<sistema>`=`logistico`). `staging` resta il root NFS già registrato; l'ambiente è un livello **sotto**. I livelli
+`<env>/<sistema>/` **non** finiscono nel container (si copia il *contenuto*): dentro `logisticolanding` resta
+`<sorgente>-landing/...` (OP-07 invariato). Il relay risolve `(env,sistema) → (container, SAS)` via
+`/opt/landing/conf/<env>/<sistema>.conf` → **aggiungere un ambiente/sistema = nuova sub-folder + nuovo conf, zero
+codice**. Lo script relay (`upload_landing.sh <env> <sistema>`, legge i due token da `$SSH_ORIGINAL_COMMAND`) e lo
+script ODI (`trigger_landing_upload.sh <env> <sistema>`, da `OdiOSCommand`, in balance su .211/.212) sono versionati
+in `scripts/relay_azcopy/`.
+
+**Aggiornamento 2026-10-01 (pomeriggio) — Reply ha CONSEGNATO il provisioning.** (mail Eddy Boscolo)
+- **Container `logisticolanding`** creato (privato), **lifecycle 220 gg** sul last-modified; retention degli altri container preservata.
+- **SAS** (R/W/C/A/List, **HTTPS-only**, scad. **31/03/2027 23:59 IT**) via **stored access policy** `logistico-azcopy-20270331`, consegnato nel file `logistico-azcopy-access.json`. ⚠️ **Segreto**: `.gitignore`-ato, **mai nel repo**, va posato **solo** su `odisrvcno3` (`/opt/landing/secrets/dev/logistico.sas`). **NB: il SAS non ha `Delete`** → cancellare/spostare file richiede le utenze Contributor (portale/Storage Explorer).
+- **Lettura Databricks** (read-only): Access Connector **`ac-dev-logistico-00`**, Storage Credential **`logisticolanding_dev_ro`**, External Location **`logisticolanding_dev`**; **READ FILES** a `Group-Engineering-dev` + SP `id-dev-dataplatform-workload-00` (appId `54d17490-ef40-4a5d-969a-dad1ccf7ada6`).
+- **Storage Blob Data Contributor** sul solo container a Erika Lo Iacono, Luigi Scrimitore, Francesco Foconi.
+
+**Aggiornamento 2026-10-02 — collaudo dal relay OK (upload reale verificato).** Posato il SAS
+(`/opt/landing/secrets/dev/logistico.sas`, 600), creati `conf/dev/logistico.conf` + `staging/dev/logistico`,
+ri-deployato `upload_landing.sh` (versione multi-env). `upload_landing.sh dev logistico` → AzCopy `Final Job Status:
+Completed`, `1 Done / 0 Failed`, `exit=0`. `azcopy list` conferma il blob `_smoketest/2026/10/01/check.txt`
+**senza** prefisso `dev/logistico/` → convenzione path confermata (OP-07). Il file di test resta nel container (SAS
+senza `Delete`): si rimuove da Storage Explorer con utenza Contributor o lo scarta il lifecycle.
+
+**Aggiornamento 2026-10-02 (extract+send sul relay) — PRIMO CARICO REALE.** Verificato che il relay può eseguire
+**anche l'estrazione** (Python 3.14, `oracledb` THIN vs Oracle 19c → nessun Instant Client); creato
+`extract_and_send.sh` (estrae con i 2 script Python in staging → `upload_landing.sh` → AzCopy; `run_date` default=oggi;
+**recap per esecuzione** + unit systemd `landing-extract-send.*` a 05:00 Persistent). Giro reale run-date 2026-10-01,
+tutti i sistemi + CDT_DW → AzCopy **Completed: 307 file, ~2,23 GB, 0 Failed** in `logisticolanding`. ⚠️ Variante:
+estrazione **sul relay** vs agenti ODI → decisione / eventuale ADR (vedi [[ACT_OP-INF-4]] + worklog `2026-10-02-03`).
+
+**Status:** 🟢 **provisioning consegnato + collaudo relay OK (2026-10-02)**. Canale relay→Blob operativo. Aperti lato
+nostro: **trigger E2E da ODI** (deploy `trigger_landing_upload.sh` su .211/.212 + test `OdiOSCommand`); **migrazione
+storico Volume→logisticolanding + ricreazione external Volume stesso nome** (poi flip `landing_mode=external`);
+industrializzazione estrazione ODI (mapping che scrivono sulla staging NFS `dev/logistico/...`); al go-live PROD
+comunicare a Reply per aggiornare la retention.
 
 ---
 
@@ -347,7 +448,7 @@ cdt_dw) arrivano in **push** dai sorgenti. Elimina secret scope Oracle, VNet pee
 |-------|-------------|
 | 🔴 Aperto / Bloccante | **OP-21** (DQ framework — senza risposta Reply), **OP-QDR-1** (quadratura non significativa senza backfill storico) |
 | 🟠 Da confermare (sorgente) | OP-08, OP-09, OP-10, OP-11, OP-31, **OP-CAR-7** (CORRIERE_COD → 'ND'), **OP-CND-1** (bronze su `cnd` dismesso → [[ACT_CND-01]]) |
-| 🟡 Da confermare (Reply/DWH/piattaforma) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25, **OP-GIA-1** (170k righe giacenze — decisione) |
+| 🟡 Da confermare (Reply/DWH/piattaforma) | OP-01, OP-02, OP-04, OP-05, OP-07, OP-20, OP-22, OP-23, OP-24, OP-25, **OP-GIA-1** (170k righe giacenze — decisione), **OP-INF-3** (modello 4 ambienti), **OP-INF-4** (host extract&send: Windows target) |
 | 🔵 Stand-by / Fisiologico / Bassa priorità | OP-03, **OP-29** (ordering fisiologico locale), OP-33, OP-34, OP-36, **OP-CAR-1**, **OP-MOV-1** (grana per-movimento — futuro) |
 | ⏸️ On hold (Technology) | **OP-18** (Service Principal unico data platform) |
 | 🟢 Risolto | **OP-19** (serverless), **OP-28** (orphan 0.0%), **OP-30** (incrementalità), **OP-32** (LAD framework completo+validato; residuo ART/FORN gated OP-02), **OP-35** (watermark), **OP-CAR-4/A** (tombstone quadratura), **OP-CAR-6** (fallback anagrafiche non più silenzioso), **OP-PSP-1** (scartate), **OP-PSP-2** (DATA_PREL_INIZ), **OP-TST-1/2** (fixture/FQN test), **OP-INF-1** (grant UC alla MI), **OP-INF-2** (nome gruppo → `Group-Engineering-dev`), **D1-D5** (migrazione Databricks) |

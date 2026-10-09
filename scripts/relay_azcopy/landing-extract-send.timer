@@ -1,0 +1,12 @@
+# /etc/systemd/system/landing-extract-send.timer
+# Schedula il giro completo extract+send una volta al giorno.
+# Tunabile: OnCalendar. Persistent=true => se il server era spento all'orario, parte al boot successivo.
+[Unit]
+Description=Schedule landing extract+send (daily)
+
+[Timer]
+OnCalendar=*-*-* 05:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

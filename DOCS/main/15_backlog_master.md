@@ -300,6 +300,7 @@ _(sezioni da popolare in Fase 2)_
 | OP-02 | Lookup master Retail (nomi + permessi) | OP-02 (+01/04/05) | ⏸️ on-hold | 🤝 | [acts/ACT_OP-02](acts/ACT_OP-02_retail-master-lookups.md) |
 | OP-08 | Conferme sorgente su ingestion | OP-08/09/10/11/31 | ⏸️ on-hold | 🟠 | [acts/ACT_OP-08](acts/ACT_OP-08_conferme-sorgente-ingestion.md) |
 | OP-25 | Processo go-live + servizi piattaforma | OP-18/20/22/23/24/25 | ⏸️ on-hold | 🤝 | [acts/ACT_OP-25](acts/ACT_OP-25_processo-go-live-e-piattaforma.md) |
+| OP-INF-4 | Relay Linux `odisrvcno3` + trigger ODI (ingestion AzCopy) | OP-INF-4 (+07) | 🔵 in-progress (trigger A validato; upload gated SAS) | 🤝 | [acts/ACT_OP-INF-4](acts/ACT_OP-INF-4_relay-linux-azcopy-ingestion.md) |
 
 **Mappa degli altri OP (nessuna ACT dedicata — vedi registro):**
 | OP | Dove è tracciato |

@@ -1,0 +1,18 @@
+# /etc/systemd/system/landing-extract-send.service
+# Oneshot: estrae da Oracle sul relay (venv python) e invia la staging a Azure via AzCopy.
+# Fa l'intero giro extract+send (richiama upload_landing.sh internamente).
+[Unit]
+Description=Extract Oracle landing + upload to Azure Blob (AzCopy)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=svc_landing
+# azcopy sta in /usr/local/bin: assicuriamo il PATH anche sotto systemd
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+# run_date OMESSO = giorno di esecuzione (date +%F). env/sistema espliciti.
+# Per restringere i sistemi o saltare CDT_DW: Environment=SYSTEMS=... / DO_CDTDW=0
+ExecStart=/opt/landing/bin/extract_and_send.sh dev logistico
+# estrazione completa (22 siti logistix + stat + cdt_estr + track + CDT_DW): timeout ampio
+TimeoutStartSec=14400
