@@ -4,13 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Pausa degli schedule dei 7 job dev del logistico + fix durevole negli YAML (LL-037)](2026-10-09-01_pausa-schedule-job-dev.md) · 2026-10-09 · monorepo `PR #22 (worklog + LL-037 + 7 YAML workflows)`
+**Ultimo push:** [Pausa degli schedule dei 7 job dev del logistico + fix durevole negli YAML (LL-037)](2026-10-09-01_pausa-schedule-job-dev.md) · 2026-10-09 · monorepo `PR #22 @c81f753 (fix + doc) + PR esito`
 
 **54 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
-| 2026-10-09 | `PR #22 (worklog + LL-037 + 7 YAML workflows)` | [Pausa degli schedule dei 7 job dev del logistico + fix durevole negli YAML (LL-037)](2026-10-09-01_pausa-schedule-job-dev.md) | — | — | LL-037 | — |
+| 2026-10-09 | `PR #22 @c81f753 (fix + doc) + PR esito` | [Pausa degli schedule dei 7 job dev del logistico + fix durevole negli YAML (LL-037)](2026-10-09-01_pausa-schedule-job-dev.md) | — | — | LL-037 | — |
 | 2026-10-06 | `merge PR #18 #16 #14 #19 #20 + chiusura #6` | [Merge PR pendenti (#14 #16 #18 #19 #20), chiusura #6 superata, pulizia branch monorepo](2026-10-06-01_merge-pr-pendenti-pulizia-branch.md) | ACT_9029 ACT_9025 ACT_9026 | — | LL-033 LL-034 | OP-TRA-1 |
 | 2026-10-02 | `PR dedicata (extract_and_send.sh + ACT/OP/README/worklog)` | [Extract+send sul relay: primo carico reale in logisticolanding (307 file, ~2,23 GB)](2026-10-02-03_extract-send-sul-relay.md) | ACT_OP-INF-4 | — | — | OP-INF-4 OP-07 OP-08 |
 | 2026-10-02 | `aa6231b` | [Checklist infra 12 allineata a provisioning consegnato + collaudo relay OK](2026-10-02-02_allineamento-doc12-collaudo.md) | ACT_OP-INF-4 | — | — | OP-INF-4 |

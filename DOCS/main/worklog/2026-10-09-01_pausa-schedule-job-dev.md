@@ -2,9 +2,9 @@
 data: 2026-10-09
 titolo: "Pausa degli schedule dei 7 job dev del logistico + fix durevole negli YAML (LL-037)"
 autore: Francesco Foconi
-push_monorepo: "PR #22 (worklog + LL-037 + 7 YAML workflows)"
-push_documentation: "da ri-split dopo merge"
-push_gitlab: "workflows: rilascio su main (no tag) → deploy_dev"
+push_monorepo: "PR #22 @c81f753 (fix + doc) + PR esito"
+push_documentation: "fd07122 (+ esito)"
+push_gitlab: "workflows v0.1.10 @33a641f (solo main, nessun tag)"
 act: []
 adr: []
 lesson: [LL-037]
@@ -53,7 +53,17 @@ DAB in development mette in pausa gli schedule **solo se lo YAML non dichiara `p
   sui permessi della cartella sandbox personale c'era già prima, non è legato al fix.
 - Dopo il deploy: i 7 job devono restare **PAUSED**, con gli **stessi job_id** (update in place, nessun duplicato).
 
+## Esito (2026-10-09) — LIVE
+- **Rilascio**: PR #22 mergiata (`c81f753`) → split → GitHub `logistico-workflows` `acb3e88` (+ `documentation`
+  `fd07122`) → GitLab `logistico-workflows` **v0.1.10** `33a641f`, push **solo `main`** alle 12:15 (tag non pushato,
+  [[LL-031]]). Contenuto del rilascio: solo le 7 righe degli YAML + 2 script di quadratura (ACT_9029) + README,
+  nessun notebook.
+- **deploy_dev**: arrivato su Databricks alle 12:15:51. Il `metadata.json` del bundle deployato riporta il commit
+  `33a641f`.
+- **Verifica post-deploy**: 7 job logistico, **stessi job_id** (update in place, nessun duplicato), tutti
+  **PAUSED** da config bundle, cron invariati.
+- Verificato anche che sul remote GitLab esiste solo `main` (punto rimasto aperto dal worklog 2026-10-06-01).
+
 ## Prossimi passi
-1. Rilascio su GitLab (serve la VPN per raggiungere `cp1lgitlab`) e verifica post-deploy.
-2. Riattivare lo scheduling in dev solo se serve, e dopo il cutover `landing_mode=external` (i job leggeranno
+1. Riattivare lo scheduling in dev solo se serve, e dopo il cutover `landing_mode=external` (i job leggeranno
    `logisticolanding`): per farlo si usa `presets.trigger_pause_status` sul target, non lo YAML del job.
