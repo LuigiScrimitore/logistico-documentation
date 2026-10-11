@@ -4,12 +4,14 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Pausa degli schedule dei 7 job dev del logistico + fix durevole negli YAML (LL-037)](2026-10-09-01_pausa-schedule-job-dev.md) · 2026-10-09 · monorepo `PR #22 @c81f753 (fix + doc) + PR esito`
+**Ultimo push:** [Estrazione giornaliera: ignorato il flag CDC dell'ODI legacy fino al go-live (eccezione imbfmovim) + job ODI alle 05:00](2026-10-11-02_ignora-flag-odi-fino-golive.md) · 2026-10-11 · monorepo `PR dedicata (estrattore + extract_and_send.sh + doc)`
 
-**54 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**56 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-10-11 | `PR dedicata (estrattore + extract_and_send.sh + doc)` | [Estrazione giornaliera: ignorato il flag CDC dell'ODI legacy fino al go-live (eccezione imbfmovim) + job ODI alle 05:00](2026-10-11-02_ignora-flag-odi-fino-golive.md) | ACT_OP-INF-4 | — | LL-024 | OP-INF-4 OP-08 |
+| 2026-10-11 | `PR #24 (README relay + extract_and_send.sh + ACT + worklog)` | [Job ODI schedulato che lancia extract_and_send.sh su odi3 (forced command ssh)](2026-10-11-01_job-odi-extract-send-su-odi3.md) | ACT_OP-INF-4 | — | — | OP-INF-4 |
 | 2026-10-09 | `PR #22 @c81f753 (fix + doc) + PR esito` | [Pausa degli schedule dei 7 job dev del logistico + fix durevole negli YAML (LL-037)](2026-10-09-01_pausa-schedule-job-dev.md) | — | — | LL-037 | — |
 | 2026-10-06 | `merge PR #18 #16 #14 #19 #20 + chiusura #6` | [Merge PR pendenti (#14 #16 #18 #19 #20), chiusura #6 superata, pulizia branch monorepo](2026-10-06-01_merge-pr-pendenti-pulizia-branch.md) | ACT_9029 ACT_9025 ACT_9026 | — | LL-033 LL-034 | OP-TRA-1 |
 | 2026-10-02 | `PR dedicata (extract_and_send.sh + ACT/OP/README/worklog)` | [Extract+send sul relay: primo carico reale in logisticolanding (307 file, ~2,23 GB)](2026-10-02-03_extract-send-sul-relay.md) | ACT_OP-INF-4 | — | — | OP-INF-4 OP-07 OP-08 |

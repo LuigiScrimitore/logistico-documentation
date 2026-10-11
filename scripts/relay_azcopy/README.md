@@ -113,6 +113,8 @@ sudo -u svc_landing /opt/landing/bin/extract_and_send.sh dev logistico
 # prova sicura (non scrive, non invia):
 sudo -u svc_landing env DRYRUN=1 /opt/landing/bin/extract_and_send.sh dev logistico
 # override: SYSTEMS=stat DO_CDTDW=0 ...
+# flag CDC dell'ODI legacy: IGNORE_ODI_FLAG=1 (default fino al go-live) = solo finestra data;
+#   le tabelle senza colonna data (imbfmovim) tengono comunque il flag. Al go-live: IGNORE_ODI_FLAG=0.
 ```
 
 **Scheduling senza login** — unit `landing-extract-send.service`/`.timer` (oneshot `svc_landing`, `OnCalendar=05:00`,
@@ -127,6 +129,48 @@ sudo systemctl disable --now landing-upload.timer 2>/dev/null || true   # evita 
 **Recap per esecuzione**: blocco riassuntivo appeso a `/var/log/landing/extract_send_recap.log` (esito estrazione
 `files/rows/errors`, esito AzCopy `Completed/file/GB`, durate, OK/KO) + log completo del run in
 `/var/log/landing/runs/extract_send_<ts>.log`.
+
+## Job ODI schedulato → `extract_and_send.sh` sul relay (2026-10-11)
+Obiettivo: un **job ODI schedulato**, eseguito dall'agent `odisrvcno1` o `odisrvcno2`, che lancia il giro completo
+estrai+invia **sul relay** `odisrvcno3` (10.8.1.158). Riusa il canale dell'Opzione A (stessa chiave, `restrict`,
+`from=`); cambia solo lo **script forzato** sul relay. Sugli agenti non serve nessuno script nuovo.
+
+1. **Relay** — forced command da `upload_landing.sh` a `extract_and_send.sh` (una riga per agente in
+   `/home/svc_landing/.ssh/authorized_keys`; gli argomenti nel `command=` sono ammessi):
+   ```
+   command="/opt/landing/bin/extract_and_send.sh dev logistico",restrict,from="10.8.1.211,10.8.1.212" ssh-rsa AAAA... <agente>
+   ```
+   ```bash
+   sudo cp -a /home/svc_landing/.ssh/authorized_keys /home/svc_landing/.ssh/authorized_keys.bak
+   sudo sed -i 's|command="/opt/landing/bin/upload_landing.sh"|command="/opt/landing/bin/extract_and_send.sh dev logistico"|' /home/svc_landing/.ssh/authorized_keys
+   sudo grep -c 'extract_and_send.sh dev logistico' /home/svc_landing/.ssh/authorized_keys   # atteso: 2
+   ```
+   Da qui la chiave degli agenti lancia **solo** estrai+invia (`run_date` = giorno di esecuzione); il trigger di solo
+   invio non esiste più. Per un giorno passato si lancia a mano sul relay con la data come 3° argomento.
+2. **Relay** — spegnere i timer systemd, se presenti (altrimenti il giro parte due volte). Al 2026-10-11
+   `landing-extract-send.timer` non risultava installato su odi3; disabilitare i due timer **separatamente**
+   (con un'unità inesistente `systemctl` si ferma alla prima):
+   `sudo systemctl disable --now landing-extract-send.timer` · `sudo systemctl disable --now landing-upload.timer`
+3. **ODI** — step `OdiOSCommand` **sincrono** (in una procedura o un package → scenario), eseguito dall'agent; la
+   chiave è quella di `oracle`, quindi l'agent deve girare come `oracle`:
+   ```
+   ssh -T -i /home/oracle/.ssh/id_rsa_landing -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=60 -o ServerAliveCountMax=10 svc_landing@10.8.1.158 dev logistico
+   ```
+   Senza apici: ssh unisce gli argomenti finali con uno spazio, quindi su odi3 arriva comunque `dev logistico`, sia che
+   ODI esegua il comando tramite shell sia che lo spezzi sugli spazi (con gli apici rischierebbero di arrivare letterali).
+   ⚠️ La stringa finale **non è ignorata**: arriva su odi3 in `SSH_ORIGINAL_COMMAND` e `upload_landing.sh` le dà la
+   precedenza sui propri argomenti. Va quindi passato **`dev logistico`** (con `extract-send` il primo test del
+   2026-10-11 ha estratto ma l'invio è fallito con `sistema non valido: ''`). Da `extract_and_send.sh` aggiornato
+   (repo, 2026-10-11) il sender viene chiamato con `env -u SSH_ORIGINAL_COMMAND`, quindi la stringa diventa
+   indifferente, ma passare `dev logistico` resta la scelta sicura anche con la versione vecchia. L'exit
+   code del relay torna a ODI: se estrazione o invio vanno KO, lo step fallisce. Il keepalive evita che la sessione
+   cada durante un giro lungo.
+4. **Schedulazione** in ODI: scenario → *Scheduling* → New (agent, giornaliero, orario) → *Update Schedule*
+   sull'agent. Attivo dal 2026-10-11: ogni giorno alle **05:00** ora italiana (03:00 UTC su odi3).
+   ⚠️ odi3 è su **UTC** e `run_date` di default è la data di odi3: non schedulare tra 00:00 e 02:00 italiane,
+   altrimenti estrae il giorno precedente.
+5. **Verifica** del primo run: step ODI verde + ultimo blocco di `/var/log/landing/extract_send_recap.log` sul relay
+   (`status: OK`, `upload: Completed`) + file del giorno in `logisticolanding`.
 
 ## In attesa da Reply (gate esterni)
 - **Container `logisticolanding` + SAS** (permessi Read/Write/Create/Add/List) → sblocca l'upload reale.

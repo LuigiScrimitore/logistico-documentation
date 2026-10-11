@@ -305,10 +305,15 @@ def build_query(sys_spec: SystemSpec, table: TableSpec,
         # dove il flag marcherebbe come 'gia' estratti' i record di produzione.
         flag_applied = False
         if table.flag_column:
-            if ignore_odi_flag:
+            if ignore_odi_flag and date_applied:
                 logger.info("    %s: flag ODI %s IGNORATO (--ignore-odi-flag) -> filtro solo per data.",
                             table.name, table.flag_column)
             else:
+                if ignore_odi_flag:
+                    # Tabella senza finestra data (es. imbfmovim): il flag e' l'unico filtro. Ignorarlo vorrebbe
+                    # dire rileggere tutto lo storico a ogni giro (imbfmovim ~2,3 M righe). Lo manteniamo.
+                    logger.warning("    %s: nessuna finestra data -> flag ODI %s MANTENUTO anche con "
+                                   "--ignore-odi-flag (evita la lettura totale).", table.name, table.flag_column)
                 fc = _validate_ident(table.flag_column, "flag_column")
                 where_parts.append(f"NVL({fc}, 0) = 0")
                 flag_applied = True
@@ -594,7 +599,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
                    help="Non applica il filtro CDC dell'ODI legacy (NVL(*_DATA_ESTRAZIONE_DWH,0)=0) sulle "
                         "transazionali. Serve al seed storico della landing DEV: in prod il flag marcherebbe come "
                         "'gia' estratti' i record, svuotando la fotografia. La finestra data resta il filtro. "
-                        "ATTENZIONE: per tabelle senza date_column (es. imbfmovim) toglie l'unico filtro (ACT_9020).")
+                        "Le tabelle senza date_column (es. imbfmovim) MANTENGONO il flag: senza finestra data sarebbe "
+                        "l'unico filtro (ACT_9020, worklog 2026-10-11-02).")
     return p.parse_args(argv)
 
 

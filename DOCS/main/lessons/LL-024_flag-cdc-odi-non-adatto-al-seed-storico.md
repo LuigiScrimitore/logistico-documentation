@@ -29,8 +29,8 @@ Rendere il filtro CDC **opt-out esplicito** via flag CLI, senza toccare il confi
 py -3.12 extract_oracle_to_landing.py --ignore-odi-flag --from-date 2026-08-31 --to-date 2026-09-02
 ```
 Default OFF (nessuna regressione per la CI a regime); con `--ignore-odi-flag` resta solo la **finestra data**
-come filtro. Attenzione alle tabelle senza `date_column` (es. `imbfmovim`): ignorando il flag restano senza
-filtro → lettura totale (il cap `--max-rows` fa da rete). Vedi [[LL-022]] (il seed storico attiva anche il bug JDN).
+come filtro. Le tabelle senza `date_column` (es. `imbfmovim`) **mantengono il flag** anche con
+`--ignore-odi-flag` (dal 2026-10-11): senza flag non avrebbero alcun filtro e verrebbero rilette per intero. Vedi [[LL-022]] (il seed storico attiva anche il bug JDN).
 
 ## Perché
 Il flag `*_DATA_ESTRAZIONE_DWH` è un meccanismo di **CDC per consumo** (l'ODI lo valorizza quando estrae), non
@@ -40,3 +40,7 @@ un marcatore di validità del dato. Per una fotografia storica serve leggere per
 ## Conferme e contraddizioni
 - 2026-09-02 · Francesco Foconi · `lgcx/pesate` 01-07 ago: con flag 0 righe, `--ignore-odi-flag` 1065 righe.
   Seed logistix+stat dal 31/08: 3,65M righe (vs 1,19M col flag).
+- 2026-10-11 · Francesco Foconi · l'estrazione **giornaliera** sul relay odi3 gira con `--ignore-odi-flag` fino al
+  go-live (worklog 2026-10-11-02): con l'ODI legacy attivo il flag escludeva i record già estratti dall'ODI anche
+  dentro la finestra di lookback (testate carichi 50-115 KB/giorno contro righe 14-20 MB). `imbfmovim`: 2.308.772
+  righe di storico contro 5.481 con flag=0 → per le tabelle senza `date_column` il flag resta applicato.

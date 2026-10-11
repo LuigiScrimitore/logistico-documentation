@@ -15,6 +15,10 @@
 #   SYSTEMS=logistix,stat,cdt_estr,track   sistemi del main extractor
 #   DO_CDTDW=1                              estrai anche anagrafiche CDT_DW (0 per saltare)
 #   DRYRUN=1                                estrazione in --dry-run + NON invia (prova sicura)
+#   IGNORE_ODI_FLAG=1                       (default, fino al go-live) ignora il flag CDC dell'ODI legacy:
+#                                           fa fede solo la finestra data; le tabelle senza colonna data
+#                                           (imbfmovim) tengono il flag. Al go-live: IGNORE_ODI_FLAG=0.
+#                                           (worklog 2026-10-11-02, LL-024)
 #   APP_DIR / VENV_PY / ENV_FILE / STAGING / SENDER / LOG_DIR / RECAP_LOG / RUN_DIR
 #
 # LOG:
@@ -29,6 +33,7 @@ RUN_DATE="${3:-$(date +%F)}"
 SYSTEMS="${SYSTEMS:-logistix,stat,cdt_estr,track}"
 DO_CDTDW="${DO_CDTDW:-1}"
 DRYRUN="${DRYRUN:-0}"
+IGNORE_ODI_FLAG="${IGNORE_ODI_FLAG:-1}"   # 1 fino al go-live (spegnimento ODI legacy), poi 0
 
 APP_DIR="${APP_DIR:-/opt/landing/app}"
 VENV_PY="${VENV_PY:-/opt/landing/venv/bin/python}"
@@ -57,6 +62,7 @@ run_all(){
   echo "$ENV"      | grep -qE '^[a-z0-9-]+$'            || die "env non valido: $ENV"
   echo "$SISTEMA"  | grep -qE '^[a-z0-9-]+$'            || die "sistema non valido: $SISTEMA"
   echo "$RUN_DATE" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' || die "run_date non valido: $RUN_DATE"
+  case "$IGNORE_ODI_FLAG" in 0|1) ;; *) die "IGNORE_ODI_FLAG deve essere 0 o 1: $IGNORE_ODI_FLAG" ;; esac
 
   # Pre-flight
   [ -x "$VENV_PY" ]      || die "venv python mancante o non eseguibile: $VENV_PY"
@@ -73,14 +79,15 @@ run_all(){
   : "${ORACLE_PASSWORD:?manca ORACLE_PASSWORD}"
 
   local DRY_FLAG=""; [ "$DRYRUN" = "1" ] && DRY_FLAG="--dry-run"
-  log "START env=$ENV sistema=$SISTEMA run_date=$RUN_DATE systems=$SYSTEMS cdtdw=$DO_CDTDW dryrun=$DRYRUN"
+  local FLAG_OPT=""; [ "$IGNORE_ODI_FLAG" = "1" ] && FLAG_OPT="--ignore-odi-flag"
+  log "START env=$ENV sistema=$SISTEMA run_date=$RUN_DATE systems=$SYSTEMS cdtdw=$DO_CDTDW dryrun=$DRYRUN ignore_odi_flag=$IGNORE_ODI_FLAG"
   log "staging=$STAGING"
 
   # 1) Estrazione principale
   local t0=$SECONDS
   log "Estrazione principale (systems=$SYSTEMS)..."
   "$VENV_PY" "$EXTRACT_MAIN" \
-    --systems "$SYSTEMS" --run-date "$RUN_DATE" --output-dir "$STAGING" $DRY_FLAG || die "estrazione principale fallita"
+    --systems "$SYSTEMS" --run-date "$RUN_DATE" --output-dir "$STAGING" $DRY_FLAG $FLAG_OPT || die "estrazione principale fallita"
 
   # 2) Estrazione anagrafiche CDT_DW (opzionale)
   if [ "$DO_CDTDW" = "1" ]; then
@@ -105,7 +112,10 @@ run_all(){
   fi
   local t1=$SECONDS
   log "Invio AzCopy ($ENV $SISTEMA) via $SENDER ..."
-  "$SENDER" "$ENV" "$SISTEMA" || die "invio AzCopy fallito"
+  # Se lanciato via ssh (forced command), SSH_ORIGINAL_COMMAND contiene la stringa passata dal client e
+  # upload_landing.sh le darebbe la precedenza sugli argomenti (es. "extract-send" -> sistema vuoto -> KO).
+  # La togliamo: il sender deve usare env/sistema di questo run.
+  env -u SSH_ORIGINAL_COMMAND "$SENDER" "$ENV" "$SISTEMA" || die "invio AzCopy fallito"
   echo "UPLOAD_SECONDS=$((SECONDS - t1))"
   log "DONE extract&send env=$ENV sistema=$SISTEMA run_date=$RUN_DATE"
 }
@@ -136,7 +146,7 @@ az_gb=""; [ -n "${az_bytes:-}" ] && az_gb="$(awk -v b="$az_bytes" 'BEGIN{if(b>0)
   echo "================= EXTRACT+SEND RECAP ================="
   echo "run_ts   : $RUN_TS"
   echo "env/sist : $ENV/$SISTEMA   run_date: $RUN_DATE   dryrun: $DRYRUN"
-  echo "systems  : $SYSTEMS   cdtdw: $DO_CDTDW"
+  echo "systems  : $SYSTEMS   cdtdw: $DO_CDTDW   ignore_odi_flag: $IGNORE_ODI_FLAG"
   echo "extract  : ${extract_sum:-n/d}   (${ex_s:-?}s)"
   echo "staging  : ${staged_files} file totali, ${staged_size:-?} (cumulativo, in $STAGING)"
   if [ "$DRYRUN" = "1" ]; then

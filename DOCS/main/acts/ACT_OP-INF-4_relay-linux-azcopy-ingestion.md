@@ -83,6 +83,11 @@ Agenti ODI (RHEL 6.8)                         Relay odisrvcno3 (Ubuntu 26.04)   
   **`Completed` 307 file / ~2,23 GB / 0 Failed** in `logisticolanding`. **Scheduling** via systemd
   `landing-extract-send.service`/`.timer` (05:00, Persistent). ⚠️ **Variante architetturale**: l'estrazione gira **sul
   relay**, non sugli agenti ODI (vedi nota in Analisi) → da decidere / eventuale ADR.
+- **2026-10-11** · obiettivo: **job ODI schedulato** (agent odisrvcno1/2) che lancia `extract_and_send.sh` su odi3 (`odisrvcno3`). Soluzione: stesso canale ssh dell'Opzione A, cambia solo il forced command in `authorized_keys` di `svc_landing` (`upload_landing.sh` → `extract_and_send.sh dev logistico`); ODI fa un `OdiOSCommand` sincrono con `ssh` (keepalive); spenti i timer systemd su odi3 per evitare il doppio giro. Procedura in `scripts/relay_azcopy/README.md` § "Job ODI schedulato". **Operativo**: run da ODI verificato sul
+  container (276 file del 2026-10-11), scenario schedulato ogni giorno alle 06:00 (odi3 è su UTC: mai tra 00:00 e 02:00).
+- **2026-10-11** · estrazione giornaliera con **`IGNORE_ODI_FLAG=1`** fino al go-live (il flag dell'ODI legacy
+  escludeva i record già estratti dall'ODI anche dentro la finestra; eccezione `imbfmovim`, senza colonna data, che
+  tiene il flag). Job ODI spostato alle **05:00**. Worklog 2026-10-11-02.
 
 ## Verifica
 - **Handshake ssh** .211/.212 → relay: OK (`ssh_rsa_verify: signature correct`, NEWKEYS).
@@ -102,6 +107,8 @@ Scoperte **trasferibili**, estratte in `DOCS/main/lessons/` (ADR-0020):
 - Nota minore: `*.sh` destinati a Linux vanno a **LF** (gitattributes), altrimenti CRLF rompe shebang/`set`.
 
 ## Follow-up
+- **Al go-live**: riportare `IGNORE_ODI_FLAG=0` (o toglierlo) in `extract_and_send.sh` / forced command.
+- **`imbfmovim`**: individuare una colonna data per toglierle la dipendenza dal flag ODI.
 - ✅ **Gated SAS** (consegna Reply 2026-10-01): SAS posato + `staging/dev/logistico` + `conf/dev/logistico.conf` + ri-deploy `upload_landing.sh` + **upload reale verificato** (collaudo 2026-10-02).
 - ✅ **Estrazione sul relay** (variante): prereq verificati (Python 3.14 / oracledb thin / Oracle 19c), `extract_and_send.sh` + unit systemd + recap; **primo carico reale** 307 file/~2,23 GB (2026-10-02). → vedi worklog `2026-10-02-03`.
 - **DECISIONE aperta**: estrazione **sul relay** (extract+send unico host) **vs** sugli **agenti ODI** (lineage ODI, trigger forced-command già pronto) → eventuale **ADR**. Coordinare con Luigi.
