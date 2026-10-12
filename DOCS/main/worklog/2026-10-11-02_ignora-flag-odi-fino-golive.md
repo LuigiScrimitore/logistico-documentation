@@ -2,7 +2,7 @@
 data: 2026-10-11
 titolo: "Estrazione giornaliera: ignorato il flag CDC dell'ODI legacy fino al go-live (eccezione imbfmovim) + job ODI alle 05:00"
 autore: Francesco Foconi
-push_monorepo: "PR dedicata (estrattore + extract_and_send.sh + doc)"
+push_monorepo: "PR #25 @c5cd120 (estrattore + extract_and_send.sh + doc) + PR esito"
 push_documentation: "da ri-split dopo merge"
 push_gitlab: "—"
 act: [ACT_OP-INF-4]
@@ -54,7 +54,25 @@ Aperto: trovare una colonna data utilizzabile per `imbfmovim`.
 Ogni giro riestrae 4 giorni sulle tabelle delta: righe ripetute tra giorni consecutivi, deduplicate dal merge del
 bronze sulle chiavi (nessun doppione a valle).
 
+## Esito (2026-10-11/12) — IN PRODUZIONE SU ODI3
+- **Deploy su odi3**: copiati `extract_and_send.sh` (`/opt/landing/bin/`, root 755), `extract_oracle_to_landing.py`
+  e `config.yaml` (`/opt/landing/app/scripts/landing_simulator/`, svc_landing), con backup `.bak`. Il `diff` del
+  config ha mostrato solo il commento sui siti spenti: su odi3 laix/lfsx/lgsx erano **già** esclusi.
+- **Prova `DRYRUN=1`** su odi3: `ignore_odi_flag=1`; flag IGNORATO su sto_tes_carichi, pesate, tracciace178,
+  dettaglio_carr, cartellino, abb_tolti; MANTENUTO su imbfmovim.
+- **Recupero dei giorni già caricati** (01, 02, 03, 07, 08, 10, 11 ottobre), **solo tabelle col flag** (per non
+  toccare le `catena`): estrazione OK (`errors=0`), invio AzCopy 763 file / 0 falliti / 8,3 GB. Verifica sul
+  container, KB per giorno prima → dopo: `pesate` 0-4.200 → 11.800-28.300; `sto_tes_carichi` 50-115 → 925-1.450;
+  `tracciace178` 0-161 → 6.000-9.300; `dettaglio_carr` 0-83 → 7.700-12.100; STAT `testate_bolle` 9-110 →
+  1.765-2.615. STAT `storico_bolle` e `storico_riepiloghi` invariate (lì il flag non tagliava).
+  I giorni mancanti (04-06, 09) sono coperti dalla finestra di 4 giorni dei giorni successivi.
+- **Giacenze del 02/10**: rimosse dalla staging di odi3 le cartelle `catena`/`catena_esterni` di `2026/10/02`
+  (fotografia del 11/10 con data sbagliata). Nel container restano 21 file da cancellare da Storage Explorer
+  (utenza Contributor; il SAS non ha Delete).
+- Nota operativa: con due `sudo` in sequenza e un'estrazione più lunga di 15 minuti, il secondo `sudo` richiede di
+  nuovo la password e va in timeout. Lanciare l'invio come comando separato.
+
 ## Prossimi passi
-1. Deploy dei 3 file su odi3 e prova `DRYRUN=1`, poi spostamento dello schedule ODI alle 05:00.
+1. Spostare lo schedule ODI alle 05:00; cancellare dal container le 21 cartelle `catena*/2026/10/02`.
 2. Al go-live: `IGNORE_ODI_FLAG=0` (o rimozione) e verifica.
 3. `imbfmovim`: individuare una colonna data per togliere anche lì la dipendenza dal flag.
