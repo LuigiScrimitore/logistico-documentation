@@ -508,6 +508,11 @@ def run(args: argparse.Namespace) -> int:
                     if table.disabled:
                         logger.info("    %s -> SKIP (disabled in config)", tbl_name)
                         continue
+                    if args.skip_snapshot and table.mode == "snapshot":
+                        # Fotografia del momento (es. catena = giacenze): con una run_date passata finirebbe
+                        # nella cartella sbagliata con i dati di oggi, e non si puo' correggere dopo (LL-006).
+                        logger.info("    %s -> SKIP (snapshot, --skip-snapshot)", tbl_name)
+                        continue
                     try:
                         sql, binds = build_query(sys_spec, table, from_dt, to_dt,
                                                   lookback_days=args.lookback_days, run_date=run_date,
@@ -595,6 +600,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
                         "0 = nessun limite. Se una query raggiunge il cap viene loggato un WARNING.")
     p.add_argument("--query-timeout", type=int, default=0,
                    help="Timeout per ogni query in secondi (0 = nessun timeout). Kill della query dopo N secondi.")
+    p.add_argument("--skip-snapshot", action="store_true", default=False,
+                   help="Salta le tabelle con mode 'snapshot' (es. catena, catena_esterni): sono la fotografia del "
+                        "momento, quindi con una run_date passata avrebbero i dati di oggi con la data sbagliata "
+                        "(LL-006). extract_and_send.sh la attiva quando run_date non e' oggi.")
     p.add_argument("--ignore-odi-flag", action="store_true", default=False,
                    help="Non applica il filtro CDC dell'ODI legacy (NVL(*_DATA_ESTRAZIONE_DWH,0)=0) sulle "
                         "transazionali. Serve al seed storico della landing DEV: in prod il flag marcherebbe come "

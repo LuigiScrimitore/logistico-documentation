@@ -19,6 +19,11 @@
 #                                           fa fede solo la finestra data; le tabelle senza colonna data
 #                                           (imbfmovim) tengono il flag. Al go-live: IGNORE_ODI_FLAG=0.
 #                                           (worklog 2026-10-11-02, LL-024)
+#   SKIP_SNAPSHOT=auto                      (default) esclude le tabelle snapshot (catena, catena_esterni =
+#                                           giacenze) se run_date non e' la data di oggi su odi3: sono la
+#                                           fotografia del momento e con una data passata avrebbero la data
+#                                           sbagliata (LL-006, worklog 2026-10-12-01). 1 = sempre escluse,
+#                                           0 = sempre incluse.
 #   APP_DIR / VENV_PY / ENV_FILE / STAGING / SENDER / LOG_DIR / RECAP_LOG / RUN_DIR
 #
 # LOG:
@@ -34,6 +39,17 @@ SYSTEMS="${SYSTEMS:-logistix,stat,cdt_estr,track}"
 DO_CDTDW="${DO_CDTDW:-1}"
 DRYRUN="${DRYRUN:-0}"
 IGNORE_ODI_FLAG="${IGNORE_ODI_FLAG:-1}"   # 1 fino al go-live (spegnimento ODI legacy), poi 0
+SKIP_SNAPSHOT="${SKIP_SNAPSHOT:-auto}"     # auto = esclude gli snapshot se run_date non e' oggi
+
+# Snapshot: stesso orologio del run_date di default (odi3 e' in UTC).
+TODAY="$(date +%F)"
+SNAP_OPT=""
+case "$SKIP_SNAPSHOT" in
+  1)    SNAP_OPT="--skip-snapshot" ;;
+  auto) [ "$RUN_DATE" != "$TODAY" ] && SNAP_OPT="--skip-snapshot" ;;
+esac
+SNAP_DESC="incluse"
+[ -n "$SNAP_OPT" ] && SNAP_DESC="ESCLUSE (SKIP_SNAPSHOT=$SKIP_SNAPSHOT, run_date $RUN_DATE, oggi $TODAY)"
 
 APP_DIR="${APP_DIR:-/opt/landing/app}"
 VENV_PY="${VENV_PY:-/opt/landing/venv/bin/python}"
@@ -63,6 +79,7 @@ run_all(){
   echo "$SISTEMA"  | grep -qE '^[a-z0-9-]+$'            || die "sistema non valido: $SISTEMA"
   echo "$RUN_DATE" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' || die "run_date non valido: $RUN_DATE"
   case "$IGNORE_ODI_FLAG" in 0|1) ;; *) die "IGNORE_ODI_FLAG deve essere 0 o 1: $IGNORE_ODI_FLAG" ;; esac
+  case "$SKIP_SNAPSHOT" in auto|0|1) ;; *) die "SKIP_SNAPSHOT deve essere auto, 0 o 1: $SKIP_SNAPSHOT" ;; esac
 
   # Pre-flight
   [ -x "$VENV_PY" ]      || die "venv python mancante o non eseguibile: $VENV_PY"
@@ -82,12 +99,13 @@ run_all(){
   local FLAG_OPT=""; [ "$IGNORE_ODI_FLAG" = "1" ] && FLAG_OPT="--ignore-odi-flag"
   log "START env=$ENV sistema=$SISTEMA run_date=$RUN_DATE systems=$SYSTEMS cdtdw=$DO_CDTDW dryrun=$DRYRUN ignore_odi_flag=$IGNORE_ODI_FLAG"
   log "staging=$STAGING"
+  log "tabelle snapshot (catena, catena_esterni): $SNAP_DESC"
 
   # 1) Estrazione principale
   local t0=$SECONDS
   log "Estrazione principale (systems=$SYSTEMS)..."
   "$VENV_PY" "$EXTRACT_MAIN" \
-    --systems "$SYSTEMS" --run-date "$RUN_DATE" --output-dir "$STAGING" $DRY_FLAG $FLAG_OPT || die "estrazione principale fallita"
+    --systems "$SYSTEMS" --run-date "$RUN_DATE" --output-dir "$STAGING" $DRY_FLAG $FLAG_OPT $SNAP_OPT || die "estrazione principale fallita"
 
   # 2) Estrazione anagrafiche CDT_DW (opzionale)
   if [ "$DO_CDTDW" = "1" ]; then
@@ -147,6 +165,7 @@ az_gb=""; [ -n "${az_bytes:-}" ] && az_gb="$(awk -v b="$az_bytes" 'BEGIN{if(b>0)
   echo "run_ts   : $RUN_TS"
   echo "env/sist : $ENV/$SISTEMA   run_date: $RUN_DATE   dryrun: $DRYRUN"
   echo "systems  : $SYSTEMS   cdtdw: $DO_CDTDW   ignore_odi_flag: $IGNORE_ODI_FLAG"
+  echo "snapshot : $SNAP_DESC"
   echo "extract  : ${extract_sum:-n/d}   (${ex_s:-?}s)"
   echo "staging  : ${staged_files} file totali, ${staged_size:-?} (cumulativo, in $STAGING)"
   if [ "$DRYRUN" = "1" ]; then

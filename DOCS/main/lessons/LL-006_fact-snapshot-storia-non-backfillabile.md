@@ -56,3 +56,7 @@ la conserverà.
 - 2026-08-21 · luigi.scrimitore · il caso ha generato una decisione aperta (OP-GIA-1): tenere le 170k righe a
   logica mista, o rimuoverle per avere una baseline coerente accettando la perdita definitiva. Non è una scelta
   tecnica ma di rischio, e va all'utente.
+- 2026-10-12 · Francesco Foconi · landing via relay: un giro manuale con `run_date=2026-10-02` lanciato l'11/10 ha
+  scritto in `catena/2026/10/02` la giacenza dell'11/10 (9 giorni di scarto). Salvaguardia aggiunta: `extract_and_send.sh`
+  esclude le tabelle snapshot quando `run_date` non è oggi (`SKIP_SNAPSHOT=auto`, estrattore `--skip-snapshot`).
+  Worklog 2026-10-12-01.

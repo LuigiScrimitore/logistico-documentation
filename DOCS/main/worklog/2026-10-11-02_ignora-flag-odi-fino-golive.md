@@ -44,8 +44,8 @@ Aperto: trovare una colonna data utilizzabile per `imbfmovim`.
   applicata la finestra data; sulle tabelle senza `date_column` resta (log di avviso).
 - `extract_and_send.sh`: nuova variabile `IGNORE_ODI_FLAG` (**default 1** fino al go-live) che passa
   `--ignore-odi-flag` all'estrattore principale; valore riportato nel log di avvio e nel recap.
-- Job ODI su odi3: schedulato alle **05:00** ora italiana (03:00 UTC su odi3, data corretta). Con il flag ignorato
-  l'orario non è più legato a quello dell'ODI legacy.
+- Job ODI su odi3: resta schedulato alle **06:00** ora italiana (04:00 UTC su odi3, data corretta); finisce verso le
+  06:13. Con il flag ignorato l'orario non è più legato a quello dell'ODI legacy (si era valutato di anticiparlo alle 05:00).
 - Deploy su odi3: copiare `extract_and_send.sh` in `/opt/landing/bin/`, `extract_oracle_to_landing.py` e
   `config.yaml` in `/opt/landing/app/scripts/landing_simulator/` (insieme arrivano anche il fix
   `SSH_ORIGINAL_COMMAND` e i siti spenti della PR #20).
@@ -69,10 +69,14 @@ bronze sulle chiavi (nessun doppione a valle).
 - **Giacenze del 02/10**: rimosse dalla staging di odi3 le cartelle `catena`/`catena_esterni` di `2026/10/02`
   (fotografia del 11/10 con data sbagliata). Nel container restano 21 file da cancellare da Storage Explorer
   (utenza Contributor; il SAS non ha Delete).
+- **Primo giro schedulato (2026-10-12, 06:00)**: file scritti alle 06:13, tabelle col flag piene (`pesate` 15 siti,
+  `sto_tes_carichi` 18, `dettaglio_carr` 18, `tracciace178` 17), `imbfmovim` col flag, `catena` del giorno giusto.
+  Volumi più bassi della media attesi: finestra = ven+sab+dom interi + lunedì fino alle 06:00 (es. `pesate` 6,0 MB
+  contro 11,8 MB della partizione 11/10, che conteneva anche il giovedì).
 - Nota operativa: con due `sudo` in sequenza e un'estrazione più lunga di 15 minuti, il secondo `sudo` richiede di
   nuovo la password e va in timeout. Lanciare l'invio come comando separato.
 
 ## Prossimi passi
-1. Spostare lo schedule ODI alle 05:00; cancellare dal container le 21 cartelle `catena*/2026/10/02`.
+1. Cancellare dal container le 21 cartelle `catena*/2026/10/02` (azcopy su odi3 con login dell'utenza Contributor).
 2. Al go-live: `IGNORE_ODI_FLAG=0` (o rimozione) e verifica.
 3. `imbfmovim`: individuare una colonna data per togliere anche lì la dipendenza dal flag.

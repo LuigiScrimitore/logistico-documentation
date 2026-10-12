@@ -115,6 +115,9 @@ sudo -u svc_landing env DRYRUN=1 /opt/landing/bin/extract_and_send.sh dev logist
 # override: SYSTEMS=stat DO_CDTDW=0 ...
 # flag CDC dell'ODI legacy: IGNORE_ODI_FLAG=1 (default fino al go-live) = solo finestra data;
 #   le tabelle senza colonna data (imbfmovim) tengono comunque il flag. Al go-live: IGNORE_ODI_FLAG=0.
+# snapshot (catena, catena_esterni = giacenze): SKIP_SNAPSHOT=auto (default) le esclude se run_date non e' oggi,
+#   perche' sono la fotografia del momento e con una data passata avrebbero la data sbagliata (LL-006).
+#   SKIP_SNAPSHOT=1 le esclude sempre, SKIP_SNAPSHOT=0 le include sempre.
 ```
 
 **Scheduling senza login** — unit `landing-extract-send.service`/`.timer` (oneshot `svc_landing`, `OnCalendar=05:00`,
@@ -166,7 +169,8 @@ estrai+invia **sul relay** `odisrvcno3` (10.8.1.158). Riusa il canale dell'Opzio
    code del relay torna a ODI: se estrazione o invio vanno KO, lo step fallisce. Il keepalive evita che la sessione
    cada durante un giro lungo.
 4. **Schedulazione** in ODI: scenario → *Scheduling* → New (agent, giornaliero, orario) → *Update Schedule*
-   sull'agent. Attivo dal 2026-10-11: ogni giorno alle **05:00** ora italiana (03:00 UTC su odi3).
+   sull'agent. Attivo dal 2026-10-11: ogni giorno alle **06:00** ora italiana (04:00 UTC su odi3); il giro finisce
+   verso le 06:13, prima del vecchio ETL delle 06:30 (comunque ininfluente con il flag ODI ignorato).
    ⚠️ odi3 è su **UTC** e `run_date` di default è la data di odi3: non schedulare tra 00:00 e 02:00 italiane,
    altrimenti estrae il giorno precedente.
 5. **Verifica** del primo run: step ODI verde + ultimo blocco di `/var/log/landing/extract_send_recap.log` sul relay

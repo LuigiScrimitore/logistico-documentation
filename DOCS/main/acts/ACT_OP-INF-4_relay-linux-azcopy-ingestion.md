@@ -87,7 +87,10 @@ Agenti ODI (RHEL 6.8)                         Relay odisrvcno3 (Ubuntu 26.04)   
   container (276 file del 2026-10-11), scenario schedulato ogni giorno alle 06:00 (odi3 è su UTC: mai tra 00:00 e 02:00).
 - **2026-10-11** · estrazione giornaliera con **`IGNORE_ODI_FLAG=1`** fino al go-live (il flag dell'ODI legacy
   escludeva i record già estratti dall'ODI anche dentro la finestra; eccezione `imbfmovim`, senza colonna data, che
-  tiene il flag). Job ODI spostato alle **05:00**. Worklog 2026-10-11-02.
+  tiene il flag). Job ODI lasciato alle **06:00** (finisce ~06:13). Primo giro schedulato (2026-10-12) verificato. Worklog 2026-10-11-02.
+- **2026-10-12** · salvaguardia **`SKIP_SNAPSHOT=auto`**: con una `run_date` passata l'estrazione esclude le tabelle
+  snapshot (`catena`, `catena_esterni`), che altrimenti avrebbero la giacenza di oggi con la data sbagliata (caso del
+  02/10). Worklog 2026-10-12-01.
 
 ## Verifica
 - **Handshake ssh** .211/.212 → relay: OK (`ssh_rsa_verify: signature correct`, NEWKEYS).
