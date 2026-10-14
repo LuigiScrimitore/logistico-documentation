@@ -13,7 +13,7 @@ CARATTERISTICHE
     --run-date YYYY-MM-DD      Data di estrazione singolo giorno (default: oggi).
     --from-date / --to-date    Backfill su intervallo di giorni (lettura piu' profonda).
     --tables tab1,tab2         Sottoinsieme di tabelle (default: tutte da config).
-    --systems logistix,stat,cnd Filtra per sistema sorgente.
+    --systems logistix,stat,cdt_estr_raw,track  Filtra per sistema (chiavi di config.yaml; nome sconosciuto = errore).
     --sites lgax,lgcx          Filtra siti Logistix (default: tutti i siti in config).
     --output-dir PATH          Override cartella output (default da config).
     --config PATH              Path file YAML (default: ./config.yaml).
@@ -459,6 +459,15 @@ def run(args: argparse.Namespace) -> int:
     selected_tables = set(args.tables.split(",")) if args.tables else None
     selected_sites = set(args.sites.split(",")) if args.sites else None
 
+    # Un nome di sistema sbagliato veniva ignorato in silenzio (es. "cdt_estr" invece di "cdt_estr_raw":
+    # le anagrafiche CDT_ESTR non venivano mai estratte). Ora e' un errore esplicito.
+    if selected_systems:
+        unknown = sorted(selected_systems - set(systems))
+        if unknown:
+            logger.error("Sistemi sconosciuti in --systems: %s (disponibili in config: %s)",
+                         ", ".join(unknown), ", ".join(systems))
+            return 2
+
     # Connessione
     conn = None
     if not args.dry_run:
@@ -581,7 +590,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--run-date", default=None, help="Data del run YYYY-MM-DD (default: oggi)")
     p.add_argument("--from-date", default=None, help="Inizio finestra backfill YYYY-MM-DD")
     p.add_argument("--to-date", default=None, help="Fine finestra backfill YYYY-MM-DD")
-    p.add_argument("--systems", default=None, help="Filtro sistemi (logistix,stat,cdt_estr). NB: CND non piu' usato.")
+    p.add_argument("--systems", default=None, help="Filtro sistemi: chiavi di config.yaml (logistix,stat,cdt_estr_raw,track). "
+                        "Un nome sconosciuto fa terminare con errore.")
     p.add_argument("--sites", default=None, help="Filtro siti Logistix (lgax,lgcx,...)")
     p.add_argument("--tables", default=None, help="Filtro tabelle (es. sto_tes_carichi,pesate)")
     p.add_argument("--output-dir", default=None, help="Override cartella output")

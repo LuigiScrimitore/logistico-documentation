@@ -12,7 +12,7 @@
 #   es.  extract_and_send.sh dev logistico 2026-09-22
 #   (run_date OMESSO = giorno di esecuzione)
 # Variabili opzionali (override):
-#   SYSTEMS=logistix,stat,cdt_estr,track   sistemi del main extractor
+#   SYSTEMS=logistix,stat,cdt_estr_raw,track   sistemi del main extractor (chiavi di config.yaml)
 #   DO_CDTDW=1                              estrai anche anagrafiche CDT_DW (0 per saltare)
 #   DRYRUN=1                                estrazione in --dry-run + NON invia (prova sicura)
 #   IGNORE_ODI_FLAG=1                       (default, fino al go-live) ignora il flag CDC dell'ODI legacy:
@@ -35,7 +35,7 @@ ENV="${1:-dev}"
 SISTEMA="${2:-logistico}"
 RUN_DATE="${3:-$(date +%F)}"
 
-SYSTEMS="${SYSTEMS:-logistix,stat,cdt_estr,track}"
+SYSTEMS="${SYSTEMS:-logistix,stat,cdt_estr_raw,track}"
 DO_CDTDW="${DO_CDTDW:-1}"
 DRYRUN="${DRYRUN:-0}"
 IGNORE_ODI_FLAG="${IGNORE_ODI_FLAG:-1}"   # 1 fino al go-live (spegnimento ODI legacy), poi 0

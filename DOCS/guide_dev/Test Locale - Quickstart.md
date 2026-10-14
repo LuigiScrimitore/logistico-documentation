@@ -81,8 +81,8 @@ py extract_oracle_to_landing.py \
 # Solo STAT (i 3 Bronze prep-spedizioni di OP-16)
 py extract_oracle_to_landing.py --systems stat
 
-# Solo CND
-py extract_oracle_to_landing.py --systems cnd
+# Solo anagrafiche CDT_ESTR (CND non esiste piu', ACT_CND-01)
+py extract_oracle_to_landing.py --systems cdt_estr_raw
 ```
 
 ### 3.5 Override path output

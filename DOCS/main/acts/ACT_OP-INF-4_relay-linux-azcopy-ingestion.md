@@ -91,6 +91,8 @@ Agenti ODI (RHEL 6.8)                         Relay odisrvcno3 (Ubuntu 26.04)   
 - **2026-10-12** · salvaguardia **`SKIP_SNAPSHOT=auto`**: con una `run_date` passata l'estrazione esclude le tabelle
   snapshot (`catena`, `catena_esterni`), che altrimenti avrebbero la giacenza di oggi con la data sbagliata (caso del
   02/10). Worklog 2026-10-12-01.
+- **2026-10-14** · piano di cutover della landing dev con percorso diretto sul container e di un job orchestratore
+  che parte all'arrivo del segnale `_SUCCESS` scritto da `extract_and_send.sh`. Worklog 2026-10-14-01.
 
 ## Verifica
 - **Handshake ssh** .211/.212 → relay: OK (`ssh_rsa_verify: signature correct`, NEWKEYS).
@@ -115,7 +117,10 @@ Scoperte **trasferibili**, estratte in `DOCS/main/lessons/` (ADR-0020):
 - ✅ **Gated SAS** (consegna Reply 2026-10-01): SAS posato + `staging/dev/logistico` + `conf/dev/logistico.conf` + ri-deploy `upload_landing.sh` + **upload reale verificato** (collaudo 2026-10-02).
 - ✅ **Estrazione sul relay** (variante): prereq verificati (Python 3.14 / oracledb thin / Oracle 19c), `extract_and_send.sh` + unit systemd + recap; **primo carico reale** 307 file/~2,23 GB (2026-10-02). → vedi worklog `2026-10-02-03`.
 - **Estrazione sul relay vs agenti ODI**: stato operativo dal 2026-10-11 = estrazione **sul relay**, lanciata da un **job ODI schedulato** (forced command `extract_and_send.sh`). Formalizzazione (eventuale **ADR**) da concordare con Luigi.
-- **Migrazione storico** Volume managed → `logisticolanding` + ricreazione **external Volume** stesso nome (cutover → flip `landing_mode=external`).
+- **Cutover** (rivisto 2026-10-14, worklog 2026-10-14-01): `landing_base_path` dev → percorso diretto
+  `abfss://logisticolanding@stdevdataplatformweudata.dfs.core.windows.net` (READ_FILES già presente via
+  `Group-Engineering-dev`), senza Volume external e senza migrazione bloccante dello storico (resta nel Volume managed).
+  Poi job orchestratore con trigger File arrival sul segnale `_control/<env>/<sistema>/<run_date>/_SUCCESS`.
   - ⚠️ **Escludere** `logistix-landing/*/catena*/2026/10/02` (21 file): è la giacenza dell'11/10 con la data del 02/10, lasciata
     nel container il 2026-10-14. Le `catena` di 01, 03, 07, 08 e 10/10 sono la fotografia del giorno successivo (giri
     manuali lanciati in ritardo); dal 12/10 (job ODI) la data è corretta.
