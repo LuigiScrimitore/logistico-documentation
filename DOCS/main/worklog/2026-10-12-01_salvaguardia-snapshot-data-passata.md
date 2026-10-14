@@ -2,8 +2,8 @@
 data: 2026-10-12
 titolo: "Salvaguardia: con una run_date passata l'estrazione esclude le tabelle snapshot (catena, catena_esterni)"
 autore: Francesco Foconi
-push_monorepo: "PR dedicata (estrattore + extract_and_send.sh + doc)"
-push_documentation: "da ri-split dopo merge"
+push_monorepo: "PR #27 @b6dc815 (estrattore + extract_and_send.sh + doc) + PR esito"
+push_documentation: "133abf0 (+ esito)"
 push_gitlab: "—"
 act: [ACT_OP-INF-4]
 adr: []
@@ -34,6 +34,15 @@ Il job ODI schedulato (ogni mattina, `run_date` = oggi) non ha il problema; il r
 Ricopiare `extract_and_send.sh` (`/opt/landing/bin/`) e `extract_oracle_to_landing.py`
 (`/opt/landing/app/scripts/landing_simulator/`); `config.yaml` invariato.
 
+## Esito (2026-10-14) — IN FUNZIONE SU ODI3
+- **Deploy** il 14/10: copiati `extract_and_send.sh` (9090 byte) e `extract_oracle_to_landing.py` (31223 byte), backup
+  `.bak2`; `grep -c skip-snapshot` = 2 su entrambi.
+- **Prova `DRYRUN=1` con `run_date=2026-10-05`**: `tabelle snapshot (catena, catena_esterni): ESCLUSE (SKIP_SNAPSHOT=auto,
+  run_date 2026-10-05, oggi 2026-10-14)` e `catena/catena_esterni -> SKIP (snapshot, --skip-snapshot)` su ogni sito.
+- **Job ODI schedulato**: dal recap di odi3 ha girato ogni mattina il 12, 13 e 14/10 alle 04:07 UTC (06:07 ora italiana).
+  Fino al 14/10 con la versione precedente (stesso risultato sui giri del giorno); dal 15/10 il recap riporterà anche
+  `snapshot : incluse`.
+
 ## Prossimi passi
-1. Deploy su odi3 e prova `DRYRUN=1` con una data passata (snapshot esclusi) e con quella di oggi (inclusi).
+1. Verificare nel recap del giro del 15/10 la riga `snapshot : incluse`.
 2. Decidere se cancellare dal container le `catena*/2026/10/02` (fotografia dell'11/10 con data sbagliata).

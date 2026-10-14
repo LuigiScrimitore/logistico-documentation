@@ -4,13 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Salvaguardia: con una run_date passata l'estrazione esclude le tabelle snapshot (catena, catena_esterni)](2026-10-12-01_salvaguardia-snapshot-data-passata.md) · 2026-10-12 · monorepo `PR dedicata (estrattore + extract_and_send.sh + doc)`
+**Ultimo push:** [Salvaguardia: con una run_date passata l'estrazione esclude le tabelle snapshot (catena, catena_esterni)](2026-10-12-01_salvaguardia-snapshot-data-passata.md) · 2026-10-12 · monorepo `PR #27 @b6dc815 (estrattore + extract_and_send.sh + doc) + PR esito`
 
 **57 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
-| 2026-10-12 | `PR dedicata (estrattore + extract_and_send.sh + doc)` | [Salvaguardia: con una run_date passata l'estrazione esclude le tabelle snapshot (catena, catena_esterni)](2026-10-12-01_salvaguardia-snapshot-data-passata.md) | ACT_OP-INF-4 | — | LL-006 | OP-INF-4 |
+| 2026-10-12 | `PR #27 @b6dc815 (estrattore + extract_and_send.sh + doc) + PR esito` | [Salvaguardia: con una run_date passata l'estrazione esclude le tabelle snapshot (catena, catena_esterni)](2026-10-12-01_salvaguardia-snapshot-data-passata.md) | ACT_OP-INF-4 | — | LL-006 | OP-INF-4 |
 | 2026-10-11 | `PR #25 @c5cd120 (estrattore + extract_and_send.sh + doc) + PR esito` | [Estrazione giornaliera: ignorato il flag CDC dell'ODI legacy fino al go-live (eccezione imbfmovim) + job ODI alle 05:00](2026-10-11-02_ignora-flag-odi-fino-golive.md) | ACT_OP-INF-4 | — | LL-024 | OP-INF-4 OP-08 |
 | 2026-10-11 | `PR #24 (README relay + extract_and_send.sh + ACT + worklog)` | [Job ODI schedulato che lancia extract_and_send.sh su odi3 (forced command ssh)](2026-10-11-01_job-odi-extract-send-su-odi3.md) | ACT_OP-INF-4 | — | — | OP-INF-4 |
 | 2026-10-09 | `PR #22 @c81f753 (fix + doc) + PR esito` | [Pausa degli schedule dei 7 job dev del logistico + fix durevole negli YAML (LL-037)](2026-10-09-01_pausa-schedule-job-dev.md) | — | — | LL-037 | — |
