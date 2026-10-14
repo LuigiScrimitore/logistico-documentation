@@ -114,7 +114,12 @@ Scoperte **trasferibili**, estratte in `DOCS/main/lessons/` (ADR-0020):
 - **`imbfmovim`**: individuare una colonna data per toglierle la dipendenza dal flag ODI.
 - ✅ **Gated SAS** (consegna Reply 2026-10-01): SAS posato + `staging/dev/logistico` + `conf/dev/logistico.conf` + ri-deploy `upload_landing.sh` + **upload reale verificato** (collaudo 2026-10-02).
 - ✅ **Estrazione sul relay** (variante): prereq verificati (Python 3.14 / oracledb thin / Oracle 19c), `extract_and_send.sh` + unit systemd + recap; **primo carico reale** 307 file/~2,23 GB (2026-10-02). → vedi worklog `2026-10-02-03`.
-- **DECISIONE aperta**: estrazione **sul relay** (extract+send unico host) **vs** sugli **agenti ODI** (lineage ODI, trigger forced-command già pronto) → eventuale **ADR**. Coordinare con Luigi.
+- **Estrazione sul relay vs agenti ODI**: stato operativo dal 2026-10-11 = estrazione **sul relay**, lanciata da un **job ODI schedulato** (forced command `extract_and_send.sh`). Formalizzazione (eventuale **ADR**) da concordare con Luigi.
 - **Migrazione storico** Volume managed → `logisticolanding` + ricreazione **external Volume** stesso nome (cutover → flip `landing_mode=external`).
+  - ⚠️ **Escludere** `logistix-landing/*/catena*/2026/10/02` (21 file): è la giacenza dell'11/10 con la data del 02/10, lasciata
+    nel container il 2026-10-14. Le `catena` di 01, 03, 07, 08 e 10/10 sono la fotografia del giorno successivo (giri
+    manuali lanciati in ritardo); dal 12/10 (job ODI) la data è corretta.
+- **Cancellazioni sul container**: il SAS non ha Delete e il login AzCopy con l'utenza personale da odi3 è bloccato dal
+  Conditional Access (device code flow). Si fanno dal PC (Azure Storage Explorer) o tramite Reply.
 - **Rotazione SAS** (scad. 31/03/2027) e **cleanup staging** post-upload da definire.
 - ✅ Lezioni estratte in `lessons/`: [[LL-035]], [[LL-036]].

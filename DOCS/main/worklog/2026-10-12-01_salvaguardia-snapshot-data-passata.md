@@ -45,4 +45,6 @@ Ricopiare `extract_and_send.sh` (`/opt/landing/bin/`) e `extract_oracle_to_landi
 
 ## Prossimi passi
 1. Verificare nel recap del giro del 15/10 la riga `snapshot : incluse`.
-2. Decidere se cancellare dal container le `catena*/2026/10/02` (fotografia dell'11/10 con data sbagliata).
+2. ✅ Deciso (2026-10-14): le `catena*/2026/10/02` restano nel container e vanno **escluse al cutover** (follow-up di
+   [[ACT_OP-INF-4]]). Non le cancelliamo da odi3: il SAS non ha Delete e il login AzCopy personale è bloccato dal
+   Conditional Access; la retention le elimina comunque dopo 220 giorni.

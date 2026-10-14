@@ -15,7 +15,11 @@ op: []
 Inventario di ciò che è schedulato su Databricks per il logistico: **7 job**, tutti
 `[dev id_dev_dataplatform_workload_00] logistica_*` (owner = Managed Identity, deployati dalla CI),
 con schedule **attivo (UNPAUSED)**. Nessun'altra risorsa schedulata: nessuna pipeline DLT, nessun job con tag
-logistico sotto altro nome; i job canonici di prod creati per errore ([[LL-031]]) non esistono più.
+logistico sotto altro nome.
+*Correzione (2026-10-11)*: avevo scritto che i job canonici di prod creati per errore ([[LL-031]]) non esistevano più.
+**Esistono ancora**: con la nostra utenza non compaiono in `jobs list` perché il target prod non ci dà permessi. Girano
+ogni notte e mandano mail di errore a Luigi (es. job 958130978588938, 430241175668587, 393262591363896). Cleanup chiesto
+all'admin del workspace.
 
 | Job | Cron (Europe/Rome) | Esito ultime 4 notti (06→09/10) |
 |---|---|---|
