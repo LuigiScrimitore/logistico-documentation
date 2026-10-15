@@ -112,7 +112,8 @@ Scoperte **trasferibili**, estratte in `DOCS/main/lessons/` (ADR-0020):
 - Nota minore: `*.sh` destinati a Linux vanno a **LF** (gitattributes), altrimenti CRLF rompe shebang/`set`.
 
 ## Follow-up
-- **Al go-live**: riportare `IGNORE_ODI_FLAG=0` (o toglierlo) in `extract_and_send.sh` / forced command.
+- **Al go-live**: riportare `IGNORE_ODI_FLAG=0` (o toglierlo) in `extract_and_send.sh` / forced command; in
+  `databricks.yml` target `prod` portare `schedule_pause_status` a `UNPAUSED` (in pausa dal 2026-10-15, worklog 2026-10-15-01).
 - **`imbfmovim`**: individuare una colonna data per toglierle la dipendenza dal flag ODI.
 - ✅ **Gated SAS** (consegna Reply 2026-10-01): SAS posato + `staging/dev/logistico` + `conf/dev/logistico.conf` + ri-deploy `upload_landing.sh` + **upload reale verificato** (collaudo 2026-10-02).
 - ✅ **Estrazione sul relay** (variante): prereq verificati (Python 3.14 / oracledb thin / Oracle 19c), `extract_and_send.sh` + unit systemd + recap; **primo carico reale** 307 file/~2,23 GB (2026-10-02). → vedi worklog `2026-10-02-03`.
@@ -121,6 +122,10 @@ Scoperte **trasferibili**, estratte in `DOCS/main/lessons/` (ADR-0020):
   `abfss://logisticolanding@stdevdataplatformweudata.dfs.core.windows.net` (READ_FILES già presente via
   `Group-Engineering-dev`), senza Volume external e senza migrazione bloccante dello storico (resta nel Volume managed).
   Poi job orchestratore con trigger File arrival sul segnale `_control/<env>/<sistema>/<run_date>/_SUCCESS`.
+  - ✅ 2026-10-14: cutover validato (`landing_ingestion` SUCCESS letto dal container).
+  - ✅ 2026-10-15: test della catena schedulata 07:00-08:30 su Databricks = 7/7 job SUCCESS. Portata nel bundle
+    (orari fissi, landing dal container, schedule attivi solo nel deploy CI): worklog 2026-10-15-01. L'orchestratore
+    con File arrival resta un'evoluzione possibile, non in corso.
   - ⚠️ **Escludere** `logistix-landing/*/catena*/2026/10/02` (21 file): è la giacenza dell'11/10 con la data del 02/10, lasciata
     nel container il 2026-10-14. Le `catena` di 01, 03, 07, 08 e 10/10 sono la fotografia del giorno successivo (giri
     manuali lanciati in ritardo); dal 12/10 (job ODI) la data è corretta.

@@ -38,6 +38,16 @@ databricks bundle validate -t prod -o json   # -> UNPAUSED
 ```
 Se serve un controllo esplicito per target, usare `presets.trigger_pause_status` sul target, non lo YAML del job.
 
+**Evoluzione (2026-10-15): schedule attivi in dev solo nel deploy della CI.** Quando i job dev della Managed Identity
+devono girare davvero (catena giornaliera) ma le sandbox personali no, il target da solo non basta: CI e sandbox usano
+lo stesso target `dev`. Si dichiara `pause_status: ${var.schedule_pause_status}` negli YAML, con:
+- variabile del bundle `schedule_pause_status`, default **`PAUSED`** → sandbox personali in pausa;
+- CI `deploy_dev`: `databricks bundle deploy -t dev --var="schedule_pause_status=UNPAUSED"` → job della MI attivi;
+- target `prod`: `schedule_pause_status: PAUSED` finché prod non è in uso, `UNPAUSED` al go-live.
+
+Verifica: `bundle validate -t dev -o json` → PAUSED; con `--var="schedule_pause_status=UNPAUSED"` → UNPAUSED;
+`-t prod` → il valore del target. Mai scrivere `UNPAUSED` fisso nello YAML.
+
 ## Perché
 In development il bundle mette in pausa uno schedule **solo se il suo `pause_status` non è già UNPAUSED**: un
 valore esplicito viene rispettato. Il prefisso `[dev ...]` nel nome dimostra che la trasformazione della
@@ -47,3 +57,5 @@ modalità è stata applicata, ma non tocca un `UNPAUSED` scritto a mano.
 - 2026-10-09 · `bundle validate -t dev -o json`: con `pause_status: UNPAUSED` nei 7 YAML → **UNPAUSED** (nome
   `[dev flabffoconi] ...`); tolta la riga → **PAUSED** su tutti e 7, mentre `-t prod` resta **UNPAUSED**.
   Prima del fix i 7 job dev avevano girato tutte le notti (06→09/10). Vedi worklog 2026-10-09-01.
+- 2026-10-15 · schedulazione dev resa attiva solo nel deploy CI con la variabile `schedule_pause_status` (worklog
+  2026-10-15-01), dopo il test del 15/10 con 7/7 job SUCCESS.

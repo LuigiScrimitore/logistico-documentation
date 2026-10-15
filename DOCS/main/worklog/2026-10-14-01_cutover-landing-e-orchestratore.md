@@ -61,3 +61,38 @@ Perché fallivano ogni notte (verificato sui run del 09/10):
   estratte sul relay. Correzione: default `cdt_estr_raw`; l'estrattore termina con errore se `--systems` contiene un
   nome che non è nel `config.yaml` (help e guida di test locale aggiornati, `cnd` era un sistema eliminato).
   Dopo il deploy su odi3: estrazione `cdt_estr_raw` del giorno e ripetizione del giro di prova.
+- **Deploy fix su odi3** (14/10): `extract_and_send.sh` 9122 byte + estrattore 31836 byte (backup `.bak3`). Estrazione
+  `cdt_estr_raw` del 14/10: `automezzi` 1.872 righe, `apvpunto_vendita` 4.381, `s_logistix` 22, `wl1_mag_sito_storico`
+  60 → inviate; `estrai_spedizioni` 0 righe (saltata). Recap con `snapshot : incluse`.
+- **Giro di prova ripetuto** (run 477112943219594): `landing_ingestion` **SUCCESS** letto interamente da
+  `logisticolanding`, 14 tabelle bronze caricate. `bronze_artdgene` resta `NO_DATA` come nei giri dal Volume (da
+  verificare: probabilmente non prevista dall'estrattore). **Cutover validato.**
+- Da verificare con `trasporti`: `estrai_spedizioni` vuota non produce la cartella del giorno (il bronze potrebbe dare
+  `PATH_NOT_FOUND` invece di `NO_DATA`).
+- **Test della schedulazione completa su Databricks (15/10)**, su richiesta: riattivati via API (temporaneo, fuori bundle)
+  gli schedule dei 7 job dev, in sequenza dopo l'arrivo della landing (06:13): landing_ingestion 07:00, dim_refresh
+  07:15, carichi 07:30, giacenze 07:45, trasporti 08:00, prep_sped 08:15, datamart 08:30 (Europe/Rome; `run_date` di
+  default = data UTC, coerente perché dopo le 02:00). Default di `landing_base_path` dei 6 job che lo hanno → container.
+  ⚠️ Il prossimo `deploy_dev` riporta la configurazione del bundle (job in pausa, percorso Volume, orari vecchi): se il
+  test va bene, gli stessi valori vanno messi nel bundle e rilasciati.
+  Per il test aggiunto anche `francesco.foconi@quanticx.com` alle mail di errore dei 7 job (Luigi resta). Backup della
+  configurazione precedente (schedule, parametri, notifiche) salvato per il ripristino. Controllo automatico dell'esito
+  previsto il 15/10 alle 08:50.
+- **Esito del test (15/10): schedulazione completa OK, 7/7 job SUCCESS**, tutti partiti all'orario previsto e letti
+  da `logisticolanding`, nessuna mail di errore:
+
+  | job | avvio | durata | task ok / vuoti / KO |
+  |---|---|---|---|
+  | landing_ingestion | 07:00 | 1,4 min | 14 / 1 (`bronze_artdgene` NO_DATA, come sempre) / 0 |
+  | dim_refresh | 07:15 | 1,6 min | 17 / 0 / 0 |
+  | carichi | 07:30 | 4,1 min | 14 / 0 / 0 |
+  | giacenze | 07:45 | 3,3 min | 11 / 0 / 0 |
+  | trasporti | 08:00 | 2,7 min | 11 / 0 / 0 (nessun `PATH_NOT_FOUND` per `estrai_spedizioni` vuota) |
+  | prep_sped | 08:15 | 8,5 min | 19 / 1 (`bronze_timbrature` NO_DATA) / 0 |
+  | datamart | 08:30 | 1,9 min | 12 / 0 / 0 (`dq_gate` superato) |
+
+  Durata massima 8,5 min: gli intervalli di 15 minuti bastano. Nota: l'orologio del PC usato per il controllo era
+  avanti di ~11 minuti rispetto al server Databricks (fa fede l'ora del server).
+  Prossimo passo: portare nel bundle `landing_base_path` = container, orari e stato di pausa (attivi solo nel deploy CI),
+  poi rilascio `workflows` su GitLab. Fino ad allora un `deploy_dev` annulla la configurazione del test.
+
