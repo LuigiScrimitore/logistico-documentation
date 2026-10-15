@@ -70,4 +70,20 @@ La prova ha però mostrato due cose da cambiare nel piano:
 5. `datamart` sul 30/09 (aggregati di settembre). Confronto finale prima/dopo.
 
 ## Esito
-_(in corso)_
+- PR [#36](https://github.com/LuigiScrimitore/Logistico2.0/pull/36) (`process_from`) mergiata; `workflows` **v0.1.14**
+  su GitLab (solo main), deploy CI verificato.
+- **45 run, tutti SUCCESS**: prova 03 (4), giorni 07–14 (31), Gold giornalieri 04/05/06/09 (8), chiusura 15 con
+  `process_from=2026-10-02` (5: carichi, trasporti completo, giacenze, prep_sped 12 min, datamart), datamart 30/09.
+- Confronto prima/dopo: **nessun calo** in nessuna tabella, **0 chiavi duplicate** (`F_CARICO`, `F_PREP_SPED`), `dq_gate`
+  verde in tutti i job. Unico "fuori finestra": `F_ORDINI` cresce anche su date di emissione di settembre (01–25/09),
+  atteso perché un ordine emesso a settembre può arrivare con le estrazioni di ottobre.
+- Totali Gold prima → dopo: `F_CARICO` 118.745 → 178.885 · `F_PREP_SPED` 5.385.181 → 8.518.925 · `F_TRASPORTO` 82.477 →
+  110.095 · `F_TURNO_PREP_SITO` 176.831 → 276.744 · `F_TRACCIABILITA_LOTTI` 130.460 → 159.604 · `F_ORDINI` 14.006 →
+  18.938 · `F_MOVIMENTAZIONE_CARRELLISTI` 1.773 → 2.476 · `F_GIACENZE_DAILY` 198.642 → 234.504 (+12, 13, 14/10).
+- Copertura ottobre: tutti i fatti transazionali presenti 01–14 (weekend più bassi, 14/10 parziale: si completa con le
+  estrazioni dei giorni successivi). `F_GIACENZE_DAILY`: 01, 02, 12–15; **03–11 non recuperabili** ([[LL-006]]).
+- Da verificare: `F_PREP_SPED` 05/10 (73.159) e 12/10 (196.656) più bassi di un giorno feriale tipico (~410–440 mila);
+  `F_CARICO` 12/10 (3.501) idem.
+- Nuovo problema trovato (non bloccante): in `logistica_carichi` `gold_late_arriving_handler` e `gold_f_carico` scrivono
+  insieme su `F_CARICO` → `ConcurrentAppendException` al primo tentativo, riuscito al secondo (retry). Stessa classe di
+  [[LL-038]] (scrittura-scrittura): far dipendere `gold_late_arriving_handler` da `gold_f_carico`.
