@@ -69,3 +69,13 @@ Scartata l'alternativa B (escludere le scartate dal check): lascerebbe una parti
 Il Gold scrive in `partitionOverwriteMode=dynamic`, che non tocca la partizione NULL scritta il 15/10: prima della
 scrittura il notebook elimina le righe con `DATA_PREL IS NULL` (idempotente; recuperabile con il time travel Delta).
 Verifica: nuovo run di `logistica_prep_sped` dopo il rilascio, `dq_gate` atteso SUCCESS.
+
+## Esito della correzione
+- PR [#34](https://github.com/LuigiScrimitore/Logistico2.0/pull/34) mergiata (`76803ec`); `workflows` **v0.1.13** su
+  GitLab (solo main), deploy CI verificato (commit `aebc1dd` nel `metadata.json` del bundle della MI).
+- Run 371663863998650 (`full_refresh=false`): **SUCCESS**, `dq_gate` incluso. Ordine rispettato:
+  `silver_storico_liste_uniche` 12:07 · `silver_storico_bolle_uniche` 12:08 → `silver_prep_prep_sped` 12:13 →
+  `gold_f_prep_sped` 12:14 → `dq_gate` 12:16.
+- `F_PREP_SPED`: 5.385.181 righe (31/08→15/10), `DATA_PREL` NULL = **0**, chiavi duplicate = **0**. Unico avviso DQ:
+  `volume` (WARNING, atteso dopo il recupero: la media storica era su 179.261 righe).
+- Resta il buco 03–11/10, comune a tutti i fatti: si chiude rilanciando la catena sui giorni passati.
