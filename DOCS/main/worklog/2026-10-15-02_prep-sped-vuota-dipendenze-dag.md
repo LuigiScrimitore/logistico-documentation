@@ -52,4 +52,20 @@ Controllando la copertura di ottobre in Gold (`gold_dev.logistica`), `F_PREP_SPE
    uniche → `prep_sped` → Gold).
 
 ## Esito
-_(in corso)_
+- PR [#33](https://github.com/LuigiScrimitore/Logistico2.0/pull/33) mergiata (`7dc3a44`); `workflows` **v0.1.12** su
+  GitLab (solo main), deploy CI verificato (dipendenze e parametro `full_refresh` presenti sul job della MI).
+- Recupero: run 643777881235239 con `full_refresh=true`. `logistica_curated.prep_sped` e `F_PREP_SPED` passano da 179.261
+  a **5.385.181 righe** (31/08→15/10), in linea con `storico_liste_uniche` (5.385.182). Ottobre: presenti 01, 02, 12–15;
+  03–11 mancano come negli altri fatti (landing non letta in quei giorni, da recuperare rilanciando i giorni).
+- Il run termina **FAILED sul `dq_gate`**: check BLOCKING `not_null_DATA_PREL` = **524 righe**. Sono tutte righe
+  **scartate** (TIPO_SCAR 09: 441, 10: 83), sito 09, ordine del 12/10, con `LSPRL_DATA_PRELIEVO`/`ORA_PRELIEVO` NULL in
+  Logistix: mai prelevate, la data di prelievo non esiste. L'ipotesi "DATA_PREL sempre valorizzata dopo OP-PSP-2"
+  (`acceptance.py`) non regge sui dati reali; prima non emergeva perché i dati non arrivavano.
+
+## Decisione (A) — DATA_PREL per le righe senza data di prelievo
+`DATA_PREL` è solo la colonna di partizione del Gold (non esiste in CDT_DW). Per le righe senza data di prelievo si usa la
+**data dell'ordine** (`GIORNO_ORD_ID`); `DATA_PREL_INIZ` resta NULL come nel legacy e il check `not_null` resta BLOCKING.
+Scartata l'alternativa B (escludere le scartate dal check): lascerebbe una partizione a data NULL in Gold.
+Il Gold scrive in `partitionOverwriteMode=dynamic`, che non tocca la partizione NULL scritta il 15/10: prima della
+scrittura il notebook elimina le righe con `DATA_PREL IS NULL` (idempotente; recuperabile con il time travel Delta).
+Verifica: nuovo run di `logistica_prep_sped` dopo il rilascio, `dq_gate` atteso SUCCESS.
