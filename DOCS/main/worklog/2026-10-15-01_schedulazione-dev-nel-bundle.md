@@ -46,4 +46,12 @@ Il trigger "File arrival" con orchestratore (piano del 14/10) resta un'evoluzion
 5. Verifica sui job dev della Managed Identity: orari, UNPAUSED, percorso, mail.
 
 ## Esito
-_(in corso)_
+- `bundle validate`: dev → 7 job PAUSED; dev con `--var="schedule_pause_status=UNPAUSED"` → 7 UNPAUSED; prod → 7 PAUSED.
+- PR [#31](https://github.com/LuigiScrimitore/Logistico2.0/pull/31) mergiata (`eecd9fe`). Split su GitHub:
+  `logistico-workflows` `9768fa9`, `logistico-documentation` `f88cf5c`.
+- GitLab: `logistico-workflows` **v0.1.11** (`75fb79d`), push solo `main`, nessun tag ([[LL-031]]). La CI ha fatto
+  `deploy_dev`: `state/metadata.json` del bundle della MI riporta il commit `75fb79d`.
+- Verifica sui 7 job `[dev id_dev_dataplatform_workload_00] logistica_*`: orari 07:00→08:30 Europe/Rome, **UNPAUSED**,
+  `landing_base_path` = container `logisticolanding`, mail di errore a Luigi e Foconi. La configurazione è ora quella
+  del bundle: un nuovo `deploy_dev` non la annulla più.
+- Al go-live: `schedule_pause_status: UNPAUSED` sul target `prod` (follow-up in [[ACT_OP-INF-4]]).
