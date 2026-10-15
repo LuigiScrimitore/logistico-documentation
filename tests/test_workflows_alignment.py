@@ -172,3 +172,94 @@ def test_parametri_task_esistono_come_widget():
             if extra:
                 problems.append(f"{wf.name}/{t['task_key']}: parametri senza widget {sorted(extra)}")
     assert not problems, problems
+
+
+@pytest.mark.parametrize("wf", _workflows(), ids=lambda p: p.name)
+def test_yaml_senza_chiavi_duplicate(wf: Path):
+    """Con una chiave duplicata (es. due `depends_on` nello stesso task) YAML tiene l'ultima e
+    `bundle validate` non avvisa: in datamart si era persa una dipendenza (LL-038)."""
+
+    class _Loader(yaml.SafeLoader):
+        pass
+
+    dup: list[str] = []
+
+    def _mapping(loader, node, deep=False):
+        seen = set()
+        for k, _v in node.value:
+            key = loader.construct_object(k, deep=deep)
+            if key in seen:
+                dup.append(f"'{key}' riga {k.start_mark.line + 1}")
+            seen.add(key)
+        return yaml.SafeLoader.construct_mapping(loader, node, deep)
+
+    _Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _mapping)
+    yaml.load(wf.read_text(encoding="utf-8"), Loader=_Loader)
+    assert not dup, f"{wf.name}: chiavi duplicate {dup}"
+
+
+def _nb_tables(nb: Path) -> tuple[set[str], set[str]]:
+    """(tabelle lette, tabelle scritte) di un notebook, ricavate dalle costanti stringa
+    (`X_CATALOG = get_catalog("silver", env)`, `TARGET_TABLE = f"{...}.schema.tab"`, `SRC_* = ...`)
+    e dai riferimenti `f"{CATALOG}.schema.tab"` inline. Nomi in minuscolo, catalogo `<layer>_dev`."""
+    import re
+
+    src = nb.read_text(encoding="utf-8")
+    env: dict[str, str] = {}
+    for m in re.finditer(r'^([A-Z_][A-Z0-9_]*)\s*=\s*(.+?)\s*(?:#.*)?$', src, re.M):
+        k, v = m.group(1), m.group(2)
+        cat = re.match(r'get_catalog\(\s*"(\w+)"', v)
+        if cat:
+            env[k] = f"{cat.group(1)}_dev"
+            continue
+        lit = re.match(r'^f?"([^"]*)"$', v)
+        if lit:
+            val = lit.group(1)
+            for _ in range(3):
+                val = re.sub(r"\{([A-Z_][A-Z0-9_]*)\}", lambda x: env.get(x.group(1), x.group(0)), val)
+            env[k] = val
+    is_table = re.compile(r"^(bronze|silver|gold)_dev\.\w+\.\w+$")
+    write_vars = {"TARGET_TABLE", "FULL_TARGET", "TARGET_NAME"}
+    writes = {v.lower() for k, v in env.items() if k in write_vars and is_table.match(v)}
+    reads = {v.lower() for k, v in env.items() if k not in write_vars and is_table.match(v)}
+
+    def _res(part: str) -> str:
+        return env.get(part.strip("{}"), part) if part.startswith("{") else part
+
+    for m in re.finditer(r'f?"(\{\w+\}|\w+_dev)\.(\{\w+\}|\w+)\.(\w+)"', src):
+        t = f"{_res(m.group(1))}.{_res(m.group(2))}.{m.group(3)}".lower()
+        if is_table.match(t) and t not in writes:
+            reads.add(t)
+    return reads, writes
+
+
+@pytest.mark.parametrize("wf", _workflows(), ids=lambda p: p.name)
+def test_task_parte_dopo_chi_scrive_i_suoi_input(wf: Path):
+    """Se un task legge una tabella scritta da un altro task dello stesso job, quel task deve
+    essere tra i suoi antenati. Altrimenti parte prima, legge dati vecchi ed esce verde:
+    F_PREP_SPED è rimasta ferma al 02/09 per sei settimane così (LL-038)."""
+    tasks = {t["task_key"]: t for t in _tasks(_load(wf))}
+    io = {}
+    for k, t in tasks.items():
+        rel = _nb_rel(t)
+        if rel and (NB_DIR / f"{rel}.py").is_file():
+            io[k] = _nb_tables(NB_DIR / f"{rel}.py")
+    producers: dict[str, list[str]] = {}
+    for k, (_r, w) in io.items():
+        for tab in w:
+            producers.setdefault(tab, []).append(k)
+
+    def ancestors(k: str, seen: set[str] | None = None) -> set[str]:
+        seen = set() if seen is None else seen
+        for d in tasks[k].get("depends_on") or []:
+            if d["task_key"] not in seen:
+                seen.add(d["task_key"])
+                ancestors(d["task_key"], seen)
+        return seen
+
+    missing = []
+    for k, (reads, _w) in io.items():
+        anc = ancestors(k)
+        for tab in sorted(reads):
+            missing += [f"{k} legge {tab} scritta da {p}" for p in producers.get(tab, []) if p != k and p not in anc]
+    assert not missing, f"{wf.name}: depends_on mancanti: {missing}"

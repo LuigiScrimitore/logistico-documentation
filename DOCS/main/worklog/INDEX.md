@@ -4,12 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Schedulazione dev nel bundle: catena 07:00-08:30, landing da logisticolanding, attiva solo nel deploy della CI](2026-10-15-01_schedulazione-dev-nel-bundle.md) · 2026-10-15 · monorepo `PR dedicata (branch feat/cutover-passo2-orchestratore)`
+**Ultimo push:** [F_PREP_SPED ferma al 02/09: silver_prep_prep_sped partiva prima dei suoi input (dipendenze DAG mancanti) + depends_on duplicato in datamart](2026-10-15-02_prep-sped-vuota-dipendenze-dag.md) · 2026-10-15 · monorepo `PR dedicata`
 
-**59 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**60 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-10-15 | `PR dedicata` | [F_PREP_SPED ferma al 02/09: silver_prep_prep_sped partiva prima dei suoi input (dipendenze DAG mancanti) + depends_on duplicato in datamart](2026-10-15-02_prep-sped-vuota-dipendenze-dag.md) | ACT_9014 | ADR-0019 | LL-038 | — |
 | 2026-10-15 | `PR dedicata (branch feat/cutover-passo2-orchestratore)` | [Schedulazione dev nel bundle: catena 07:00-08:30, landing da logisticolanding, attiva solo nel deploy della CI](2026-10-15-01_schedulazione-dev-nel-bundle.md) | ACT_OP-INF-4 | ADR-0003 | LL-037 | OP-INF-4 |
 | 2026-10-14 | `PR dedicata` | [Piano: cutover della landing dev su logisticolanding (percorso diretto) + job orchestratore che parte all'arrivo dei file](2026-10-14-01_cutover-landing-e-orchestratore.md) | ACT_OP-INF-4 | ADR-0003 | LL-037 | OP-INF-4 |
 | 2026-10-12 | `PR #27 @b6dc815 (estrattore + extract_and_send.sh + doc) + PR esito` | [Salvaguardia: con una run_date passata l'estrazione esclude le tabelle snapshot (catena, catena_esterni)](2026-10-12-01_salvaguardia-snapshot-data-passata.md) | ACT_OP-INF-4 | — | LL-006 | OP-INF-4 |
