@@ -32,4 +32,9 @@ tabella".
    ordinati (uno antenato dell'altro). [[LL-038]] esteso al caso scrittura-scrittura.
 
 ## Esito
-_(in corso)_
+- PR [#38](https://github.com/LuigiScrimitore/Logistico2.0/pull/38) mergiata (`9e894fa`); `pytest
+  tests/test_workflows_alignment.py` 58 passed (senza la correzione il nuovo test fallisce solo su `logistica_carichi`).
+- `workflows` **v0.1.15** su GitLab (solo main, `8b51ff7`), deploy CI verificato; sul job della MI
+  `gold_late_arriving_handler` depends_on = `silver_prep_carico`, `gold_f_carico`.
+- Run di prova 986357837999257 (`run_date` 2026-10-16): SUCCESS, **nessun retry**: `gold_f_carico` 09:50:20→09:50:49,
+  poi `gold_late_arriving_handler` 09:50:49→09:51:18 (primo tentativo), `dq_gate` 09:51:18→09:51:46.
