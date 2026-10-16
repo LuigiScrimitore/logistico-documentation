@@ -44,4 +44,9 @@ Selezione con finestra chiusa sui timbri `[12/10, 16/10)` (quello che l'ODI ha p
 `pytest tests/test_extract_selection.py tests/test_workflows_alignment.py`: 64 passed.
 
 ## Esito
-_(in corso: PR, copia su odi3, primo run giornaliero, recupero di ottobre)_
+- PR [#40](https://github.com/LuigiScrimitore/Logistico2.0/pull/40) mergiata; copia su odi3 fatta dall'utente (vedi diario
+  [[ACT_9030]]: `--backup=numbered` toglie proprietario e permesso di esecuzione, ripristinati con `--reference`).
+- Estrazione di recupero 01–16/10 (giorno per giorno, timbri `[D, D+1)`): 16/16 OK.
+- Rilancio Databricks 01–16/10 + chiusura con `process_from=2026-09-30`: tutti i job SUCCESS (dopo le correzioni dei
+  worklog 2026-10-16-04 e -05). Confronto con CDT_DW: **`F_PREP_SPED` = 100% del legacy ogni giorno dal 30/09 al 12/10**
+  (12/10: 418.105 vs 417.948; prima 47%); `F_CARICO` dal 26–30% al **77–82%**, con tutti i 18 siti del legacy.

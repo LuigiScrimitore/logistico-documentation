@@ -38,4 +38,10 @@ chiusura del recupero.
 3. Copia su odi3 dell'estrattore corretto **prima del job ODI delle 06:00 del 17/10**.
 
 ## Esito
-_(in corso)_
+- PR [#42](https://github.com/LuigiScrimitore/Logistico2.0/pull/42) mergiata. Verifica Oracle (bolle timbrate 07/10): riepiloghi
+  selezionati tutti del 2026 (8.500). Pulizia: 666 righe pre-2026 cancellate da bronze (versione prima: 60), silver
+  `prep_riepilogo` (125), `turno_prep_sito` (104), `F_TURNO_PREP_SITO` (80); `A_TURNO_PREP_SITO` già pulita.
+- I file di recupero nella landing (estratti prima della correzione) contengono ancora i riepiloghi vecchi: il rilancio
+  07–16/10 è stato fatto **escludendo `bronze_prep_riepiloghi`** (verificato: 0 righe pre-2026 dopo il rilancio).
+- Da fare: copia dell'estrattore corretto su odi3 **prima del job ODI delle 06:00 del 17/10**, rigenerazione dei soli
+  riepiloghi 01–16/10, passaggio mirato su Databricks (riepiloghi → turni → `prep_sped` con `full_refresh`).

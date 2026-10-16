@@ -136,4 +136,22 @@ L'invio (`azcopy --overwrite=ifSourceNewer`) carica solo i file cambiati.
   a 1,08 GB (14/10) al giorno, 2–4 minuti per giorno, 42 minuti in tutto.
 
 ## Esito
-_(in corso)_
+_(parziale, 2026-10-16)_ Recupero 01–16/10 completato (worklog 2026-10-16-03/-04/-05). Confronto con CDT_DW per giorno:
+
+| | prima | dopo |
+|---|---|---|
+| `F_PREP_SPED` (30/09–12/10) | 0–96%, lunedì 17–47% | **100%** ogni giorno |
+| `F_CARICO` | 26–30%, 5 siti | **77–82%**, 18 siti |
+
+Totali Gold: `F_CARICO` 212.667 → 363.761, `F_PREP_SPED` 8,92 M → 11,12 M, `F_GIACENZE_DAILY` 289.041 → 457.736,
+`F_TRACCIABILITA_LOTTI` 188.176 → 262.366, `F_ORDINI` 19.643 → 34.390. Nessun calo, 0 chiavi duplicate.
+
+Punti aperti:
+1. **`F_CARICO` al ~80% uniforme su tutti i siti**: l'estrazione delle pesate coincide col legacy (worklog 2026-10-16-03),
+   la perdita è nella trasformazione → quadratura [[ACT_9029]].
+2. **Bolle vecchie riemesse**: il 12/10 13:36 l'ODI ha timbrato 27 bolle 2018–2025 → ~9.900 prelievi di quegli anni in
+   `F_PREP_SPED` (giorni parziali, il Gold non ha storico prima del 31/08/2026). Stesso comportamento del legacy; decidere
+   se tenerle o filtrare le date fuori dal perimetro.
+3. Riepiloghi da rigenerare con l'estrattore corretto (worklog 2026-10-16-05).
+4. Libreria: correzione `julian_to_date` (worklog 2026-10-16-04) già nel wheel sul Volume e in `logistico-lib` v1.0.6.
+5. Go-live: l'estrattore deve scrivere lui il flag (passo 5 del piano).
