@@ -115,6 +115,11 @@ sudo -u svc_landing env DRYRUN=1 /opt/landing/bin/extract_and_send.sh dev logist
 # override: SYSTEMS=stat DO_CDTDW=0 ...
 # flag CDC dell'ODI legacy: IGNORE_ODI_FLAG=1 (default fino al go-live) = solo finestra data;
 #   le tabelle senza colonna data (imbfmovim) tengono comunque il flag. Al go-live: IGNORE_ODI_FLAG=0.
+#   Dal 2026-10-16 (ACT_9030) le tabelle con `selection` in config.yaml (carichi, pesate, righe carico, traccia,
+#   carrellisti, cartellino, abb tolti, imbfmovim, bolle/liste/riepiloghi STAT) NON usano piu' la finestra data:
+#   leggono il timbro dell'ODI in sola lettura (sospesi + timbrati negli ultimi 2 giorni). IGNORE_ODI_FLAG non le tocca.
+# recupero (opzioni in piu' all'estrattore): EXTRACT_EXTRA="--stamp-from 2026-10-01 --max-rows 0" = tutto cio' che
+#   l'ODI ha timbrato dal 1/10 (+ sospesi). Va con SKIP_SNAPSHOT=1 se la run_date non e' oggi.
 # snapshot (catena, catena_esterni = giacenze): SKIP_SNAPSHOT=auto (default) le esclude se run_date non e' oggi,
 #   perche' sono la fotografia del momento e con una data passata avrebbero la data sbagliata (LL-006).
 #   SKIP_SNAPSHOT=1 le esclude sempre, SKIP_SNAPSHOT=0 le include sempre.

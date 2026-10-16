@@ -63,6 +63,7 @@ systems:
         date_column_type: "julian_day"   # Oracle legacy: Julian Day Number (TO_DATE(num,'J'))
         flag_column: "STCAR_DATA_ESTRAZIONE_DWH"
         merge_keys: ["STCAR_NRO_CARICO", "STCAR_COD_MAGAZZINO"]
+        selection: legacy_flag      # come il legacy: sospesi + timbrati dall'ODI (ACT_9030)
         columns: []
       sto_righe_carico:
         mode: delta
@@ -70,6 +71,10 @@ systems:
         date_column_type: "julian_day"
         flag_column: ""              # nessun flag proprio (AS-IS via WL2_CATENA)
         merge_keys: ["SRCAR_NRO_CARICO", "SRCAR_COD_MSI", "SRCAR_COD_MAGAZZINO"]
+        selection: parent           # righe dei carichi selezionati, come il legacy (ACT_9030)
+        parent:
+          table: sto_tes_carichi
+          keys: [[SRCAR_NRO_CARICO, STCAR_NRO_CARICO], [SRCAR_COD_MAGAZZINO, STCAR_COD_MAGAZZINO]]
         columns: []
       pesate:
         mode: delta
@@ -77,6 +82,7 @@ systems:
         date_column_type: "date"     # eccezione: PSP_DATABOLLA e' DATE
         flag_column: "PSP_DATA_ESTRAZIONE_DWH"
         merge_keys: ["PSP_NUMETIC", "PSP_DATABOLLA"]
+        selection: legacy_flag      # come il legacy: sospesi + timbrati dall'ODI (ACT_9030)
         columns: []
       tracciace178:
         mode: delta
@@ -84,6 +90,7 @@ systems:
         date_column_type: "julian_day"
         flag_column: "CE178_DATA_ESTRAZIONE_DWH"
         merge_keys: ["CE178_NRO_ETICHETTA", "CE178_NRO_CARICO"]
+        selection: legacy_flag      # come il legacy: sospesi + timbrati dall'ODI (ACT_9030)
         columns: []
       dettaglio_carr:
         mode: delta
@@ -91,6 +98,7 @@ systems:
         date_column_type: "julian_day"
         flag_column: "DTCRL_DATA_ESTRAZIONE_DWH"
         merge_keys: ["DTCRL_COD_CARRELLIST", "DTCRL_DATA_RICH_ABB", "DTCRL_ORA_RICH_ABB", "DTCRL_COD_MSI"]
+        selection: legacy_flag      # come il legacy: sospesi + timbrati dall'ODI (ACT_9030)
         columns: []
       cartellino:
         mode: delta
@@ -98,12 +106,14 @@ systems:
         date_column_type: "julian_day"
         flag_column: "CARTE_DATA_ESTRAZIONE_DWH"
         merge_keys: ["CARTE_COD_CARRELLIST", "CARTE_DATA"]
+        selection: legacy_flag      # come il legacy: sospesi + timbrati dall'ODI (ACT_9030)
         columns: []
       imbfmovim:
         mode: delta
         date_column: ""              # IMBFMOVIM senza date_column -> filtro solo via flag
         flag_column: "IMF_DATA_ESTRAZIONE_DWH"
         merge_keys: ["IMFNUMBOL", "IMFANNOBOL", "IMFPRGRIF", "IMFCODIMB"]
+        selection: legacy_flag      # come il legacy: sospesi + timbrati dall'ODI (ACT_9030)
         columns: []
       abb_tolti:
         mode: delta
@@ -111,6 +121,7 @@ systems:
         date_column_type: "julian_day"
         flag_column: "ABT_DATA_ESTRAZIONE_DWH"
         merge_keys: ["ABT_NRO_ETICHETTA", "ABT_DATA_ANNULLO"]
+        selection: legacy_flag      # come il legacy: sospesi + timbrati dall'ODI (ACT_9030)
         columns: []
       # Anagrafiche — modalità FULL (snapshot completo, no filtro)
       carrellisti:        { mode: full, columns: [] }
@@ -157,6 +168,10 @@ systems:
         date_column_type: "julian_day"
         flag_column: "RPLPR_DATA_ESTRAZIONE_DWH"
         merge_keys: ["RPLPR_SITO", "RPLPR_NRO_RIEPILOGO", "RPLPR_DATA_PREPARAZ"]
+        selection: parent           # riepiloghi delle liste selezionate, come il legacy (ACT_9030)
+        parent:
+          table: storico_liste
+          keys: [[RPLPR_SITO, LSPRL_SITO], [RPLPR_NRO_RIEPILOGO, LSPRL_NRO_RIEPILOGO], [RPLPR_COD_NEGOZIO, LSPRL_COD_NEGOZIO]]
         columns: []
       testate_bolle:
         mode: delta
@@ -164,6 +179,8 @@ systems:
         date_column_type: "julian_day"
         flag_column: "TEBO_DATA_ESTRAZIONE_DWH"
         merge_keys: ["TEBO_SITO", "TEBO_NRO_BOLLA", "TEBO_DATA_BOLLA"]
+        selection: legacy_flag      # bolle emesse non ancora estratte + timbrate dall'ODI (ACT_9030)
+        pending_where: "TEBO_STATO = 'E' AND TEBO_FLAG_ESTRAZIONE_DWH = 'N'"
         columns: []
       storico_bolle:
         mode: delta
@@ -171,6 +188,10 @@ systems:
         date_column_type: "julian_day"
         flag_column: "BOL_DATA_ESTRAZIONE_DWH"
         merge_keys: ["BOL_SITO", "BOL_NRO_BOLLA", "BOL_DATA_BOLLA", "BOL_NRO_RIGA"]
+        selection: parent           # righe delle bolle selezionate (ACT_9030)
+        parent:
+          table: testate_bolle
+          keys: [[BOL_SITO, TEBO_SITO], [BOL_COD_NEGOZIO, TEBO_COD_NEGOZIO], [BOL_NRO_BOLLA, TEBO_NRO_BOLLA], [BOL_DATA_BOLLA, TEBO_DATA_BOLLA]]
         columns: []
       # Sorgente RAW prep_sped (sostituisce wl1_storico_liste + _uniche).
       # NB date_column/merge_keys DA VALIDARE con dati reali (bugfix successivo).
@@ -180,6 +201,10 @@ systems:
         date_column_type: "julian_day"
         flag_column: ""        # decisione: niente flag CDC, solo finestra data
         merge_keys: ["LSPRL_SITO", "LSPRL_NRO_GABBIA", "LSPRL_NRO_ORDINE_NEG", "LSPRL_COD_NEGOZIO", "LSPRL_COD_MSI", "LSPRL_DATA_ORDIN_NEG", "LSPRL_SEQUE_PRELIEVO", "LSPRL_FLAG_SCARTATO"]
+        selection: parent           # liste delle bolle selezionate, come il legacy (ACT_9030)
+        parent:
+          table: testate_bolle
+          keys: [[LSPRL_SITO, TEBO_SITO], [LSPRL_COD_NEGOZIO, TEBO_COD_NEGOZIO], [LSPRL_NRO_BOLLA, TEBO_NRO_BOLLA], [LSPRL_DATA_BOLLA, TEBO_DATA_BOLLA]]
         columns: []
       buoni_eco:
         # AS-IS: estrazione non flag-based; date_column "DATA_BUONO" non esiste su STAT (ORA-00904).

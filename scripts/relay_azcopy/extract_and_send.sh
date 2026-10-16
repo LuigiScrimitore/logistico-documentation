@@ -40,6 +40,9 @@ DO_CDTDW="${DO_CDTDW:-1}"
 DRYRUN="${DRYRUN:-0}"
 IGNORE_ODI_FLAG="${IGNORE_ODI_FLAG:-1}"   # 1 fino al go-live (spegnimento ODI legacy), poi 0
 SKIP_SNAPSHOT="${SKIP_SNAPSHOT:-auto}"     # auto = esclude gli snapshot se run_date non e' oggi
+# Opzioni in piu' per l'estrattore, solo per lanci a mano (es. recupero ACT_9030:
+#   EXTRACT_EXTRA="--stamp-from 2026-10-01 --max-rows 0"). Il job ODI non la imposta.
+EXTRACT_EXTRA="${EXTRACT_EXTRA:-}"
 
 # Snapshot: stesso orologio del run_date di default (odi3 e' in UTC).
 TODAY="$(date +%F)"
@@ -100,12 +103,13 @@ run_all(){
   log "START env=$ENV sistema=$SISTEMA run_date=$RUN_DATE systems=$SYSTEMS cdtdw=$DO_CDTDW dryrun=$DRYRUN ignore_odi_flag=$IGNORE_ODI_FLAG"
   log "staging=$STAGING"
   log "tabelle snapshot (catena, catena_esterni): $SNAP_DESC"
+  [ -n "$EXTRACT_EXTRA" ] && log "opzioni estrattore in piu' (EXTRACT_EXTRA): $EXTRACT_EXTRA"
 
   # 1) Estrazione principale
   local t0=$SECONDS
   log "Estrazione principale (systems=$SYSTEMS)..."
   "$VENV_PY" "$EXTRACT_MAIN" \
-    --systems "$SYSTEMS" --run-date "$RUN_DATE" --output-dir "$STAGING" $DRY_FLAG $FLAG_OPT $SNAP_OPT || die "estrazione principale fallita"
+    --systems "$SYSTEMS" --run-date "$RUN_DATE" --output-dir "$STAGING" $DRY_FLAG $FLAG_OPT $SNAP_OPT $EXTRACT_EXTRA     || die "estrazione principale fallita"
 
   # 2) Estrazione anagrafiche CDT_DW (opzionale)
   if [ "$DO_CDTDW" = "1" ]; then
@@ -166,6 +170,7 @@ az_gb=""; [ -n "${az_bytes:-}" ] && az_gb="$(awk -v b="$az_bytes" 'BEGIN{if(b>0)
   echo "env/sist : $ENV/$SISTEMA   run_date: $RUN_DATE   dryrun: $DRYRUN"
   echo "systems  : $SYSTEMS   cdtdw: $DO_CDTDW   ignore_odi_flag: $IGNORE_ODI_FLAG"
   echo "snapshot : $SNAP_DESC"
+  [ -n "$EXTRACT_EXTRA" ] && echo "extra    : $EXTRACT_EXTRA"
   echo "extract  : ${extract_sum:-n/d}   (${ex_s:-?}s)"
   echo "staging  : ${staged_files} file totali, ${staged_size:-?} (cumulativo, in $STAGING)"
   if [ "$DRYRUN" = "1" ]; then

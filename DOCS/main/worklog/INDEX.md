@@ -4,12 +4,14 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [F_CARICO: gold_late_arriving_handler e gold_f_carico scrivevano in parallelo (ConcurrentAppendException) — ordine nel DAG + guardrail scrittura-scrittura](2026-10-16-01_conflitto-scrittura-f-carico.md) · 2026-10-16 · monorepo `PR dedicata`
+**Ultimo push:** [Estrattore landing: selezione come il legacy (timbro ODI in sola lettura, righe collegate dai documenti) al posto della finestra sulle date](2026-10-16-03_estrattore-selezione-come-legacy.md) · 2026-10-16 · monorepo `PR dedicata`
 
-**62 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**64 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-10-16 | `PR dedicata` | [Estrattore landing: selezione come il legacy (timbro ODI in sola lettura, righe collegate dai documenti) al posto della finestra sulle date](2026-10-16-03_estrattore-selezione-come-legacy.md) | ACT_9030 | — | LL-006 | OP-INF-4 |
+| 2026-10-16 | `PR dedicata` | [Siti Logistix: i job elaboravano 5 siti su 19 (parametro siti fermo a una lista vecchia) → variabile unica con i 19 siti della landing](2026-10-16-02_siti-logistix-19.md) | ACT_9030 | — | — | OP-INF-4 |
 | 2026-10-16 | `PR dedicata` | [F_CARICO: gold_late_arriving_handler e gold_f_carico scrivevano in parallelo (ConcurrentAppendException) — ordine nel DAG + guardrail scrittura-scrittura](2026-10-16-01_conflitto-scrittura-f-carico.md) | ACT_9014 | ADR-0019 | LL-038 | — |
 | 2026-10-15 | `PR solo doc` | [Recupero dei fatti Gold di ottobre (03–14/10) rilanciando i job sui giorni passati, con prova e confronto prima/dopo](2026-10-15-03_recupero-ottobre-03-14.md) | ACT_OP-INF-4 | — | LL-006 LL-038 | OP-INF-4 |
 | 2026-10-15 | `PR dedicata` | [F_PREP_SPED ferma al 02/09: silver_prep_prep_sped partiva prima dei suoi input (dipendenze DAG mancanti) + depends_on duplicato in datamart](2026-10-15-02_prep-sped-vuota-dipendenze-dag.md) | ACT_9014 | ADR-0019 | LL-038 | — |

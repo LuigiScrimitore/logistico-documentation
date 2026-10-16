@@ -107,6 +107,15 @@ class TableSpec:
     where_clause: str = ""
     source_object: str = ""         # override del nome oggetto sorgente (default: name uppercase)
     disabled: bool = False          # se True salta la tabella
+    # Selezione "come il legacy" (ACT_9030). Vuota = finestra sulla date_column (comportamento storico).
+    #   legacy_flag: righe in sospeso (flag NULL/0/transitorio o pending_where, entro pending_days sulla
+    #                date_column) OPPURE timbrate dall'ODI (stamp_column >= stamp_from) -> sola lettura.
+    #   parent:      righe collegate a quelle selezionate di un'altra tabella dello stesso sistema.
+    selection: str = ""
+    stamp_column: str = ""          # colonna timbro YYYYMMDDHHMI (default: flag_column)
+    pending_where: str = ""         # condizione "in sospeso" esplicita (es. TEBO_STATO = 'E' AND ...)
+    parent_table: str = ""          # selection=parent: tabella padre (chiave config, stesso sistema)
+    parent_keys: list = None        # selection=parent: [[colonna_figlio, colonna_padre], ...]
 
     def src_obj(self) -> str:
         return self.source_object.strip() or self.name.upper()
@@ -148,6 +157,11 @@ def load_config(path: Path) -> tuple[Path, dict, dict[str, SystemSpec]]:
                 where_clause=str(t_cfg.get("where_clause") or "").strip(),
                 source_object=str(t_cfg.get("source_object") or "").strip(),
                 disabled=bool(t_cfg.get("disabled", False)),
+                selection=str(t_cfg.get("selection") or "").strip().lower(),
+                stamp_column=str(t_cfg.get("stamp_column") or "").strip(),
+                pending_where=str(t_cfg.get("pending_where") or "").strip(),
+                parent_table=str((t_cfg.get("parent") or {}).get("table") or "").strip(),
+                parent_keys=[list(k) for k in ((t_cfg.get("parent") or {}).get("keys") or [])],
             )
         systems[sys_key] = SystemSpec(
             key=sys_key,
@@ -232,10 +246,69 @@ def _validate_columns(cols: list[str]) -> list[str]:
     return out
 
 
+# Timbri ODI: YYYYMMDDHHMI (12 cifre). Sotto questa soglia il flag e' "in sospeso" (NULL, 0, transitori come 11).
+STAMP_MIN = 100000000000
+SAFE_PENDING = re.compile(r"^[A-Z][A-Z0-9_]*\s*=\s*'[A-Z0-9]{1,3}'(\s+AND\s+[A-Z][A-Z0-9_]*\s*=\s*'[A-Z0-9]{1,3}')*$")
+
+
+@dataclass
+class SelectionCtx:
+    """Parametri della selezione "come il legacy" (ACT_9030)."""
+    run_date: date
+    stamp_from: date
+    stamp_to: date | None = None     # esclusiva
+    pending_days: int = 30
+
+
+def _stamp_bind(d: date) -> int:
+    return int(d.strftime("%Y%m%d") + "0000")
+
+
+def selection_where(sys_spec: SystemSpec, table: TableSpec, ctx: SelectionCtx,
+                    binds: dict[str, Any], depth: int = 0) -> str:
+    """Condizione WHERE della selezione legacy_flag / parent (ricorsiva sul padre). Sola lettura."""
+    if depth > 3:
+        raise ValueError(f"catena parent troppo profonda su {table.name}")
+    if table.selection == "legacy_flag":
+        stamp = _validate_ident(table.stamp_column or table.flag_column, "stamp_column")
+        binds["stamp_from"] = _stamp_bind(ctx.stamp_from)
+        stamped = f"{stamp} >= :stamp_from"
+        if ctx.stamp_to:
+            # Finestra chiusa (verifica / recupero storico): solo cio' che l'ODI ha timbrato, niente sospesi.
+            binds["stamp_to"] = _stamp_bind(ctx.stamp_to)
+            return f"({stamped} AND {stamp} < :stamp_to)"
+        if table.pending_where:
+            pw = table.pending_where.strip().upper()
+            if not SAFE_PENDING.match(pw):
+                raise ValueError(f"pending_where non in whitelist (COL = 'X' [AND ...]): {table.pending_where!r}")
+            pending = f"({pw})"
+        else:
+            fc = _validate_ident(table.flag_column, "flag_column")
+            pending = f"NVL({fc}, 0) < {STAMP_MIN}"
+        if table.date_column:
+            dc = _validate_ident(table.date_column, "date_column")
+            bn = f"pend_{table.name}"[:30]
+            binds[bn] = _date_bind(ctx.run_date - timedelta(days=ctx.pending_days), table.date_column_type)
+            pending = f"({pending} AND {dc} >= :{bn})"
+        return f"({pending} OR {stamped})"
+    if table.selection == "parent":
+        parent = (sys_spec.tables or {}).get(table.parent_table)
+        if parent is None or not table.parent_keys:
+            raise ValueError(f"{table.name}: selection=parent richiede parent.table e parent.keys validi")
+        child_cols = ", ".join(_validate_ident(k[0], "parent.keys") for k in table.parent_keys)
+        parent_cols = ", ".join(_validate_ident(k[1], "parent.keys") for k in table.parent_keys)
+        psrc = _validate_ident(parent.src_obj(), "tabella padre")
+        pfrom = f"{_validate_ident(sys_spec.schema, 'schema')}.{psrc}" if sys_spec.schema else f"{psrc}@{{DBLINK}}"
+        pwhere = selection_where(sys_spec, parent, ctx, binds, depth + 1)
+        return f"({child_cols}) IN (SELECT {parent_cols} FROM {pfrom} WHERE {pwhere})"
+    raise ValueError(f"selection non valida per {table.name}: {table.selection!r}")
+
+
 def build_query(sys_spec: SystemSpec, table: TableSpec,
                 from_date: date | None, to_date: date | None,
                 lookback_days: int = 7, run_date: date | None = None,
-                ignore_odi_flag: bool = False) -> tuple[str, dict[str, Any]]:
+                ignore_odi_flag: bool = False,
+                sel_ctx: SelectionCtx | None = None) -> tuple[str, dict[str, Any]]:
     """Costruisce SELECT validata. Usa bind variables per le date.
 
     ignore_odi_flag: se True, NON applica il filtro CDC dell'ODI legacy
@@ -271,7 +344,15 @@ def build_query(sys_spec: SystemSpec, table: TableSpec,
         where_parts.append(wc)
 
     # Modalita' delta / snapshot / full
-    if table.mode == "delta":
+    if table.mode == "delta" and table.selection:
+        # Selezione come il legacy (ACT_9030): sostituisce finestra data e filtro flag. Sola lettura, quindi
+        # indipendente da --ignore-odi-flag (non consumiamo il flag dell'ODI, lo leggiamo).
+        if sel_ctx is None:
+            raise ValueError(f"{table.name}: selection={table.selection} senza contesto di selezione")
+        where_parts.append(selection_where(sys_spec, table, sel_ctx, binds))
+        logger.info("    %s: selezione %s (timbro >= %s%s, sospesi %d gg)", table.name, table.selection,
+                    sel_ctx.stamp_from, f" e < {sel_ctx.stamp_to}" if sel_ctx.stamp_to else "", sel_ctx.pending_days)
+    elif table.mode == "delta":
         # STRATEGIA: filtro su data come default sicuro (limita SEMPRE la finestra).
         # Il flag viene combinato in AND solo se esistono entrambi (in produzione restringe
         # ai "non ancora estratti"; in test e' un no-op se il flag non e' popolato).
@@ -454,6 +535,15 @@ def run(args: argparse.Namespace) -> int:
     if args.dry_run:
         logger.warning("DRY-RUN: nessuna query eseguita, nessun file scritto.")
 
+    # Selezione come il legacy (ACT_9030): timbri ODI da stamp_from (default run_date - stamp_lookback_days).
+    stamp_from = (date.fromisoformat(args.stamp_from) if args.stamp_from
+                  else run_date - timedelta(days=args.stamp_lookback_days))
+    stamp_to = date.fromisoformat(args.stamp_to) if args.stamp_to else None
+    sel_ctx = SelectionCtx(run_date=run_date, stamp_from=stamp_from, stamp_to=stamp_to,
+                           pending_days=args.pending_days)
+    logger.info("Selezione legacy: timbro >= %s%s, sospesi entro %d gg", stamp_from,
+                f" e < {stamp_to}" if stamp_to else "", args.pending_days)
+
     # Filtri CLI
     selected_systems = set(args.systems.split(",")) if args.systems else None
     selected_tables = set(args.tables.split(",")) if args.tables else None
@@ -525,7 +615,7 @@ def run(args: argparse.Namespace) -> int:
                     try:
                         sql, binds = build_query(sys_spec, table, from_dt, to_dt,
                                                   lookback_days=args.lookback_days, run_date=run_date,
-                                                  ignore_odi_flag=args.ignore_odi_flag)
+                                                  ignore_odi_flag=args.ignore_odi_flag, sel_ctx=sel_ctx)
                         sql = apply_max_rows(sql, args.max_rows)
                         if dblink:
                             sql = sql.replace("{DBLINK}", dblink)
@@ -614,6 +704,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
                    help="Salta le tabelle con mode 'snapshot' (es. catena, catena_esterni): sono la fotografia del "
                         "momento, quindi con una run_date passata avrebbero i dati di oggi con la data sbagliata "
                         "(LL-006). extract_and_send.sh la attiva quando run_date non e' oggi.")
+    p.add_argument("--stamp-lookback-days", type=int, default=2,
+                   help="Tabelle con selection (ACT_9030): righe timbrate dall'ODI da run_date - N giorni (default 2: "
+                        "il run delle 06:00 precede l'ODI delle ~06:46, il margine copre il giro precedente).")
+    p.add_argument("--stamp-from", default=None,
+                   help="Tabelle con selection: timbro ODI minimo YYYY-MM-DD (recupero; sovrascrive "
+                        "--stamp-lookback-days).")
+    p.add_argument("--stamp-to", default=None,
+                   help="Tabelle con selection: timbro ODI massimo ESCLUSO YYYY-MM-DD (verifica/recupero storico, "
+                        "senza le righe in sospeso).")
+    p.add_argument("--pending-days", type=int, default=30,
+                   help="Tabelle con selection: righe non ancora estratte dall'ODI considerate entro N giorni sulla "
+                        "date_column (default 30; oltre sono righe che l'ODI non prende mai).")
     p.add_argument("--ignore-odi-flag", action="store_true", default=False,
                    help="Non applica il filtro CDC dell'ODI legacy (NVL(*_DATA_ESTRAZIONE_DWH,0)=0) sulle "
                         "transazionali. Serve al seed storico della landing DEV: in prod il flag marcherebbe come "
