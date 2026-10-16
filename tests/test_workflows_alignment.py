@@ -263,3 +263,33 @@ def test_task_parte_dopo_chi_scrive_i_suoi_input(wf: Path):
         for tab in sorted(reads):
             missing += [f"{k} legge {tab} scritta da {p}" for p in producers.get(tab, []) if p != k and p not in anc]
     assert not missing, f"{wf.name}: depends_on mancanti: {missing}"
+
+
+@pytest.mark.parametrize("wf", _workflows(), ids=lambda p: p.name)
+def test_task_che_scrivono_la_stessa_tabella_sono_ordinati(wf: Path):
+    """Due task dello stesso job che scrivono la stessa tabella devono essere ordinati (uno antenato
+    dell'altro): in parallelo Delta rifiuta il secondo commit (ConcurrentAppendException) e il retry
+    nasconde il problema. Caso reale: gold_late_arriving_handler e gold_f_carico su F_CARICO (LL-038)."""
+    tasks = {t["task_key"]: t for t in _tasks(_load(wf))}
+    writers: dict[str, list[str]] = {}
+    for k, t in tasks.items():
+        rel = _nb_rel(t)
+        if rel and (NB_DIR / f"{rel}.py").is_file():
+            for tab in _nb_tables(NB_DIR / f"{rel}.py")[1]:
+                writers.setdefault(tab, []).append(k)
+
+    def ancestors(k: str, seen: set[str] | None = None) -> set[str]:
+        seen = set() if seen is None else seen
+        for d in tasks[k].get("depends_on") or []:
+            if d["task_key"] not in seen:
+                seen.add(d["task_key"])
+                ancestors(d["task_key"], seen)
+        return seen
+
+    paralleli = []
+    for tab, ks in sorted(writers.items()):
+        for i, a in enumerate(ks):
+            for b in ks[i + 1:]:
+                if a not in ancestors(b) and b not in ancestors(a):
+                    paralleli.append(f"{a} e {b} scrivono {tab}")
+    assert not paralleli, f"{wf.name}: scritture parallele sulla stessa tabella: {paralleli}"

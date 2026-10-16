@@ -31,6 +31,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate` | [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md) |
 | `colonne bronze popolate con i valori di un'altra colonna` | [LL-008](LL-008_csv-bronze-schema-per-nome.md) |
 | `compact vdisk completato ma il file resta della stessa dimensione` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
+| `ConcurrentAppendException su una tabella Gold al primo tentativo, riuscito al retry` | [LL-038](LL-038_task-incrementale-parte-prima-dei-suoi-input.md) |
 | `CONFIG_NOT_AVAILABLE.SERVERLESS_DELTA_SCHEMA_AUTO_MERGE_ENABLED: Configuration spark.databricks.delta.schema.autoMerge.enabled is not available` | [LL-028](LL-028_serverless-schema-evolution-merge.md) |
 | `Configuration ... is not supported in serverless environments` | [LL-028](LL-028_serverless-schema-evolution-merge.md) |
 | `conteggi corretti ma contenuti spostati di una posizione` | [LL-008](LL-008_csv-bronze-schema-per-nome.md) |

@@ -7,6 +7,7 @@ sintomi:
   - "il log del notebook incrementale riporta 0 chiavi impattate"
   - "un task parte allo stesso secondo dei bronze pur leggendo tabelle silver dello stesso job"
   - "una dipendenza dichiarata nello YAML del job non compare nel DAG del job deployato"
+  - "ConcurrentAppendException su una tabella Gold al primo tentativo, riuscito al retry"
 tag: [databricks, dab, workflow, dag, incrementale, dq]
 stadio: regola-documentata
 automatizzabile: true
@@ -30,6 +31,8 @@ MERGE vuoto, SUCCESS. Il giorno dopo filtrava solo la nuova data, quindi il cari
 - In un job, **ogni task che legge una tabella scritta da un altro task dello stesso job deve averlo tra gli antenati**
   (`depends_on` diretto o indiretto). Vale doppio per i notebook incrementali per `run_date`: se partono prima, perdono il
   giorno per sempre.
+- **Due task dello stesso job che scrivono la stessa tabella devono essere ordinati** (uno antenato dell'altro): in
+  parallelo Delta rifiuta il secondo commit (`ConcurrentAppendException`) e il retry nasconde il problema.
 - Niente chiavi duplicate negli YAML dei job.
 - Entrambe le regole sono verificate da `tests/test_workflows_alignment.py` (tabelle lette/scritte ricavate dalle costanti
   `TARGET_TABLE` / `FULL_TARGET` / `SRC_*` dei notebook).
@@ -43,3 +46,5 @@ task senza dipendenze, in Databricks Jobs, parte subito: nessun errore, solo dat
 - 2026-10-15 · run del 15/10: `silver_prep_prep_sped` 08:15:00→08:16:41, `storico_liste_uniche` 08:18:25→08:23:32;
   `logistica_curated.prep_sped` con un solo `_silver_load_date` (2026-09-02). Stesso controllo su tutti i job: un
   `depends_on` duplicato in `gold_a_stock_mensile` (datamart). Worklog 2026-10-15-02.
+- 2026-10-16 · `logistica_carichi`: `gold_late_arriving_handler` e `gold_f_carico` scrivevano `F_CARICO` in parallelo
+  (`ConcurrentAppendException` a ogni run, salvato dal retry). Regola estesa a scrittura-scrittura. Worklog 2026-10-16-01.
