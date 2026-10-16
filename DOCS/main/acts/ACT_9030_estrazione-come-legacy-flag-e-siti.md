@@ -104,8 +104,36 @@ del job ODI non cambia. Restano a finestra sulla data `track/spedizioni` (nessun
    altrimenti le righe "non ancora estratte" crescono senza limite. Da aggiungere ai passi di go-live con
    `IGNORE_ODI_FLAG=0` e `schedule_pause_status` prod.
 
+## Runbook recupero di ottobre (passo 4)
+L'estrattore carica in memoria tutte le righe di una tabella (`fetchall` + dedup): un recupero di tutto ottobre in un colpo
+solo (milioni di righe di liste e bolle) rischia di esaurire la memoria di odi3. Si recupera **un giorno alla volta, come
+il legacy**: per ogni giorno D, finestra chiusa sui timbri `[D, D+1)` (= quello che l'ODI ha preso quel giorno), scritta
+nella cartella di D. Solo le tabelle con `selection`; gli snapshot restano esclusi (`run_date` passata, [[LL-006]]).
+L'invio (`azcopy --overwrite=ifSourceNewer`) carica solo i file cambiati.
+
+1. Copia su odi3 (utente, da PC con MobaXterm nella home): `extract_oracle_to_landing.py`, `config.yaml`
+   (`/opt/landing/app/scripts/landing_simulator/`), `extract_and_send.sh` (`/opt/landing/bin/`), con backup numerato.
+2. Prova: `sudo -u svc_landing env DRYRUN=1 SYSTEMS=logistix,stat DO_CDTDW=0 /opt/landing/bin/extract_and_send.sh dev logistico`
+   → nel log `selezione legacy_flag` / `selezione parent`.
+3. Recupero 01–16/10 (in background, come `svc_landing`, log in `/var/log/landing/recupero_ottobre.log`):
+   `SYSTEMS=logistix,stat DO_CDTDW=0 EXTRACT_EXTRA="--stamp-from D --stamp-to D+1 --tables <12 tabelle>"
+   extract_and_send.sh dev logistico D` per D = 01..16.
+4. Databricks: giorni 01–16 in ordine crescente (`carichi`, `trasporti` senza `bronze_automezzi` fino al 13,
+   `prep_sped`, `datamart`; `giacenze` solo 12–16), chiusura sul 16 con `process_from=2026-09-30`, `datamart` 30/09;
+   confronto prima/dopo e con CDT_DW giorno per giorno.
+
 ## Diario
 - 2026-10-16 · Analisi e confronto con CDT_DW (sopra). Worklog 2026-10-16-02 (siti).
+- 2026-10-16 · Siti: prova a 19 siti pulita, rilascio `workflows` **v0.1.16** (PR #40), deploy CI verificato: i 4 job
+  hanno 19 siti. Estrattore: verifica contro Oracle (worklog 2026-10-16-03), in attesa di copia su odi3.
+- 2026-10-16 · Estrattore su odi3 (utente): `diff` del `config.yaml` = solo le righe nuove di selezione; installati
+  `extract_oracle_to_landing.py` (38.480 B), `config.yaml` (14.102 B), `extract_and_send.sh` (9.500 B) con
+  `cp --backup=numbered` → backup `.~1~`. ⚠️ `--backup=numbered` rinomina l'originale e crea il nuovo file da zero:
+  proprietario `root` e `extract_and_send.sh` **non eseguibile**; ripristinati con `chown/chmod --reference=<file>.~1~`
+  (da ricordare nelle copie future). Prova `DRYRUN=1`: 156 righe `selezione` (8 tabelle Logistix × 19 siti + 4 STAT).
+- 2026-10-16 · Estrazione di recupero 01–16/10 su odi3 (giorno per giorno, timbri `[D, D+1)`, 12 tabelle): 16/16
+  `status OK`, `errors=0`, invio `failed=0`; da 0,02 GB (05/10, lunedì: l'ODI quella mattina ha preso solo la domenica)
+  a 1,08 GB (14/10) al giorno, 2–4 minuti per giorno, 42 minuti in tutto.
 
 ## Esito
 _(in corso)_
