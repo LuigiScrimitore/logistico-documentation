@@ -264,6 +264,20 @@ def _stamp_bind(d: date) -> int:
     return int(d.strftime("%Y%m%d") + "0000")
 
 
+YEAR_J = re.compile(r"^YEAR_J\(([A-Z][A-Z0-9_]*)\)$")
+
+
+def _key_expr(k: str) -> str:
+    """Elemento di parent.keys: una colonna oppure YEAR_J(<colonna>) = anno della data giuliana.
+    I numeri di riepilogo si riciclano negli anni: il legacy collega liste e riepiloghi dello STESSO anno
+    (worklog 2026-10-16-05). Lo 0 non e' una data giuliana valida per Oracle -> NULL."""
+    m = YEAR_J.match((k or "").strip().upper())
+    if m:
+        c = _validate_ident(m.group(1), "parent.keys")
+        return f"CASE WHEN {c} > 0 THEN TO_CHAR(TO_DATE({c}, 'J'), 'YYYY') END"
+    return _validate_ident(k, "parent.keys")
+
+
 def selection_where(sys_spec: SystemSpec, table: TableSpec, ctx: SelectionCtx,
                     binds: dict[str, Any], depth: int = 0) -> str:
     """Condizione WHERE della selezione legacy_flag / parent (ricorsiva sul padre). Sola lettura."""
@@ -295,8 +309,8 @@ def selection_where(sys_spec: SystemSpec, table: TableSpec, ctx: SelectionCtx,
         parent = (sys_spec.tables or {}).get(table.parent_table)
         if parent is None or not table.parent_keys:
             raise ValueError(f"{table.name}: selection=parent richiede parent.table e parent.keys validi")
-        child_cols = ", ".join(_validate_ident(k[0], "parent.keys") for k in table.parent_keys)
-        parent_cols = ", ".join(_validate_ident(k[1], "parent.keys") for k in table.parent_keys)
+        child_cols = ", ".join(_key_expr(k[0]) for k in table.parent_keys)
+        parent_cols = ", ".join(_key_expr(k[1]) for k in table.parent_keys)
         psrc = _validate_ident(parent.src_obj(), "tabella padre")
         pfrom = f"{_validate_ident(sys_spec.schema, 'schema')}.{psrc}" if sys_spec.schema else f"{psrc}@{{DBLINK}}"
         pwhere = selection_where(sys_spec, parent, ctx, binds, depth + 1)

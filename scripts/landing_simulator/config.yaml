@@ -171,7 +171,8 @@ systems:
         selection: parent           # riepiloghi delle liste selezionate, come il legacy (ACT_9030)
         parent:
           table: storico_liste
-          keys: [[RPLPR_SITO, LSPRL_SITO], [RPLPR_NRO_RIEPILOGO, LSPRL_NRO_RIEPILOGO], [RPLPR_COD_NEGOZIO, LSPRL_COD_NEGOZIO]]
+          # stesso anno di preparazione: i numeri di riepilogo si riciclano negli anni (come il legacy, worklog 2026-10-16-05)
+          keys: [[RPLPR_SITO, LSPRL_SITO], [RPLPR_NRO_RIEPILOGO, LSPRL_NRO_RIEPILOGO], [RPLPR_COD_NEGOZIO, LSPRL_COD_NEGOZIO], ["YEAR_J(RPLPR_DATA_PREPARAZ)", "YEAR_J(LSPRL_DATA_PREPARAZ)"]]
         columns: []
       testate_bolle:
         mode: delta

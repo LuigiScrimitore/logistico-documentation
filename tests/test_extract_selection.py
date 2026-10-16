@@ -45,7 +45,9 @@ def test_righe_carico_dai_carichi_selezionati():
 
 def test_liste_e_riepiloghi_dalle_bolle_emesse():
     sql, _ = _q("stat", "storico_riepiloghi")
-    assert "(RPLPR_SITO, RPLPR_NRO_RIEPILOGO, RPLPR_COD_NEGOZIO) IN (SELECT LSPRL_SITO" in sql
+    # stesso anno di preparazione: i numeri di riepilogo si riciclano negli anni (worklog 2026-10-16-05)
+    assert ("(RPLPR_SITO, RPLPR_NRO_RIEPILOGO, RPLPR_COD_NEGOZIO, CASE WHEN RPLPR_DATA_PREPARAZ > 0 THEN "
+            "TO_CHAR(TO_DATE(RPLPR_DATA_PREPARAZ, 'J'), 'YYYY') END) IN (SELECT LSPRL_SITO") in sql
     assert "(LSPRL_SITO, LSPRL_COD_NEGOZIO, LSPRL_NRO_BOLLA, LSPRL_DATA_BOLLA) IN (SELECT TEBO_SITO" in sql
     assert "(TEBO_STATO = 'E' AND TEBO_FLAG_ESTRAZIONE_DWH = 'N')" in sql
     assert "TEBO_DATA_ESTRAZIONE_DWH >= :stamp_from" in sql
