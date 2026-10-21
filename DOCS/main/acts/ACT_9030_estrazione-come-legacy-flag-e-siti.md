@@ -152,6 +152,7 @@ Punti aperti:
 2. **Bolle vecchie riemesse**: il 12/10 13:36 l'ODI ha timbrato 27 bolle 2018–2025 → ~9.900 prelievi di quegli anni in
    `F_PREP_SPED` (giorni parziali, il Gold non ha storico prima del 31/08/2026). Stesso comportamento del legacy; decidere
    se tenerle o filtrare le date fuori dal perimetro.
-3. Riepiloghi da rigenerare con l'estrattore corretto (worklog 2026-10-16-05).
+3. ✅ Riepiloghi: v2 su odi3 solo il 21/10 (685 riepiloghi vecchi rientrati dal 17/10, `prep_sped` 17/10 FAILED);
+   rigenerati 01–21/10 e ricaricati, 0 righe pre-2026 (worklog 2026-10-21-01).
 4. Libreria: correzione `julian_to_date` (worklog 2026-10-16-04) già nel wheel sul Volume e in `logistico-lib` v1.0.6.
 5. Go-live: l'estrattore deve scrivere lui il flag (passo 5 del piano).

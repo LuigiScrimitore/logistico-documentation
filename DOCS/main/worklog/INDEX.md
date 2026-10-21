@@ -4,12 +4,16 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Estrattore: i riepiloghi collegati alle liste vanno presi dello stesso anno (numeri riciclati) — correzione + pulizia di 666 riepiloghi 2019–2025](2026-10-16-05_riepiloghi-stesso-anno.md) · 2026-10-16 · monorepo `PR dedicata`
+**Ultimo push:** [Rinomina vettore resa definitiva su dev: wheel ricaricato, schema migrato (rename, dati preservati), deploy_dev CI = success](2026-10-21-04_vettore-migrazione-e-deploy.md) · 2026-10-21 · monorepo `doc su main`
 
-**66 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**70 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-10-21 | `doc su main` | [Rinomina vettore resa definitiva su dev: wheel ricaricato, schema migrato (rename, dati preservati), deploy_dev CI = success](2026-10-21-04_vettore-migrazione-e-deploy.md) | ACT_9031 | ADR-0028 ADR-0025 | — | Q-01 |
+| 2026-10-21 | `diretto su main (rinomina modello gold/silver)` | [Rinomina CORRIERE_COD -> VETTORE_COD (requisito cliente, scope colonna+tabella): 18 file + dimensione LU_VETTORE](2026-10-21-03_rinomina-vettore-cod.md) | ACT_9031 | ADR-0028 | — | Q-01 |
+| 2026-10-21 | `diretto su main (doc + notebook gold additivo)` | [F_CARICO: aggiunti i diagnostici GG_* al gold (ACT_9031); rinomina vettore + flag scarti + scad stock tracciati come da decidere](2026-10-21-02_f-carico-gg-e-mappa-colonne.md) | ACT_9031 ACT_9029 | — | — | Q-01 |
+| 2026-10-21 | `PR solo doc` | [Riepiloghi: estrattore v2 (stesso anno) installato su odi3 solo il 21/10 — 685 riepiloghi vecchi rientrati dal 17/10, rigenerazione 01–21/10 e ricarico](2026-10-21-01_riepiloghi-v2-odi3-ricarico.md) | ACT_9030 | — | — | OP-INF-4 |
 | 2026-10-16 | `PR dedicata` | [Estrattore: i riepiloghi collegati alle liste vanno presi dello stesso anno (numeri riciclati) — correzione + pulizia di 666 riepiloghi 2019–2025](2026-10-16-05_riepiloghi-stesso-anno.md) | ACT_9030 | — | LL-006 | OP-INF-4 |
 | 2026-10-16 | `PR dedicata` | [julian_to_date: una data '0' faceva fallire il job su serverless (to_date ANSI) — correzione nella libreria + wheel ricaricato sul Volume](2026-10-16-04_julian-to-date-zero-ansi.md) | ACT_9030 ACT_9027 | ADR-0025 | LL-022 | — |
 | 2026-10-16 | `PR dedicata` | [Estrattore landing: selezione come il legacy (timbro ODI in sola lettura, righe collegate dai documenti) al posto della finestra sulle date](2026-10-16-03_estrattore-selezione-come-legacy.md) | ACT_9030 | — | LL-006 | OP-INF-4 |

@@ -70,3 +70,42 @@ Uno strumento `scripts/quadratura/extract_f_carico.py` (READ-ONLY, riusa la conn
 - **Prossimo (fase 3, misure senza soglia)**: confronto valori di QTA_CARICO, QTA_UF_CARICO, QTA_ORD_FORN,
   PES_CARICO, VOL_CARICO, VAL_COSTO_CARICO per chiave (SITO+NUM_DOC+NUM_ETICH), ODI vs gold **cloud** (22-24),
   evidenziando **tutte** le differenze (nessuna soglia). Serve export gold cloud→Volume→download.
+- **2026-10-11 · Verifica "come viene popolata" per TUTTE le 49 colonne gold** (richiesta utente su tabella
+  annotata DECISIONE): tracciata la derivazione esatta dal codice (`silver_prep_carico.py` v2.0.0,
+  `gold_f_carico.py` v4.0.0, `attach_carico_dimensions`/`attach_carico_peso_volume` in `logistica_utils/utils.py`).
+  Tabella completa in `quadratura_f_carico_mappa_colonne.md` (sez. "Come viene popolata ogni colonna gold").
+  **Esiti chiave**:
+  - **Correzioni mappa**: `ART_COD` (riga 12) è **non portata** (obsoleta), non rinominata; la radice/variante
+    derivano da `ART_RADICE_ID` (62) / `ART_VAR_LOGIS_ID` (60). (segnalazione utente corretta)
+  - **Derivate/ricalcolate (non copiano l'ODI → quadrare per prime)**: `FASCIA_ORA_ID` (da ora),
+    `STESSO_IMB_CARICO_FLAG` (ricalcolato), `QTA_CARICO`, `NUM_IMB_FORN_CARICO`, `QTA_ORD_FORN` (OP-CAR-3, COLLI),
+    `PES_CARICO`/`VOL_CARICO` (formula ODI da `LU_ART_UNITA_LOGISTICA`), `DATA_SCAD_CARICO` (da pesata, non FK ODI),
+    `DATA_PREV_CONS_FORN` (= data conferma ordine).
+  - **Popolazione CDT_DW (gg 22, 25.556 righe)**: GG_* tutti 100% → importabili; `NUM_PLT_CARICO` sempre 1
+    (coincide con gold); VETTORE/STESSO_IMB/GIORNO_SCAD_* popolati 100%; CARICO_INCOMPLETO_FLAG 0% nel campione.
+- **2026-10-11 · Verifica calcolo LEGACY ODI per colonna** (richiesta "come viene calcolata, su CDT_SA o CDT_ESTR"):
+  trovati i sorgenti PL/SQL legacy (fuori repo, sul Desktop → memoria [[logistico-legacy-odi-sources-fcarico]]).
+  Catena: Logistix → **CDT_ESTR** (`V_CARICO_ORDINARIO`→WL2→WL3→WL4→T_CARICO) → **CDT_SA** (T_CARICO_TMP_P2,
+  lookup S_*, E_CARICO) → **CDT_DW** (post-load UPDATE). Dettaglio per-colonna in
+  `quadratura_f_carico_mappa_colonne.md` (sez. "Calcolo legacy ODI"). **Correzioni/scoperte**:
+  - `CARICO_INCOMPLETO_FLAG` NON è vuota per design → calcolata in CDT_DW da **E_CARICO** (scarti/doppioni);
+  - `AFFID_TEMPI_FORN_COD` è una **banda derivata** dal delta giorni DATA_CARICO−DATA_PREV_CONS_FORN (CDT_SA);
+  - `QTA_ORD_FORN` legacy = distribuzione CEIL/FLOOR degenere + residuo → **SUM gruppo = MAX_QTA_ORD**: la nostra
+    OP-CAR-3 opz.B è equivalente SUM-invariante ✅;
+  - `GIORNO_SCAD_STOCK_ID` = scad stock, else scad carico; `GIORNO_SCAD_CARICO_PREC_ID` via SP dedicata;
+  - date = **JDN** `TO_DATE(x,'J')`;
+  - **mancano sul disco**: def. vista `V_CARICO_ORDINARIO` (FASCIA_ORA_ID, STESSO_IMB_CARICO_FLAG, QTA/PES/VOL) e
+    il mapping OWB che calcola i **GG_***.
+- **2026-10-11 (cont.) · Estrazione da Oracle live** (VPN, `all_views`/`all_source` via `quadratura_f_carico.connect_oracle`):
+  recuperati testo vista `CDT_ESTR.V_CARICO_ORDINARIO` e SP `CDT_DW.SP_INS_GIORNO_SCAD_CARICO_PREC`.
+  **Conferme dalla vista** (port fedele): `ORA_CARICO`=LPAD(NVL(ora,0),4,'0'), `FASCIA_ORA_ID`=SUBSTR(..,1,2),
+  `STESSO_IMB_CARICO_FLAG`=DECODE(eff_forn−sito,0,1,0), `QTA_CARICO`=nrcolli*pzxcart, `QTA_UF_CARICO`=psp_qta_uf_ril,
+  `NUM_IMB_FORN_CARICO`, `NUM_PLT_CARICO`=1, **`DATA_SCAD_CARICO`=p.psp_data_scadenza (pesata)**,
+  `DATA_PREV_CONS_FORN`=t.stcar_data_confe_ord → **tutti identici al nostro gold** (annullati i "da quadrare" precedenti
+  su DATA_SCAD_CARICO e STESSO_IMB_CARICO_FLAG).
+  **GG_\* ricavati empiricamente e confermati 100% (gg22)**: VITA_RESID=SCAD−CARICO, PREV_CONS=PREV_CONS−EMIS,
+  EFF_CONS=CARICO−EMIS, RITARDO=CARICO−PREV_CONS (=EFF−PREV) → tutti derivabili dalle date già nel gold.
+  **PES/VOL/ART_MODL_PES**: vista=NULL (G5) ma **CDT_DW.F_CARICO li ha valorizzati** (ri-calcolo DW) → il nostro
+  ricalcolo da anagrafica è **quadrabile**. **VAL_COSTO_CARICO valorizzato sul 26% (gg22)** → **OP-CAR-1 da riconsiderare**
+  (non del tutto dismesso; vista: qta_carico × c.stkultstock).
+  Sorgenti estratti in scratchpad (`V_CARICO_ORDINARIO.sql`, `SP_INS_GIORNO_SCAD_CARICO_PREC.sql`).
