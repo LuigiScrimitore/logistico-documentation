@@ -4,12 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Rinomina vettore resa definitiva su dev: wheel ricaricato, schema migrato (rename, dati preservati), deploy_dev CI = success](2026-10-21-04_vettore-migrazione-e-deploy.md) · 2026-10-21 · monorepo `doc su main`
+**Ultimo push:** [Gap copertura F_CARICO (82%) chiuso: la join testata scartava ~17% etichette dei carichi multi-ordine (merge key senza ordine)](2026-10-21-05_fix-join-testata-multiordine.md) · 2026-10-21 · monorepo `diretto su main (fix silver + doc)`
 
-**70 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**71 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-10-21 | `diretto su main (fix silver + doc)` | [Gap copertura F_CARICO (82%) chiuso: la join testata scartava ~17% etichette dei carichi multi-ordine (merge key senza ordine)](2026-10-21-05_fix-join-testata-multiordine.md) | ACT_9033 ACT_9032 | — | LL-039 | Q-01 |
 | 2026-10-21 | `doc su main` | [Rinomina vettore resa definitiva su dev: wheel ricaricato, schema migrato (rename, dati preservati), deploy_dev CI = success](2026-10-21-04_vettore-migrazione-e-deploy.md) | ACT_9031 | ADR-0028 ADR-0025 | — | Q-01 |
 | 2026-10-21 | `diretto su main (rinomina modello gold/silver)` | [Rinomina CORRIERE_COD -> VETTORE_COD (requisito cliente, scope colonna+tabella): 18 file + dimensione LU_VETTORE](2026-10-21-03_rinomina-vettore-cod.md) | ACT_9031 | ADR-0028 | — | Q-01 |
 | 2026-10-21 | `diretto su main (doc + notebook gold additivo)` | [F_CARICO: aggiunti i diagnostici GG_* al gold (ACT_9031); rinomina vettore + flag scarti + scad stock tracciati come da decidere](2026-10-21-02_f-carico-gg-e-mappa-colonne.md) | ACT_9031 ACT_9029 | — | — | Q-01 |
