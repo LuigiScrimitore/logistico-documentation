@@ -50,3 +50,13 @@ creata dà `TABLE_OR_VIEW_NOT_FOUND`: la robustezza NO_DATA va portata anche lì
   lgcx) fallivano su `input_file_name` → fix `_metadata.file_path` = SUCCESS; `pesate`/`tracciace178` (non seedati)
   fallivano su PATH_NOT_FOUND → fix skip-forzato = SUCCESS (NO_DATA). Silver corrispondenti restano rossi con
   `TABLE_OR_VIEW_NOT_FOUND` finché la tabella bronze non esiste (residuo di robustezza NO_DATA lato Silver).
+- 2026-10-22 · francesco.foconi · **ricomparso** su 5 bronze anagrafiche (`s_logistix`, `wl1_mag_sito_storico`,
+  `apvpunto_vendita`, `tipo_attivita`, `buoni_eco`) + `gold_lu_from_cdtdw`: usavano ancora il `try/except
+  AnalysisException` stretto (non coperti dalla fix 2026-09-01) → l'estrazione odi3 del 22/10 non consegnò quelle
+  anagrafiche → `logistica_landing_ingestion` e `logistica_dim_refresh` **FAILED** (`[PATH_NOT_FOUND]`). Conferma
+  chiave: su serverless (Spark Connect) `PATH_NOT_FOUND` è una `pyspark.errors...AnalysisException` che **non eredita**
+  da `pyspark.sql.utils.AnalysisException` → l'except non la cattura. **Fix generalizzata ([[ACT_9034]])**: helper
+  SSOT `resolve_landing_snapshot_path(day_path_fn, run_date, dbutils)` in `utils` — verifica col `fs.ls` quale giorno
+  esiste **prima** della `spark.read` (niente eccezione sfuggita) e, per gli snapshot FULL, **retrocede all'ultimo
+  disponibile** (fallback, non solo NO_DATA). Deploy dev + re-run 22/10 = SUCCESS (fallback al 21/10). Preferibile
+  al skip-forzato per le anagrafiche: la tabella resta a "stato corrente" invece di non aggiornarsi.

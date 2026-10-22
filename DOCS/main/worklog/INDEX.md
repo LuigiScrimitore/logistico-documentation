@@ -4,12 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Release completa: fix join testata (ACT_9033) + sistema quadratura (ACT_9032) su dev via CI](2026-10-21-06_release-fix-testata-e-quadratura.md) · 2026-10-21 · monorepo `main @eb61205`
+**Ultimo push:** [Resilienza landing snapshot: i job landing/dim_refresh non falliscono più se manca il giorno (ACT_9034)](2026-10-22-01_resilienza-landing-snapshot.md) · 2026-10-22 · monorepo `main @333b57e`
 
-**72 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**73 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-10-22 | `main @333b57e` | [Resilienza landing snapshot: i job landing/dim_refresh non falliscono più se manca il giorno (ACT_9034)](2026-10-22-01_resilienza-landing-snapshot.md) | ACT_9034 | — | LL-021 | — |
 | 2026-10-21 | `main @eb61205` | [Release completa: fix join testata (ACT_9033) + sistema quadratura (ACT_9032) su dev via CI](2026-10-21-06_release-fix-testata-e-quadratura.md) | ACT_9033 ACT_9032 | — | LL-039 | Q-01 |
 | 2026-10-21 | `diretto su main (fix silver + doc)` | [Gap copertura F_CARICO (82%) chiuso: la join testata scartava ~17% etichette dei carichi multi-ordine (merge key senza ordine)](2026-10-21-05_fix-join-testata-multiordine.md) | ACT_9033 ACT_9032 | — | LL-039 | Q-01 |
 | 2026-10-21 | `doc su main` | [Rinomina vettore resa definitiva su dev: wheel ricaricato, schema migrato (rename, dati preservati), deploy_dev CI = success](2026-10-21-04_vettore-migrazione-e-deploy.md) | ACT_9031 | ADR-0028 ADR-0025 | — | Q-01 |

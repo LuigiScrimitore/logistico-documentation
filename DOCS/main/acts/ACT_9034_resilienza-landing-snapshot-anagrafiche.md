@@ -1,11 +1,11 @@
 # ACT_9034 · Resilienza landing snapshot: anagrafiche/lookup non falliscono se manca il giorno
 
-**Status**: in-progress
+**Status**: done
 **Type**: fix (robustezza pipeline)
 **Origin**: incident 2026-10-22 — job `logistica_landing_ingestion` e `logistica_dim_refresh` FAILED
 **Sprint**: trasversale / operatività DEV
-**Created**: 2026-10-22   **Closed**: —   **Owner**: team
-**OP collegati**: —   **Lesson**: [[LL-040]]
+**Created**: 2026-10-22   **Closed**: 2026-10-22   **Owner**: team
+**OP collegati**: —   **Lesson**: [[LL-021]]
 
 ## Sintomo
 Run schedulate del 2026-10-22: `logistica_landing_ingestion` e `logistica_dim_refresh` **FAILED**.
@@ -54,14 +54,18 @@ Un giorno di **mancata consegna** di un'anagrafica/lookup **non fa fallire** la 
   `logistica_dim_refresh` sul 2026-10-22 → **SUCCESS**, con WARNING di fallback sui 5+lookup e le FULL
   anagrafiche/LU che conservano l'ultimo snapshot (21/10).
 
-## Esito (in corso — 2026-10-22)
-- **Codice implementato + validato localmente** ✅
-  - `utils.py`: helper `resolve_landing_snapshot_path` (SSOT). Unit test: giorno presente / fallback /
-    nessuno / finestra lookback / folder-senza-file = tutti verdi.
-  - Wiring nei 6 notebook (5 bronze + `gold_lu_from_cdtdw`). `py_compile` OK su tutti.
-- **Wheel**: `logistica_utils-1.0.0` ricompilato da `lib/` e **ricaricato sul Volume** `_wheels`
-  (backup del precedente in `_wheels/backup/…-20261022-103756.whl`). Verificato: l'helper è nel wheel sul Volume.
-  Additivo/retro-compatibile → i notebook vecchi non ne risentono finché non vengono deployati.
-- **Da fare per chiudere**: deploy notebooks ai job MI via GitLab `deploy_dev` (richiede VPN+PAT, push solo
-  main, no tag [[LL-031]]) → re-run `logistica_landing_ingestion` + `logistica_dim_refresh` sul 22/10 →
-  atteso SUCCESS con WARNING di fallback (snapshot 21/10). Poi worklog + indicazioni al team.
+## Esito (VALIDATO 2026-10-22) ✅
+- **Codice** (helper SSOT `resolve_landing_snapshot_path` + wiring 6 notebook): `py_compile` OK, unit test
+  helper verde (giorno presente / fallback / nessuno / finestra lookback / folder-senza-file).
+- **Wheel** `logistica_utils-1.0.0` ricompilato e **ricaricato sul Volume** `_wheels` (backup precedente in
+  `_wheels/backup/…-20261022-103756.whl`); helper verificato nel wheel sul Volume.
+- **Rilascio**: monorepo @333b57e → GitHub (lib/workflows/documentation) → GitLab **lib v1.0.8** + **workflows
+  v0.1.19** (push solo main, no tag [[LL-031]]). `deploy_dev` (CI MI) = success; verificato che il notebook
+  sul job MI contiene l'helper.
+- **Re-run 22/10** (riproduce lo scenario, file del 22 assenti):
+  - `logistica_landing_ingestion` run 389330436923961 = **SUCCESS**; i 5 bronze prima KO (`s_logistix`,
+    `wl1_mag_sito_storico`, `apvpunto_vendita`, `buoni_eco`, `tipo_attivita`) = **SUCCESS** (fallback al 21/10).
+  - `logistica_dim_refresh` run 426194327104925 = **SUCCESS**; `gold_lu_from_cdtdw` = **SUCCESS** (fallback).
+- **Residuo lato odi3**: resta da capire perché l'estrazione anagrafiche/lookup del 22 non ha consegnato
+  (relay, fuori da questo ambiente). Da domani la pipeline **non fallisce più** per un giorno mancante
+  (usa l'ultimo snapshot entro 7 gg; oltre, torna a fallire per far emergere l'outage).
