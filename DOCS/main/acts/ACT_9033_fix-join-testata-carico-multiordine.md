@@ -28,6 +28,15 @@ carichi che abbiamo già** (95% delle etichette mancanti sta in carichi presenti
 (con dedup di sicurezza su df_t), invece di `(SITO,CARICO,DATA,ORDINE)`. Copertura F_CARICO attesa **82%→~99%**.
 Le misure (QTA/UF/PES/VOL dalla pesata/dettaglio) quadrano quindi su ~tutte le etichette.
 
+## Residuo ~2% (indagato 2026-10-21) — NON è l'MSI
+Ipotesi iniziale (join su radice+variante come il legacy invece che su MSI): **smentita** — su 10-15
+`join MSI` e `join radice+variante` danno **identico 27.829**. Il residuo (~264 su 28.191 = 0,9%, + ~98 su
+carico+bolla+ordine) è un **disallineamento `(bolla, ordine)` pesata↔dettaglio**: l'MSI della pesata esiste nel
+carico (0 pesate orfane) ma sotto una `(bolla, ordine)` diversa dalla riga. Recuperarle richiederebbe **allentare
+la join** (→ fan-out, etichette duplicate con articolo errato) o un'indagine di coerenza a monte (sospetti: dedup
+`silver_pesate` [[LL-034]], derivazione bolla). **Decisione: lasciare** (98,7% copertura è sufficiente; fix rischiosa
+per lo 0,9%). Open point minore: coerenza (bolla,ordine) pesata vs dettaglio in silver.
+
 ## Trade-off / nota
 Il bronze ha **già** collassato i multi-ordine → la testata è per-carico: gli attributi d'ordine
 (`DATA_EMISSIONE_ORD`, `DATA_PREV_CONS_FORN`) sono quelli dell'**unico ordine superstite** per i carichi

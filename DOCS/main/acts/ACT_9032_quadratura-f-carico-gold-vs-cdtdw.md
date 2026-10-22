@@ -36,7 +36,17 @@ Idea: caricare file giornalieri dell'ODI e confrontarli in Databricks con il gol
 3. Run notebook `quadratura_f_carico_misure` (dopo `gold_f_carico`) → tabelle risultati.
 4. SAL: query/dashboard su `quadratura_f_carico_misure` (match% per giorno/misura) + copertura.
 
-## Da fare
-- Validare il notebook su dev (upload file 22-23 + run) — scrive SOLO tabelle nuove (additivo, safe).
-- Schedulare l'estrazione giornaliera (dove Oracle è raggiungibile) + task notebook nel job.
-- (SAL) vista/dashboard sulla tabella risultati.
+## Esito Fase 1 — MVP operativo (VALIDATO 2026-10-21) ✅
+Estratti ODI 13-16/10 (radice/variante) → Volume `.../quadratura/f_carico/cdtdw/` → run notebook (serverless) =
+SUCCESS → tabelle `gold_dev.logistica_dm.quadratura_f_carico_misure` (432 righe) + `..._copertura`.
+**Risultati (13-16, etichette comuni)**:
+- QTA_CARICO / QTA_UF_CARICO / PES_CARICO / VOL_CARICO = **100% match** (delta 0; VOL a meno di arrotondamento float).
+- QTA_ORD_FORN 56,9% (OP-CAR-3 allocazione), VAL_COSTO_CARICO 44,4% (OP-CAR-1, gold=0) — scostamenti **noti**.
+- **Copertura 97,5–98,7%** per giorno (dopo fix [[ACT_9033]]).
+Fix notebook durante la validazione: `norm_sito`/`norm_num` con `.cast()` corretto; tolleranza MATCH **relativa**
+(EPS_ABS 0,5 + EPS_REL 1e-5) per i volumi.
+
+## Da fare (Fase 2 — sistema schedulato)
+- Schedulare l'estrazione ODI giornaliera (relay/odi3, dove Oracle è raggiungibile) → Volume.
+- Aggiungere il notebook come **task nel job** (dopo `gold_f_carico`) → tabelle aggiornate ogni giorno.
+- (SAL) vista/dashboard sulla tabella risultati (match% per giorno/misura + copertura).
