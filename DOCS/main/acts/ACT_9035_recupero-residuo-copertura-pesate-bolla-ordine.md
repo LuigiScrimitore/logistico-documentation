@@ -83,7 +83,19 @@ lookup è ≤1 riga per chiave (filtri di unicità).
   giorno-sito. Settembre quadra di fatto come ottobre; residuo = dato storico, non errore pipeline.
 - **202608** (solo 31/08) non incluso. `config_backfill.yaml` committato tra gli script per i backfill futuri.
 
+## Quadratura completa settembre + ottobre (confronto corretto 1 riga/etichetta)
+- **Metodologia**: il confronto va fatto **deduplicato per etichetta su entrambi i lati** (il notebook già lo fa
+  con dropDuplicates; una query manuale che somma i duplicati ODI gonfia falsamente il delta). L'ODI legacy ha
+  **duplicati** di etichetta (DQ legacy) che il gold non ha.
+- **Settembre** (ODI 684.597 etich · copertura 99,99%): QTA −0,005%, UF −0,005%, PES −0,001%, VOL −0,005%.
+- **Ottobre 1–21** (ODI 468.423 etich · copertura 99,76% dopo fix 21/10): QTA −0,001%, UF −0,001%, PES −0,000%, VOL −0,001%.
+- **Fix 21/10**: il giorno 21 era quasi vuoto in gold (358/29.547) — pipeline normale non lo aveva completato.
+  Backfill carichi 15–21/10 (run 722614107552743) → gold ottobre 439k→467k etich, copertura 93,76%→99,76%.
+- Estratto ODI ottobre completo 1–21 (468.482 righe) sul Volume; tabelle `quadratura_f_carico_*` rigenerate.
+
 ## Conclusione
-Tutto il gold F_CARICO disponibile (settembre + ottobre) è **completo, su logica v2.2.0, copertura ~100%**
-e **misure ~100% a livello etichetta** vs CDT_DW. Punti aperti indipendenti: OP-CAR-1 (costo), OP-CAR-3
-(allocazione ord. forn.), fedeltà date per-ordine ([[ACT_9033]] opzione B).
+Gold F_CARICO (set+ott) **completo su v2.2.0**, **misure allineate a ≥99,99%** e **copertura ~99,8–100%** vs CDT_DW.
+Il residuo frazionale **non è errore pipeline**: duplicati del legacy (deduplicati nel gold) + correzioni sorgente
+post-congelamento legacy (dato storico). Un 100,000% bit-exact su mesi storici non è ottenibile. Punti aperti
+indipendenti: OP-CAR-1 (costo), OP-CAR-3 (allocazione ord. forn.), fedeltà date per-ordine ([[ACT_9033]] opz. B),
+e lo 0,2% copertura ottobre residuo (singole etichette sparse, basso ROI).
