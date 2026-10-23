@@ -54,11 +54,18 @@ lookup è ≤1 riga per chiave (filtri di unicità).
     nell'ODI legacy** (`etich_odi_duplicate=4`, gold_duplicate=0) — artefatto sorgente, non errore gold.
 - **Quadratura pubblicata rigenerata** (run 323182479522217) per 13–16/10 → tabelle
   `gold_dev.logistica_dm.quadratura_f_carico_*` ora riflettono il ~100%.
-- **Backfill storico** (richiesta "tutto il gold ok"): il re-run aveva toccato solo 202610. Ri-processato
-  anche **202609** (run 802857354255333: `silver_prep_carico`+`gold_f_carico`, v2.2.0, letto da sorgenti
-  silver esistenti — no landing). Risultato gold F_CARICO: **202609 94.784 → 155.705** righe (= etichette
-  distinte, **0 fan-out**; settembre era molto sotto-popolato dal codice pre-fix), **202610 439.229 invariato**.
-  Ora **entrambi i mesi del gold sono sulla stessa logica v2.2.0**.
-- **Aperti/note**: settembre **non quadrato vs ODI** (manca l'estratto ODI di settembre sul Volume; stessa
-  logica di ottobre, che quadra ~100%). **202608** (solo 31/08) presente nelle sorgenti silver ma non in gold
-  (coda finestra estrazione) — non incluso. Downstream di F_CARICO (aggregati/LAD) da rinfrescare al prossimo run.
+- **Backfill storico — 2 fasi** (richiesta "tutto il gold ok"):
+  1. Re-process logica su 202610 e 202609 da sorgenti silver esistenti (v2.2.0). Emerse però **buchi in
+     settembre**: solo **20/30 giorni**, 94.784 righe (03–08, 23, 25–27 mancanti) → settembre era stato
+     **ingerito parzialmente** in ramp-up, non solo mal-processato.
+  2. **Ricarico dalla sorgente** (estrazione Oracle per range, backfill reale): `extract_oracle_to_landing.py`
+     con **config dedicata** `config_backfill.yaml` (selection disattivata → `--from-date/--to-date` +
+     `--ignore-odi-flag` effettivi) su `sto_tes_carichi,sto_righe_carico,pesate`, 3 blocchi da 10 gg
+     (~1,23M righe). Copia sul **Volume** `landing_dev` (l'abfss landing non è scrivibile dall'utente, ACT_9034)
+     → pipeline mirata ramo F_CARICO (run 552522402835429: bronze con `landing_base_path`=Volume per 09/10-20-30,
+     silver `full_refresh`, prep, gold).
+  - **Risultato gold F_CARICO 202609: 94.784 → 657.114 righe** (= etichette distinte, **0 fan-out**), **30/30
+    giorni** coperti, distribuzione feriale/weekend regolare. 202610 invariato (439.229). Entrambi i mesi su v2.2.0.
+- **Aperti/note**: settembre **non quadrato vs ODI** (manca l'estratto ODI di settembre). **202608** (solo 31/08)
+  non incluso. Downstream di F_CARICO (aggregati/LAD) da rinfrescare al prossimo run. `config_backfill.yaml`
+  da committare tra gli script per i backfill futuri.

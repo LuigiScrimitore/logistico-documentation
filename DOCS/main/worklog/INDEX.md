@@ -4,12 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Recupero residuo ~2% copertura F_CARICO: riconciliazione (bolla,ordine) pesata→dettaglio, copertura ~100% (ACT_9035)](2026-10-23-01_recupero-residuo-copertura-pesate.md) · 2026-10-23 · monorepo `main @b329553`
+**Ultimo push:** [Backfill settembre F_CARICO: da 20 giorni incompleti (94.784) a 30/30 completi (657.114) — tutto il gold su v2.2.0](2026-10-23-02_backfill-settembre-fcarico-completo.md) · 2026-10-23 · monorepo `main`
 
-**74 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**75 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-10-23 | `main` | [Backfill settembre F_CARICO: da 20 giorni incompleti (94.784) a 30/30 completi (657.114) — tutto il gold su v2.2.0](2026-10-23-02_backfill-settembre-fcarico-completo.md) | ACT_9035 | — | — | Q-01 |
 | 2026-10-23 | `main @b329553` | [Recupero residuo ~2% copertura F_CARICO: riconciliazione (bolla,ordine) pesata→dettaglio, copertura ~100% (ACT_9035)](2026-10-23-01_recupero-residuo-copertura-pesate.md) | ACT_9035 | — | — | Q-01 |
 | 2026-10-22 | `main @333b57e` | [Resilienza landing snapshot: i job landing/dim_refresh non falliscono più se manca il giorno (ACT_9034)](2026-10-22-01_resilienza-landing-snapshot.md) | ACT_9034 | — | LL-021 | — |
 | 2026-10-21 | `main @eb61205` | [Release completa: fix join testata (ACT_9033) + sistema quadratura (ACT_9032) su dev via CI](2026-10-21-06_release-fix-testata-e-quadratura.md) | ACT_9033 ACT_9032 | — | LL-039 | Q-01 |
