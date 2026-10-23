@@ -73,7 +73,17 @@ lookup è ≤1 riga per chiave (filtri di unicità).
   *di oggi* vs snapshot **congelato** del legacy (dati storici corretti dopo il consumo ODI). Ottobre quadra 100%
   perché recente (stessa epoca).
 - **Downstream rinfrescati** (run 294584164203101): `gold_late_arriving_handler` + `gold_a_inbound_mensile` 202609 = SUCCESS.
-- **APERTO — migliorare copertura inizio settembre**: ri-estrarre **pesate agosto** (`--from-date 2026-08-01
-  --to-date 2026-08-31 --tables pesate`) → bronze_pesate(08/31) → silver_pesate full_refresh → prep+gold →
-  ri-quadratura. **BLOCCATO: VPN giù** (Oracle `DPY-6005 timeout`). Riprendere appena la VPN torna.
+- **Copertura inizio settembre — RISOLTA**: ri-estratte **pesate agosto** (688.221 righe; le bolle di fine
+  agosto dei carichi di inizio settembre) → bronze_pesate(08/31) → silver_pesate full_refresh → prep+gold
+  (run 468804598453575) → ri-quadratura (run quad_sett_v2). **Copertura settembre 96% → 100,0%** (01/09
+  45%→100%; ODI 684.597 / gold 684.598).
+- **Misure settembre — chiarimento grana**: il match per `(giorno,sito)` risultava ~85-93%, ma a **livello
+  etichetta QTA è identica su 684.439/684.555 = 99,98%** (solo **116** diverse, delta medio ~195 = correzioni
+  storiche reali). L'85% era artefatto: una sola etichetta che drifta fa fallire il MATCH dell'intero gruppo
+  giorno-sito. Settembre quadra di fatto come ottobre; residuo = dato storico, non errore pipeline.
 - **202608** (solo 31/08) non incluso. `config_backfill.yaml` committato tra gli script per i backfill futuri.
+
+## Conclusione
+Tutto il gold F_CARICO disponibile (settembre + ottobre) è **completo, su logica v2.2.0, copertura ~100%**
+e **misure ~100% a livello etichetta** vs CDT_DW. Punti aperti indipendenti: OP-CAR-1 (costo), OP-CAR-3
+(allocazione ord. forn.), fedeltà date per-ordine ([[ACT_9033]] opzione B).
