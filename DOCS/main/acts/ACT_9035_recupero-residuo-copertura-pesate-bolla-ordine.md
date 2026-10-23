@@ -66,6 +66,14 @@ lookup è ≤1 riga per chiave (filtri di unicità).
      silver `full_refresh`, prep, gold).
   - **Risultato gold F_CARICO 202609: 94.784 → 657.114 righe** (= etichette distinte, **0 fan-out**), **30/30
     giorni** coperti, distribuzione feriale/weekend regolare. 202610 invariato (439.229). Entrambi i mesi su v2.2.0.
-- **Aperti/note**: settembre **non quadrato vs ODI** (manca l'estratto ODI di settembre). **202608** (solo 31/08)
-  non incluso. Downstream di F_CARICO (aggregati/LAD) da rinfrescare al prossimo run. `config_backfill.yaml`
-  da committare tra gli script per i backfill futuri.
+- **Quadratura settembre** (estratto ODI CDT_DW 30 gg = 684.717 righe → Volume → notebook, run 389456114113878):
+  copertura **96,0%**, misure comuni QTA 85,8% / UF 85,0% / PES 87,2% / VOL 93,5% (ORD_FORN 6,9%, COSTO 15,5%).
+  Due effetti (non bug): (a) **copertura bassa a inizio mese** (01/09: 45%, poi ~100% dal ~10) = effetto-bordo
+  della finestra pesate (bolle datate agosto fuori range); (b) **drift misure** su etichette comuni = ri-estrazione
+  *di oggi* vs snapshot **congelato** del legacy (dati storici corretti dopo il consumo ODI). Ottobre quadra 100%
+  perché recente (stessa epoca).
+- **Downstream rinfrescati** (run 294584164203101): `gold_late_arriving_handler` + `gold_a_inbound_mensile` 202609 = SUCCESS.
+- **APERTO — migliorare copertura inizio settembre**: ri-estrarre **pesate agosto** (`--from-date 2026-08-01
+  --to-date 2026-08-31 --tables pesate`) → bronze_pesate(08/31) → silver_pesate full_refresh → prep+gold →
+  ri-quadratura. **BLOCCATO: VPN giù** (Oracle `DPY-6005 timeout`). Riprendere appena la VPN torna.
+- **202608** (solo 31/08) non incluso. `config_backfill.yaml` committato tra gli script per i backfill futuri.
