@@ -52,5 +52,13 @@ lookup è ≤1 riga per chiave (filtri di unicità).
   - Gold 13–16: **113.020 righe = 113.020 etichette distinte** → **0 fan-out**.
   - Misure chiave (QTA/UF/PES/VOL) quadrano sulle comuni; unico scarto = **4 etichette duplicate
     nell'ODI legacy** (`etich_odi_duplicate=4`, gold_duplicate=0) — artefatto sorgente, non errore gold.
-- **Nota**: le tabelle pubblicate `gold_dev.logistica_dm.quadratura_f_carico_*` vanno rigenerate al prossimo
-  run della quadratura per riflettere il ~100% (dato già verificato via query diretta).
+- **Quadratura pubblicata rigenerata** (run 323182479522217) per 13–16/10 → tabelle
+  `gold_dev.logistica_dm.quadratura_f_carico_*` ora riflettono il ~100%.
+- **Backfill storico** (richiesta "tutto il gold ok"): il re-run aveva toccato solo 202610. Ri-processato
+  anche **202609** (run 802857354255333: `silver_prep_carico`+`gold_f_carico`, v2.2.0, letto da sorgenti
+  silver esistenti — no landing). Risultato gold F_CARICO: **202609 94.784 → 155.705** righe (= etichette
+  distinte, **0 fan-out**; settembre era molto sotto-popolato dal codice pre-fix), **202610 439.229 invariato**.
+  Ora **entrambi i mesi del gold sono sulla stessa logica v2.2.0**.
+- **Aperti/note**: settembre **non quadrato vs ODI** (manca l'estratto ODI di settembre sul Volume; stessa
+  logica di ottobre, che quadra ~100%). **202608** (solo 31/08) presente nelle sorgenti silver ma non in gold
+  (coda finestra estrazione) — non incluso. Downstream di F_CARICO (aggregati/LAD) da rinfrescare al prossimo run.
