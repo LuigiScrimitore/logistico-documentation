@@ -1,10 +1,10 @@
 # ACT_9035 · Recupero del residuo ~2% copertura F_CARICO: riconciliazione (bolla, ordine) pesata↔dettaglio
 
-**Status**: in-progress (validato sul dato, in deploy)
+**Status**: done
 **Type**: fix (copertura / correttezza)
 **Origin**: follow-up [[ACT_9033]] (residuo ~2% lasciato come open point) — richiesta "va risolto subito"
 **Sprint**: trasversale quadratura / FASE 2 Wave A Carichi
-**Created**: 2026-10-23   **Closed**: —   **Owner**: team
+**Created**: 2026-10-23   **Closed**: 2026-10-23   **Owner**: team
 **OP collegati**: Q-01   **Dipende da**: silver pesata/carico_dettaglio
 
 ## Contesto / sintomo
@@ -43,5 +43,14 @@ lookup è ≤1 riga per chiave (filtri di unicità).
 - **Validazione simulazione SQL (13–16/10, warehouse)** ✅: su 113.020 pesate, dopo riconciliazione
   **agganciate 113.020 / non agganciate 0**; righe in output = 113.020 (**0 fan-out**); max righe
   dettaglio per 5-chiave = 1. Recupero del residuo 2.229 completo, senza duplicati.
-- **Da fare**: deploy dev (solo notebook, no wheel) + re-run `logistica_carichi` (202610) + quadratura
-  → conferma copertura ~100% end-to-end; worklog + chiusura.
+- **Release**: monorepo @b329553 → GitHub (workflows @6143c71, documentation) → GitLab workflows
+  **v0.1.20** (push solo main, no tag [[LL-031]]); `deploy_dev` (MI) success, notebook v2.2.0 verificato sul job MI.
+- **Re-run DEV** `logistica_carichi` (run 533031850033208, 202610) = **SUCCESS** → gold F_CARICO ricostruito.
+- **Verifica end-to-end (13–16/10, warehouse)** ✅:
+  - Copertura vs CDT_DW: 13/10 **100,0%**, 14/10 **100,0%**, 15/10 **100,0%** (28.191/28.191), 16/10 **100,0%**
+    (prima ~98%).
+  - Gold 13–16: **113.020 righe = 113.020 etichette distinte** → **0 fan-out**.
+  - Misure chiave (QTA/UF/PES/VOL) quadrano sulle comuni; unico scarto = **4 etichette duplicate
+    nell'ODI legacy** (`etich_odi_duplicate=4`, gold_duplicate=0) — artefatto sorgente, non errore gold.
+- **Nota**: le tabelle pubblicate `gold_dev.logistica_dm.quadratura_f_carico_*` vanno rigenerate al prossimo
+  run della quadratura per riflettere il ~100% (dato già verificato via query diretta).
