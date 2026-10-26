@@ -93,9 +93,24 @@ lookup è ≤1 riga per chiave (filtri di unicità).
   Backfill carichi 15–21/10 (run 722614107552743) → gold ottobre 439k→467k etich, copertura 93,76%→99,76%.
 - Estratto ODI ottobre completo 1–21 (468.482 righe) sul Volume; tabelle `quadratura_f_carico_*` rigenerate.
 
+## Indagine residuo copertura (richiesta "capire e risolvere")
+- **La copertura reale è ~99,99%**, non 99,8%: la query con `max`+inner-join sotto-contava le comuni per via
+  delle righe con chiave NULL. Anti-join pulito: **ottobre 20 etichette mancanti su 468.423** (99,996%).
+- **Causa**: per le mancanti la **testata del carico c'è** ma la **pesata no** in bronze. Estraiamo le pesate
+  **per data-bolla**: se la bolla cade fuori dalle finestre backfill, la pesata si perde pur essendo il carico in range.
+- **Fix parziale**: ri-estratte pesate del gap [15/09→14/10] (run 254248143407424) → ottobre **20→10 mancanti**
+  (recuperato il cluster del carico 557431). Restano **10 (ott) + 42 (set)** = ~0,002–0,006%.
+- **Residuo irriducibile**: per questi il carico HA pesate in bronze, ma le **specifiche etichette non esistono
+  in nessuna pesata del source Oracle attuale** (0 ovunque). Sono etichette presenti nello **snapshot congelato
+  del legacy ma rimosse/corrette alla sorgente** dopo il consumo ODI → **non recuperabili per estrazione**. Il gold
+  riflette il source attuale, corretto. **Non è un errore di pipeline.**
+- **Fix strutturale consigliato** (futuro): estrarre le pesate in **modalità parent** (collegate ai carichi
+  selezionati) invece che per data-bolla → ogni carico prende tutte le sue pesate a prescindere dalla bolla,
+  azzerando i residui "da finestra". Non risolve però gli assenti dal source.
+
 ## Conclusione
-Gold F_CARICO (set+ott) **completo su v2.2.0**, **misure allineate a ≥99,99%** e **copertura ~99,8–100%** vs CDT_DW.
-Il residuo frazionale **non è errore pipeline**: duplicati del legacy (deduplicati nel gold) + correzioni sorgente
-post-congelamento legacy (dato storico). Un 100,000% bit-exact su mesi storici non è ottenibile. Punti aperti
-indipendenti: OP-CAR-1 (costo), OP-CAR-3 (allocazione ord. forn.), fedeltà date per-ordine ([[ACT_9033]] opz. B),
-e lo 0,2% copertura ottobre residuo (singole etichette sparse, basso ROI).
+Gold F_CARICO (set+ott) **completo su v2.2.0**, **misure ≥99,99%** e **copertura 99,99%** vs CDT_DW. I residui
+frazionali (≤0,01%) sono **artefatti/assenze del legacy**: duplicati (che il gold deduplica) e etichette non più
+presenti nel source. Il 100,000% bit-exact su mesi storici **non è ottenibile** (vorrebbe dire riportare dati
+vecchi/assenti del legacy). Punti aperti indipendenti: OP-CAR-1 (costo), OP-CAR-3 (allocazione ord. forn.),
+fedeltà date per-ordine ([[ACT_9033]] opz. B), estrazione pesate parent-mode (robustezza backfill).
