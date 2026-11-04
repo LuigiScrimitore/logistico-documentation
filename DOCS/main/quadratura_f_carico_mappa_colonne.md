@@ -16,7 +16,7 @@
 > **Correzione 2026-10-11** (verifica codice, [[ACT_9029]]): `ART_COD` (riga 12) è **non portata** (obsoleta), non rinominata. La radice/variante del gold derivano da `ART_RADICE_ID` (riga 62) e `ART_VAR_LOGIS_ID` (riga 60), non da `ART_COD`.
 
 - **Chiavi (grain etichetta)**: `MAG_SITO_COD`+`NUM_DOC_CARICO`+`NUM_ETICH` (ODI) ↔ `SITO_COD`+`NUM_DOC_CARICO`+`NUM_ETICH` (gold) → **corrispondono**.
-- **Tutte le misure** sono nel gold (QTA_CARICO, QTA_UF_CARICO, QTA_ORD_FORN, PES_CARICO, VOL_CARICO, VAL_COSTO_CARICO, + NUM_*).
+- **Misure nel gold**: QTA_CARICO, QTA_UF_CARICO, PES_CARICO, VOL_CARICO, + NUM_*. `QTA_ORD_FORN` e `VAL_COSTO_CARICO` **rimosse** (decisione SAL, [[ADR-0029]], 2026-10-30).
 - Il gap 63→49 è fisiologico: l'ODI porta **surrogate ID** e diagnostici `GG_*` non replicati; il gold aggiunge **tecniche/NAT**.
 
 ## Mappa ODI → Gold (63 colonne, ordine F_CARICO)
@@ -48,7 +48,7 @@
 | 24 | NUM_DOC_CARICO | ✅ presente | NUM_DOC_CARICO | **chiave** |
 | 25 | NUM_BOLLA_FORN | ✅ presente | NUM_BOLLA_FORN | |
 | 26 | NUM_ORD_FORN | ✅ presente | NUM_ORD_FORN | |
-| 27 | QTA_ORD_FORN | ✅ presente | QTA_ORD_FORN | **misura** |
+| 27 | QTA_ORD_FORN | ⛔ rimossa ([[ADR-0029]]) | — | misura derivata, non del carico (OP-CAR-8) |
 | 28 | NUM_PZ_IMB_ORD_FORN | ✅ presente | NUM_PZ_IMB_ORD_FORN | |
 | 29 | NUM_PZ_IMB_EFF_FORN | ✅ presente | NUM_PZ_IMB_EFF_FORN | |
 | 30 | NUM_PZ_IMB_SITO | ✅ presente | NUM_PZ_IMB_SITO | |
@@ -68,7 +68,7 @@
 | 44 | NUM_PLT_CARICO | ✅ presente | NUM_PLT_CARICO | |
 | 45 | PES_CARICO | ✅ presente | PES_CARICO | **misura** |
 | 46 | VOL_CARICO | ✅ presente | VOL_CARICO | **misura** |
-| 47 | VAL_COSTO_CARICO | ✅ presente | VAL_COSTO_CARICO | **misura** (OP-CAR-1: spesso NULL, sorgente dismessa) |
+| 47 | VAL_COSTO_CARICO | ⛔ rimossa ([[ADR-0029]]) | — | misura derivata, non del carico |
 | 48 | GG_VITA_RESID_ART_CARICO | ⛔ non portata | — | diagnostico GG_* |
 | 49 | GG_PREV_CONS | ⛔ non portata | — | diagnostico GG_* |
 | 50 | GG_EFF_CONS | ⛔ non portata | — | diagnostico GG_* |
@@ -136,13 +136,13 @@ Legenda tipo: **D**=diretta/passthrough · **C**=calcolata/derivata (⚠️ non 
 | NUM_IMB_STRATO_PLT_FORN | D | `MAX(r....)` |
 | NUM_STRATO_PLT_FORN | D | `MAX(r....)` |
 | NUM_IMB_ULT_STRATO_FORN | D | `MAX(r....)` |
-| QTA_ORD_FORN | C | OP-CAR-3 opz.B: `MAX(QTA_ORDINATA)` sulla 1ª etichetta del gruppo (sito,ordine,radice,var), 0 altrove. ⚠️ unità **COLLI** |
+| ~~QTA_ORD_FORN~~ | — | **rimossa** ([[ADR-0029]]). Storico — OP-CAR-3 opz.B: `MAX(QTA_ORDINATA)` sulla 1ª etichetta del gruppo (sito,ordine,radice,var), 0 altrove. ⚠️ unità **COLLI** |
 | QTA_UF_CARICO | D | `p.QTA_UF_RILEVATA` |
 | QTA_CARICO | C | `p.NRO_COLLI × p.PZ_PER_CARTONE` (pezzi) |
 | NUM_IMB_CARICO | D | `p.NRO_COLLI` |
 | NUM_IMB_FORN_CARICO | C | `QTA_CARICO / NULLIF(NUM_PZ_IMB_EFF_FORN,0)` |
 | NUM_PLT_CARICO | K | `lit(1)` — costante (verificato: CDT_DW sempre 1) |
-| VAL_COSTO_CARICO | N | `lit(None)` — NULL (OP-CAR-1, sorgente dismessa) |
+| ~~VAL_COSTO_CARICO~~ | — | **rimossa** ([[ADR-0029]]); prima `lit(None)` (OP-CAR-1) |
 | ART_MODL_PES_COD | L | `coalesce(ul.ART_MODL_PES_COD,1)` da `LU_ART_UNITA_LOGISTICA` |
 | PES_CARICO | C/L | `se ART_MODL_PES_COD>1 → QTA_UF_CARICO; else → NVL(peso_lordo,0)×QTA_UF_CARICO` (formula ODI) |
 | VOL_CARICO | C/L | `QTA_CARICO × alt_pz × lar_pz × pro_pz / 1000` (formula ODI) |
@@ -214,7 +214,7 @@ Catena ODI: **Logistix → CDT_ESTR (viste+WLn) → CDT_SA (T_CARICO_TMP_P2, loo
 | ART_COD | CDT_ESTR | portato nel legacy (il nostro gold lo **omette**, usa radice+variante) |
 
 **Implicazioni quadratura**:
-- `QTA_ORD_FORN`: quadra a livello **gruppo** (SUM = qta ordinata), non per singola etichetta → confrontare per gruppo.
+- `QTA_ORD_FORN`, `VAL_COSTO_CARICO`: fuori dal perimetro di quadratura (rimosse, [[ADR-0029]]).
 - `AFFID_TEMPI_FORN_COD`: **derivabile** dalle date del gold (banda delta-giorni) → rivedere il "escludere".
 - `GIORNO_SCAD_STOCK_ID` e `CARICO_INCOMPLETO_FLAG`: calcolati tardi (stock/scarti) → importabili solo ricostruendo stock-scad e meccanismo scarti.
 - `V_CARICO_ORDINARIO` (def.) e mapping GG_* mancano sul disco → per la quadratura di FASCIA_ORA_ID/STESSO_IMB_CARICO_FLAG/GG_* serve o la vista o il confronto diretto dei valori ODI vs gold.

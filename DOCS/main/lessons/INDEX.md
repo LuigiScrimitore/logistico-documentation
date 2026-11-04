@@ -4,7 +4,7 @@
 > `python scripts/lessons/lessons_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0020](../adr/0020_lezioni_operative.md).
 
-**38 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
+**40 lezioni.** Stadio: 🟡 lezione · 🔵 regola documentata · 🟢 guardrail automatico
 
 ## Cerca per sintomo
 
@@ -47,6 +47,8 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `Error: Saved plan is stale — the state was changed by another operation after the plan was created` | [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) |
 | `Error: unable to create directory at /Workspace/data-platform/.../<user>/files` | [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md) |
 | `errori tipo '<tool> has no command named sh/-c' all'avvio del job` | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) |
+| `etichette multi-bolla nel gold molto più numerose che in CDT_DW (1004 vs 88)` | [LL-040](LL-040_quadratura-solo-sul-comune-nasconde-sovraconteggio.md) |
+| `F_CARICO gold ha un giorno con poche righe (es. 3.774 invece di ~30.000) mentre landing e bronze sono completi` | [LL-041](LL-041_watermark-salta-giorno-ricaricato.md) |
 | `F_CARICO ha righe duplicate sulla grana [SITO_COD, NUM_DOC_CARICO, NUM_ETICH, NUM_BOLLA_FORN] identiche tranne QTA_ORD_FORN (una copia con la qta, l'altra 0.0)` | [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md) |
 | `fstrim: 0 B (0 bytes) trimmed` | [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) |
 | `get_sito_alias_map restituisce una mappa vuota o parziale` | [LL-025](LL-025_alias-map-sito-cast-e-completezza.md) |
@@ -82,6 +84,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `lo stesso progetto vive su due remote (es. GitHub e GitLab) con ruoli diversi` | [LL-009](LL-009_due-host-git-una-direzione.md) |
 | `lo strato silver/curated ha un solo _silver_load_date anche se le sorgenti crescono ogni giorno` | [LL-038](LL-038_task-incrementale-parte-prima-dei-suoi-input.md) |
 | `MAX(DATA_*) restituisce una data tipo +2461321-01-01` | [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md) |
+| `N_GOLD > N_ODI nella copertura mentre le misure risultano perfette` | [LL-040](LL-040_quadratura-solo-sul-comune-nasconde-sovraconteggio.md) |
 | `nel log si vedono solo messaggi JVM di Delta, nessun avanzamento Python` | [LL-002](LL-002_vacuum-per-database-unbuffered.md) |
 | `nel Package Registry il pacchetto ha una versione diversa dal tag che l'ha pubblicato` | [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) |
 | `nessun duplicato sulla chiave ma i totali non tornano` | [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) |
@@ -96,10 +99,12 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `partizione con colonna di partizione NULL e DWH_UPDATED_AT vecchio` | [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) |
 | `PERMISSION_DENIED / does not have <privilegio> su un catalog/schema Unity Catalog` | [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) |
 | `pesate/carichi storici assenti in landing per date già consumate dall'ODI di produzione` | [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md) |
+| `quadratura F_CARICO verde (misure delta 0,0%, noMatch 0/392) ma il gold ha più righe e più UF dell'ODI` | [LL-040](LL-040_quadratura-solo-sul-comune-nasconde-sovraconteggio.md) |
 | `quadratura KO su tutte le chiavi sito×giorno` | [LL-005](LL-005_delta-costante-accusa-colonna.md) |
 | `quadratura: una colonna di delta è esattamente 100,0% su ogni sito e ogni data` | [LL-005](LL-005_delta-costante-accusa-colonna.md) |
 | `seed landing DEV vuoto/parziale sulle transazionali nonostante la finestra data contenga record` | [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md) |
 | `Settings > CI/CD > Runners mostra un runner attivo (pallino verde) ma i job non partono` | [LL-011](LL-011_pipeline-stuck-runner-taggato.md) |
+| `silver carico_dettaglio ha molte meno righe del bronze per una DATA_CARICO` | [LL-041](LL-041_watermark-salta-giorno-ricaricato.md) |
 | `silver ha una sola data mentre il fact gold ne ha diverse` | [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) |
 | `silver.logistica.pesata ha 2 righe per la stessa etichetta (SITO, ETICHET_NRO) con DATA_BOLLA diverse e BOLLA_NRO placeholder vs reale` | [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md) |
 | `ssh esce con 255 prima ancora di connettersi` | [LL-036](LL-036_hostkey-in-ssh_config-client-bad-option.md) |
@@ -109,6 +114,7 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | `terraform data \"databricks_jobs\" \"all\" va in errore: due job con lo stesso nome esatto` | [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md) |
 | `Terraform has no command named \"sh\". Did you mean \"push\"?` | [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) |
 | `terraform init/plan passano ma apply fallisce con 'User does not have CREATE SCHEMA` | [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) |
+| `testata presente in bronze ma assente in silver carico_testata` | [LL-041](LL-041_watermark-salta-giorno-ricaricato.md) |
 | `un .env o un dato reale è finito in un repo condiviso/consegnato` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `un file del monorepo non compare in nessun repo derivato dopo lo split` | [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md) |
 | `un file in include: non produce alcuna risorsa nel bundle` | [LL-015](LL-015_dab-file-inclusi-resources-jobs.md) |
@@ -172,6 +178,8 @@ Parti da qui: il sintomo e' come il problema si presenta, non il nome dell'attiv
 | [LL-036](LL-036_hostkey-in-ssh_config-client-bad-option.md) | HostKey nel ssh_config CLIENT → Bad configuration option: ogni ssh in uscita muore | 🔵 regola | `ssh`, `ssh_config`, `on-prem`, `infra` | ACT_OP-INF-4 | 2026-10-01 |
 | [LL-037](LL-037_dab-dev-pausa-schedule-solo-se-non-dichiarato.md) | DAB mode:development mette in pausa gli schedule solo se `pause_status` non è dichiarato — un UNPAUSED esplicito li lascia attivi in dev | 🔵 regola ⚠️ da automatizzare | `databricks`, `dab`, `schedule`, `deploy`, `dev`, `costi` | pausa-schedule-job-dev | 2026-10-09 |
 | [LL-038](LL-038_task-incrementale-parte-prima-dei-suoi-input.md) | Un task incrementale senza depends_on sui suoi input va verde ogni giorno senza caricare niente | 🔵 regola ⚠️ da automatizzare | `databricks`, `dab`, `workflow`, `dag`, `incrementale`, `dq` | prep-sped-vuota | 2026-10-15 |
+| [LL-040](LL-040_quadratura-solo-sul-comune-nasconde-sovraconteggio.md) | La quadratura delle misure sulle sole chiavi comuni nasconde il sovra-conteggio — controllare anche i totali | 🟢 guardrail | `quadratura`, `gold`, `carichi`, `dq`, `falso-positivo`, `pesate` | ACT_9037 | 2026-10-29 |
+| [LL-041](LL-041_watermark-salta-giorno-ricaricato.md) | Un giorno di landing riscritto dopo l'elaborazione viene saltato dal silver incrementale (watermark con ">") | 🔵 regola ⚠️ da automatizzare | `silver`, `incrementale`, `watermark`, `landing`, `bronze`, `carichi`, `recupero` | ACT_9038 | 2026-10-30 |
 
 ## Debito di automazione
 
@@ -192,6 +200,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md) — La chiave naturale della pesata non include DATA_BOLLA — instabile tra ri-estrazioni, duplica F_CARICO
 - [LL-037](LL-037_dab-dev-pausa-schedule-solo-se-non-dichiarato.md) — DAB mode:development mette in pausa gli schedule solo se `pause_status` non è dichiarato — un UNPAUSED esplicito li lascia attivi in dev
 - [LL-038](LL-038_task-incrementale-parte-prima-dei-suoi-input.md) — Un task incrementale senza depends_on sui suoi input va verde ogni giorno senza caricare niente
+- [LL-041](LL-041_watermark-salta-giorno-ricaricato.md) — Un giorno di landing riscritto dopo l'elaborazione viene saltato dal silver incrementale (watermark con ">")
 
 ## Per tag
 
@@ -201,9 +210,9 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`ansi`**: [LL-027](LL-027_serverless-ansi-trycast-parse.md)
 - **`azure`**: [LL-018](LL-018_auth-ok-non-significa-autorizzato.md)
 - **`backfill`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
-- **`bronze`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md) · [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) · [LL-025](LL-025_alias-map-sito-cast-e-completezza.md)
+- **`bronze`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md) · [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) · [LL-025](LL-025_alias-map-sito-cast-e-completezza.md) · [LL-041](LL-041_watermark-salta-giorno-ricaricato.md)
 - **`cache`**: [LL-029](LL-029_serverless-cache-persist-non-supportato.md)
-- **`carichi`**: [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md)
+- **`carichi`**: [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md) · [LL-040](LL-040_quadratura-solo-sul-comune-nasconde-sovraconteggio.md) · [LL-041](LL-041_watermark-salta-giorno-ricaricato.md)
 - **`cast`**: [LL-027](LL-027_serverless-ansi-trycast-parse.md)
 - **`cdc`**: [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md)
 - **`certificati`**: [LL-012](LL-012_certificate-verify-failed-ca-aziendale-container.md)
@@ -227,20 +236,21 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`diagnostica`**: [LL-005](LL-005_delta-costante-accusa-colonna.md)
 - **`disco`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md)
 - **`docker`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md) · [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md)
-- **`dq`**: [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md) · [LL-038](LL-038_task-incrementale-parte-prima-dei-suoi-input.md)
+- **`dq`**: [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md) · [LL-038](LL-038_task-incrementale-parte-prima-dei-suoi-input.md) · [LL-040](LL-040_quadratura-solo-sul-comune-nasconde-sovraconteggio.md)
 - **`duplicati`**: [LL-030](LL-030_dab-ci-root-path-change-duplica-job-terraform.md)
 - **`extractor`**: [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md)
+- **`falso-positivo`**: [LL-040](LL-040_quadratura-solo-sul-comune-nasconde-sovraconteggio.md)
 - **`full-refresh`**: [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md)
 - **`git`**: [LL-009](LL-009_due-host-git-una-direzione.md) · [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
 - **`gitlab`**: [LL-011](LL-011_pipeline-stuck-runner-taggato.md) · [LL-014](LL-014_gitlab-ci-image-entrypoint-non-shell.md) · [LL-016](LL-016_gitlab-protected-var-ref-protetto.md) · [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md) · [LL-031](LL-031_verifica-ci-dev-non-lanciare-deploy-prod-sul-tag.md)
-- **`gold`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) · [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md) · [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md)
+- **`gold`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md) · [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md) · [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md) · [LL-040](LL-040_quadratura-solo-sul-comune-nasconde-sovraconteggio.md)
 - **`governance`**: [LL-009](LL-009_due-host-git-una-direzione.md)
 - **`guardrail`**: [LL-007](LL-007_dag-derivato-dal-codice.md)
 - **`idempotenza`**: [LL-004](LL-004_partizioni-stale-dynamic-overwrite.md) · [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md)
-- **`incrementale`**: [LL-029](LL-029_serverless-cache-persist-non-supportato.md) · [LL-038](LL-038_task-incrementale-parte-prima-dei-suoi-input.md)
+- **`incrementale`**: [LL-029](LL-029_serverless-cache-persist-non-supportato.md) · [LL-038](LL-038_task-incrementale-parte-prima-dei-suoi-input.md) · [LL-041](LL-041_watermark-salta-giorno-ricaricato.md)
 - **`infra`**: [LL-035](LL-035_ssh-kex-legacy-rhel6-verso-openssh10.md) · [LL-036](LL-036_hostkey-in-ssh_config-client-bad-option.md)
 - **`julian`**: [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md)
-- **`landing`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md) · [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md)
+- **`landing`**: [LL-008](LL-008_csv-bronze-schema-per-nome.md) · [LL-024](LL-024_flag-cdc-odi-non-adatto-al-seed-storico.md) · [LL-041](LL-041_watermark-salta-giorno-ricaricato.md)
 - **`lockfile`**: [LL-019](LL-019_tfplan-apply-ci-lock-e-stato.md)
 - **`logging`**: [LL-003](LL-003_docker-exec-troncato-lock-derby.md)
 - **`logistica`**: [LL-025](LL-025_alias-map-sito-cast-e-completezza.md)
@@ -264,11 +274,12 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`performance`**: [LL-029](LL-029_serverless-cache-persist-non-supportato.md)
 - **`permessi`**: [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) · [LL-023](LL-023_dab-dev-root-path-in-home-per-sandbox.md) · [LL-032](LL-032_permessi-job-dab-nel-bundle-non-a-mano.md) · [LL-033](LL-033_run-as-mi-serve-grant-uc-sui-dati.md)
 - **`persist`**: [LL-029](LL-029_serverless-cache-persist-non-supportato.md)
-- **`pesate`**: [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md)
+- **`pesate`**: [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md) · [LL-040](LL-040_quadratura-solo-sul-comune-nasconde-sovraconteggio.md)
 - **`pip`**: [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md)
 - **`prod`**: [LL-031](LL-031_verifica-ci-dev-non-lanciare-deploy-prod-sul-tag.md)
 - **`python`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
-- **`quadratura`**: [LL-005](LL-005_delta-costante-accusa-colonna.md)
+- **`quadratura`**: [LL-005](LL-005_delta-costante-accusa-colonna.md) · [LL-040](LL-040_quadratura-solo-sul-comune-nasconde-sovraconteggio.md)
+- **`recupero`**: [LL-041](LL-041_watermark-salta-giorno-ricaricato.md)
 - **`relay`**: [LL-035](LL-035_ssh-kex-legacy-rhel6-verso-openssh10.md)
 - **`release`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md)
 - **`rhel6`**: [LL-035](LL-035_ssh-kex-legacy-rhel6-verso-openssh10.md)
@@ -284,7 +295,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`serverless`**: [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md) · [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) · [LL-027](LL-027_serverless-ansi-trycast-parse.md) · [LL-028](LL-028_serverless-schema-evolution-merge.md) · [LL-029](LL-029_serverless-cache-persist-non-supportato.md)
 - **`service-principal`**: [LL-033](LL-033_run-as-mi-serve-grant-uc-sui-dati.md)
 - **`sicurezza`**: [LL-010](LL-010_split-da-file-tracciati-niente-drop-silenziosi.md)
-- **`silver`**: [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md) · [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md) · [LL-027](LL-027_serverless-ansi-trycast-parse.md) · [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md)
+- **`silver`**: [LL-022](LL-022_date-logistix-sono-jdn-mai-cast-diretto.md) · [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md) · [LL-027](LL-027_serverless-ansi-trycast-parse.md) · [LL-034](LL-034_chiave-naturale-pesata-senza-data-bolla.md) · [LL-041](LL-041_watermark-salta-giorno-ricaricato.md)
 - **`sito`**: [LL-025](LL-025_alias-map-sito-cast-e-completezza.md) · [LL-026](LL-026_full-refresh-deve-fare-overwrite-non-merge.md)
 - **`snapshot`**: [LL-006](LL-006_fact-snapshot-storia-non-backfillabile.md)
 - **`spark`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md) · [LL-003](LL-003_docker-exec-troncato-lock-derby.md) · [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md)
@@ -301,6 +312,7 @@ Lezioni nate da difetti sui dati che **devono** diventare un check DQ o un test 
 - **`unity-catalog`**: [LL-018](LL-018_auth-ok-non-significa-autorizzato.md) · [LL-021](LL-021_uc-serverless-input-file-name-e-path-lazy.md) · [LL-033](LL-033_run-as-mi-serve-grant-uc-sui-dati.md)
 - **`vacuum`**: [LL-002](LL-002_vacuum-per-database-unbuffered.md)
 - **`variabili`**: [LL-016](LL-016_gitlab-protected-var-ref-protetto.md)
+- **`watermark`**: [LL-041](LL-041_watermark-salta-giorno-ricaricato.md)
 - **`wheel`**: [LL-013](LL-013_versione-wheel-dal-tag-non-da-setup.md) · [LL-020](LL-020_wheel-privato-su-serverless-pip-non-env.md) · [LL-025](LL-025_alias-map-sito-cast-e-completezza.md)
 - **`workflow`**: [LL-007](LL-007_dag-derivato-dal-codice.md) · [LL-038](LL-038_task-incrementale-parte-prima-dei-suoi-input.md)
 - **`wsl`**: [LL-001](LL-001_compact-vhdx-dipende-dal-trim.md)

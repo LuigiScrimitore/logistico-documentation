@@ -1,6 +1,6 @@
 # ADR-0012 · Ammanco (ordinato−ricevuto) calcolato in **pezzi**, unità omogenea
 
-**Status**: accepted (2026-07-05)
+**Status**: superseded da [[ADR-0029]] (2026-10-30) — ammanco rimosso da `A_INBOUND_MENSILE`; accepted 2026-07-05
 
 **Contesto**:
 L'aggregato `A_INBOUND_MENSILE` espone l'**ammanco** = quantità ordinata − ricevuta (misura di business,

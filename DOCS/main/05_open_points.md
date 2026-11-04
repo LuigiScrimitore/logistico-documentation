@@ -345,10 +345,10 @@ mantenendo i criteri già scritti (9 pipeline).
 Emersi durante la ri-certifica di `F_CARICO` e `F_PREP_SPED` con quadratura parametrica vs CDT_DW
 (`scripts/quadratura/quadratura_fact.py`). Dettaglio operativo in `09_runbook_recert_carichi_prepsped.md`.
 
-### OP-CAR-1 — `VAL_COSTO_CARICO` = NULL 🔵 FISIOLOGICO
+### OP-CAR-1 — `VAL_COSTO_CARICO` = NULL ⚪ SUPERATO (2026-10-30, [[ADR-0029]]: misura rimossa da F_CARICO)
 Sorgente `cndstostock` dismessa (dati fermi al 2020). Il campo resta NULL. Collegato a ST-01/ST-02.
 
-### OP-CAR-3 — `QTA_ORD_FORN` 🟢 RISOLTO + VALIDATO RUNTIME (opzione B, 2026-07-04; validato 2026-07-05)
+### OP-CAR-3 — `QTA_ORD_FORN` ⚪ SUPERATO (2026-10-30, [[ADR-0029]]: misura rimossa da F_CARICO; storico: opzione B 2026-07-04)
 La distribuzione della quantità ordinata fornitore (catena WL4, formula legacy) è degenere.
 **Risolto con opzione B:** `silver_prep_carico` ora porta `QTA_ORDINATA` (da `carico_dettaglio`) e la
 assegna alla **prima etichetta** del gruppo `(SITO_COD, ORDINE_NRO, ART_RADICE, ART_VAR)` via
@@ -380,6 +380,11 @@ Rimossa la colonna morta `AMMANCO_QTA` da `carico_dettaglio` (ammanco = concetto
 **Impatto downstream (FASE 5/6):** senza quantità ordinata non è calcolabile lo **scarto ricevimento**
 → `A_INBOUND_MENSILE` v4.0 non espone le misure di scarto e `kpi_qualita_ricevimento` è **bloccata**.
 Scegliendo A/B si riabilitano.
+
+### OP-CAR-8 — Ordinato e ammanco da derivare dal fatto ordini 🟠 APERTO (2026-10-30)
+Con [[ADR-0029]] (decisione SAL) `QTA_ORD_FORN` e `VAL_COSTO_CARICO` escono da F_CARICO: non sono misure del carico.
+Sospesi finché non esiste la fonte: `QTA_ORDINATA_TOT`/`AMMANCO_QTA_TOT`/`TASSO_AMMANCO` di `A_INBOUND_MENSILE` e il
+KPI `kpi_qualita_ricevimento`. Da reintrodurre derivandoli dal fatto ordini (e i costi da una fonte costi). Owner: team.
 
 ### OP-CAR-4 — Quadratura CARICO: due cause 🟢/🟠
 - **Causa A (RISOLTO 2026-07-02):** bug della quadratura, non della pipeline. `query_gold_kpi`

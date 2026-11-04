@@ -29,6 +29,9 @@ ALLOWED_ORPHANS = {
     "silver/cdt_estr/silver_t_trasp_mtv",        # non nella catena rebuilt-from-raw
     "silver/prep_spedizioni/silver_prep_bolle",  # non nel runner validato
     "gold/giacenze/gold_f_giacenze_monthly",     # aggregato mensile via gold_dm_giacenze_monthly
+    "gold/quadratura/quadratura_f_carico_misure",  # lanciato ad-hoc: quadratura vs CDT_DW (ACT_9032)
+    "bronze/carichi/backfill_act9038_integra_da_oracle",  # recupero storico una tantum (ACT_9038)
+    "bronze/carichi/backfill_act9038_ricarica_bronze_da_landing",  # recupero storico una tantum (ACT_9038)
 }
 
 
