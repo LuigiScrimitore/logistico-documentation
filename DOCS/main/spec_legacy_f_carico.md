@@ -41,6 +41,10 @@ da Oracle (`LOGISTICO_DATA\datarelay_compare\viste_legacy_carico.sql`) · `E` = 
   = DECODE(pz_cart_for - pz_cartone,0,1,0)`; `NUM_BOLLA_FORN = NVL(r.bolla,'0')` (= `PSP_NUMBOL` per la join);
   `ORA = LPAD(NVL(ora,0),4,'0')`; `FASCIA = SUBSTR(ora,1,2)`; `DATA_SCAD_CARICO = p.psp_data_scadenza`;
   `VAL_COSTO = qta * NVL(stkultstock,0)` (cndstostock outer); PES/VOL = NULL (ricalcolati a valle, "migrato al RAC").
+  **Arrotondamento di `VOL_CARICO` in CDT_DW: 2 decimali, mezzo per eccesso** (0,005 → 0,01). Il mapping DW non è
+  disponibile; la regola è ricavata dai dati: su set + 1-28/10 (1.317.958 righe) arrotondando così il volume coincide su
+  tutte le righe, mentre l'arrotondamento al pari lascia 6.407 righe diverse e il troncamento 161.458.
+  `PES_CARICO` coincide già senza arrotondare.
 
 ## 3. WL2 → WL4 → T_CARICO (CDT_ESTR)
 - **R-3.1** Nessuna dedup: i `MIN(ROWID)` di WL3/WL4 distinguono solo la prima riga del gruppo (sito, ordine, radice,

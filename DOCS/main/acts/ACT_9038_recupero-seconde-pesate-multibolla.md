@@ -190,6 +190,11 @@ gold = ODI (ott: 88), 4 misure 0,0%.
   tabella varianti (`DESCRIBE DETAIL … lastModified`); i carichi successivi non vengono scartati finché la tabella non è
   estratta ogni giorno. Settembre e 1-28 ottobre invariati (data ≤ 30/10).
 
+- 2026-11-05 · **VOL_CARICO arrotondato a 2 decimali come il legacy** (richiesta utente dopo il SAL): regola ricavata dai
+  dati (spec R-2.4: mezzo per eccesso → 0 righe diverse su 1.317.958; prima 315.293 righe con scarto ≤ 0,005).
+  Applicata nella formula condivisa `attach_carico_peso_volume` (lib), passando per un decimale a 6 cifre per non
+  ereditare il rumore del double (0,215 non diventa 0,21).
+
 ## Esito
 **2026-11-05 — giro M2 di DataRelay e lacuna 31/10–04/11.** DataRelay ha tolto la deduplica sulle 3 tabelle dei carichi e,
 per il solo giro del 05/11, ha allargato la finestra dei timbri a 6 giorni (report
