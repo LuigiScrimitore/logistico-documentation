@@ -1,6 +1,6 @@
 # ACT_9039 · Rimuovere `QTA_ORD_FORN` e `VAL_COSTO_CARICO` da F_CARICO e dai derivati
 
-**Status**: in-progress
+**Status**: rilasciato (2026-11-04 con ACT_9038: workflows v0.1.21, lib v1.0.9); resta la migrazione delle colonne in dev (SQL ADR-0029, la esegue l'utente)
 **Type**: change (modello)
 **Origin**: decisione SAL 2026-10-29/30 → [[ADR-0029]]
 **Fase / Wave**: FASE 2 — Wave A Carichi + aggregati

@@ -1,6 +1,6 @@
 # ACT_9038 · F_CARICO al 100%: recuperare le 2e pesate delle etichette multi-bolla (estrazione → bronze → silver)
 
-**Status**: in-review (quadratura raggiunta su dev; rilascio da fare)
+**Status**: rilasciato (2026-11-04: PR #45, GitLab workflows v0.1.21 / lib v1.0.9, deploy dev 63bcff1); restano il recupero 31/10–04/11 e la correzione DataRelay
 **Type**: fix (completezza dato)
 **Origin**: emerged — residuo di [[ACT_9037]] (copertura 99,983%, ~88 etichette/mese)
 **Fase / Wave**: FASE 2 — Wave A Carichi
@@ -191,6 +191,25 @@ gold = ODI (ott: 88), 4 misure 0,0%.
   estratta ogni giorno. Settembre e 1-28 ottobre invariati (data ≤ 30/10).
 
 ## Esito
+**2026-11-05 — giro M2 di DataRelay e lacuna 31/10–04/11.** DataRelay ha tolto la deduplica sulle 3 tabelle dei carichi e,
+per il solo giro del 05/11, ha allargato la finestra dei timbri a 6 giorni (report
+`Extractor_Relay/docs/report/REPORT_giro_2026-11-05_M2.md`: 0 righe scartate su 19 siti). Quadratura 29/10–03/11 vs
+CDT_DW: 31/10, 1/11, 2/11 e 3/11 al 100% (righe, UF, QTA; 3 etichette rinumerate); mancavano 7 righe il 29/10 e 658 il
+30/10, tutte su carichi timbrati il 31/10. **Causa**: `_P` (fotografia dopo il giro) era calcolata come D+1, ma dal
+31/10 al 04/11 il bronze non ha fotografie; le righe di dettaglio definitive (bolla reale) compaiono per la prima volta
+il 05/11 e restavano fuori. **Correzione** (`silver_prep_carico` v3.4.0): `_P` = primo giorno di landing effettivamente
+caricato dopo D (prima vista di testate e pesate arrivate dalla landing, non da Oracle); prima del primo giorno di
+landing (settembre, ricostruito da Oracle) resta D+1. Con fotografie continue il risultato è identico a prima.
+
+**2026-11-04 — rilasciato.** PR #45 unita (b39a07f) → GitHub (lib 141cd75, workflows d4006ba, documentation
+340658c) → GitLab solo `main` (workflows v0.1.21 63bcff1, lib v1.0.9 b00a8e5) → `deploy_dev` verificato (commit
+63bcff1 nel `metadata.json` del bundle, `silver_prep_carico` v3.3.0) → wheel ricaricato sul Volume (copia precedente in
+`_wheels/backup/…_20261104_prima_ACT9039.whl`). Dal 31/10 al 04/11 il job carichi era fallito ogni mattina sui task bronze
+(`DELTA_MERGE_UNRESOLVED_EXPRESSION … _first_seen_date`: codice vecchio sul bronze ricaricato) senza scrivere nulla:
+bronze/silver/gold sono rimasti allo stato quadrato del 30/10. **Recupero dei 5 giorni rinviato per decisione
+dell'utente** finché DataRelay non smette di deduplicare (la landing di quei giorni ha ancora la perdita delle 2e pesate):
+istruzioni a DataRelay in `LOGISTICO_DATA/datarelay_compare/ISTRUZIONI_DataRelay_2026-11-04.md` (M2 = segnale nostro).
+
 **2026-10-30 — F_CARICO gold dev quadrato con CDT_DW su settembre e 1-28 ottobre** (7 giri di ricaricamento con
 correzioni successive; codice sul branch `feat/act-9039-rimozione-misure-derivate`, ultimo commit 9f538ae):
 

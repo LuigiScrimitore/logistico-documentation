@@ -353,8 +353,8 @@ _(sezioni da popolare in Fase 2)_
 | 9031 | Allineamento F_CARICO alla mappa colonne (GG_ fatti; rinomina vettore + CARICO_INCOMPLETO + SCAD_STOCK da decidere) | revisione mappa colonne vs codice live | 🔵 in-progress | [acts/ACT_9031](acts/ACT_9031_allineamento-f-carico-mappa-colonne.md) |
 | 9036 | Grana pesate multi-bolla F_CARICO (indagine residuo quadratura ottobre) | residuo 0,007% su etichette multi-bolla | ✅ done (indagine; fix in ACT_9037, residuo in ACT_9038) | [acts/ACT_9036](acts/ACT_9036_grana-pesate-multibolla-f-carico.md) |
 | 9037 | F_CARICO: `NUM_BOLLA_FORN` dalla pesata come il legacy (grana etichetta×bolla) | multi-bolla: la bolla del gold è del dettaglio, nel legacy è della pesata | ✅ done (prep v2.3.0; misure 0,0%, UF −0,003%, cop. 99,98%) | [acts/ACT_9037](acts/ACT_9037_f-carico-bolla-da-pesata-come-legacy.md) |
-| 9038 | F_CARICO al 100%: recuperare le 2e pesate multi-bolla (dedup in estrazione su etichetta+data-bolla) | residuo ACT_9037 (~88 etichette/mese) | ⬜ proposed (attende verifica Oracle) | [acts/ACT_9038](acts/ACT_9038_recupero-seconde-pesate-multibolla.md) |
-| 9039 | Rimuovere `QTA_ORD_FORN` e `VAL_COSTO_CARICO` da F_CARICO e derivati (A_INBOUND, KPI qualità ricevimento) | decisione SAL → ADR-0029 | 🔵 in-progress | [acts/ACT_9039](acts/ACT_9039_rimozione-misure-derivate-f-carico.md) |
+| 9038 | F_CARICO al 100%: recuperare le 2e pesate multi-bolla (dedup in estrazione su etichetta+data-bolla) | residuo ACT_9037 (~88 etichette/mese) | ✅ rilasciato 2026-11-04 (v0.1.21); recupero 31/10–04/11 dopo fix DataRelay | [acts/ACT_9038](acts/ACT_9038_recupero-seconde-pesate-multibolla.md) |
+| 9039 | Rimuovere `QTA_ORD_FORN` e `VAL_COSTO_CARICO` da F_CARICO e derivati (A_INBOUND, KPI qualità ricevimento) | decisione SAL → ADR-0029 | ✅ rilasciato 2026-11-04 (migrazione colonne dev: SQL utente) | [acts/ACT_9039](acts/ACT_9039_rimozione-misure-derivate-f-carico.md) |
 
 ---
 

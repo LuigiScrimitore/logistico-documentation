@@ -4,12 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [Backfill settembre F_CARICO: da 20 giorni incompleti (94.784) a 30/30 completi (657.114) — tutto il gold su v2.2.0](2026-10-23-02_backfill-settembre-fcarico-completo.md) · 2026-10-23 · monorepo `main`
+**Ultimo push:** [Rilascio F_CARICO quadrato col legacy (ACT_9037/9038/9039): workflows v0.1.21, lib v1.0.9 — recupero 31/10–04/11 rinviato al fix DataRelay](2026-11-04-01_rilascio-f-carico-quadrato-v0121.md) · 2026-11-04 · monorepo `main @b39a07f (PR #45)`
 
-**75 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**76 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-11-04 | `main @b39a07f (PR #45)` | [Rilascio F_CARICO quadrato col legacy (ACT_9037/9038/9039): workflows v0.1.21, lib v1.0.9 — recupero 31/10–04/11 rinviato al fix DataRelay](2026-11-04-01_rilascio-f-carico-quadrato-v0121.md) | ACT_9037 ACT_9038 ACT_9039 | ADR-0029 | LL-041 | Q-01 |
 | 2026-10-23 | `main` | [Backfill settembre F_CARICO: da 20 giorni incompleti (94.784) a 30/30 completi (657.114) — tutto il gold su v2.2.0](2026-10-23-02_backfill-settembre-fcarico-completo.md) | ACT_9035 | — | — | Q-01 |
 | 2026-10-23 | `main @b329553` | [Recupero residuo ~2% copertura F_CARICO: riconciliazione (bolla,ordine) pesata→dettaglio, copertura ~100% (ACT_9035)](2026-10-23-01_recupero-residuo-copertura-pesate.md) | ACT_9035 | — | — | Q-01 |
 | 2026-10-22 | `main @333b57e` | [Resilienza landing snapshot: i job landing/dim_refresh non falliscono più se manca il giorno (ACT_9034)](2026-10-22-01_resilienza-landing-snapshot.md) | ACT_9034 | — | LL-021 | — |

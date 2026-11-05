@@ -34,6 +34,8 @@ da Oracle (`LOGISTICO_DATA\datarelay_compare\viste_legacy_carico.sql`) · `E` = 
   etichetta rinumerata) il legacy tiene il valore vecchio. Criterio per noi: pesata valida se vista per la prima volta
   **entro il giorno di consumo (timbro) della sua testata** (verificato sul nostro bronze: 96840676 vista 19/10 05:31 prima
   del giro delle 07:13; la rinumerata 96841694 vista dal 20/10).
+  Implementazione gold: la fotografia "dopo il giro" è il primo giorno di landing **effettivamente caricato** dopo il
+  giorno del timbro, non D+1 per definizione (lacuna 31/10–04/11/2026: la fotografia dopo il giro del 31/10 è il 05/11).
 - **R-2.4** Formule (V 3-52): `QTA_UF_CARICO = psp_qta_uf_ril`; `QTA_CARICO = nrcolli*pzxcart`; `NUM_IMB_CARICO =
   nrcolli`; `NUM_IMB_FORN_CARICO = qta/DECODE(pz_cart_for,0,1,pz_cart_for)`; `NUM_PLT_CARICO = 1`; `STESSO_IMB_CARICO_FLAG
   = DECODE(pz_cart_for - pz_cartone,0,1,0)`; `NUM_BOLLA_FORN = NVL(r.bolla,'0')` (= `PSP_NUMBOL` per la join);
