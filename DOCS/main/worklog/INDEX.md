@@ -4,12 +4,13 @@
 > `python scripts/worklog/worklog_index.py`. Convenzioni in [README](README.md),
 > decisione in [ADR-0024](../adr/0024_worklog_diario_push.md).
 
-**Ultimo push:** [VOL_CARICO arrotondato a 2 decimali come CDT_DW (lib v1.0.10) — nessun ricalcolo, effetto dal giro del 06/11](2026-11-05-02_vol-carico-arrotondato-2-decimali.md) · 2026-11-05 · monorepo `main @3cd3e32 (PR #47)`
+**Ultimo push:** [Prep carichi v3.5.0: cambio mese gestito in automatico (ACT_9040) — workflows v0.1.23](2026-11-05-03_prep-carico-cambio-mese.md) · 2026-11-05 · monorepo `main @14b4307 (PR #48)`
 
-**78 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
+**79 voci.** La prima riga (in alto) è il push più recente = **stato corrente**.
 
 | Data | Push | Cosa | ACT | ADR | LL | OP |
 |---|---|---|---|---|---|---|
+| 2026-11-05 | `main @14b4307 (PR #48)` | [Prep carichi v3.5.0: cambio mese gestito in automatico (ACT_9040) — workflows v0.1.23](2026-11-05-03_prep-carico-cambio-mese.md) | ACT_9040 | — | — | — |
 | 2026-11-05 | `main @3cd3e32 (PR #47)` | [VOL_CARICO arrotondato a 2 decimali come CDT_DW (lib v1.0.10) — nessun ricalcolo, effetto dal giro del 06/11](2026-11-05-02_vol-carico-arrotondato-2-decimali.md) | ACT_9038 | — | — | Q-01 |
 | 2026-11-05 | `main @a394cbb (PR #46)` | [Giro M2 di DataRelay + fix fotografia dopo il giro (prep v3.4.0): F_CARICO = CDT_DW dal 01/09 al 03/11 — workflows v0.1.22](2026-11-05-01_giro-m2-datarelay-e-fix-fotografia-dopo-giro.md) | ACT_9038 | — | LL-041 | Q-01 |
 | 2026-11-04 | `main @b39a07f (PR #45)` | [Rilascio F_CARICO quadrato col legacy (ACT_9037/9038/9039): workflows v0.1.21, lib v1.0.9 — recupero 31/10–04/11 rinviato al fix DataRelay](2026-11-04-01_rilascio-f-carico-quadrato-v0121.md) | ACT_9037 ACT_9038 ACT_9039 | ADR-0029 | LL-041 | Q-01 |
