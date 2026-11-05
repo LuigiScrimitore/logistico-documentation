@@ -355,6 +355,7 @@ _(sezioni da popolare in Fase 2)_
 | 9037 | F_CARICO: `NUM_BOLLA_FORN` dalla pesata come il legacy (grana etichetta×bolla) | multi-bolla: la bolla del gold è del dettaglio, nel legacy è della pesata | ✅ done (prep v2.3.0; misure 0,0%, UF −0,003%, cop. 99,98%) | [acts/ACT_9037](acts/ACT_9037_f-carico-bolla-da-pesata-come-legacy.md) |
 | 9038 | F_CARICO al 100%: recuperare le 2e pesate multi-bolla (dedup in estrazione su etichetta+data-bolla) | residuo ACT_9037 (~88 etichette/mese) | ✅ rilasciato 2026-11-04 (v0.1.21); recupero 31/10–04/11 dopo fix DataRelay | [acts/ACT_9038](acts/ACT_9038_recupero-seconde-pesate-multibolla.md) |
 | 9039 | Rimuovere `QTA_ORD_FORN` e `VAL_COSTO_CARICO` da F_CARICO e derivati (A_INBOUND, KPI qualità ricevimento) | decisione SAL → ADR-0029 | ✅ rilasciato 2026-11-04 (migrazione colonne dev: SQL utente) | [acts/ACT_9039](acts/ACT_9039_rimozione-misure-derivate-f-carico.md) |
+| 9040 | Prep carichi: rielaborare il mese precedente al cambio mese (timbri del mese dopo) | worklog 2026-11-05-01 (ACT_9038) | ✅ rilasciato 2026-11-05 (v0.1.23) | [acts/ACT_9040](acts/ACT_9040_prep-carico-cambio-mese.md) |
 
 ---
 
